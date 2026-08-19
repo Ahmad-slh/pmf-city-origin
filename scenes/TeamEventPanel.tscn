@@ -1,0 +1,80 @@
+[gd_scene format=3 uid="uid://10fqe6kfps8d"]
+
+[ext_resource type="Script" uid="uid://cv2f78nkemhlk" path="res://scripts/team_event_panel.gd" id="1_1k6iy"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_1k6iy"]
+bg_color = Color(0.60038817, 0.60038817, 0.60038817, 0)
+
+[node name="TeamEventPanel" type="Control" unique_id=1432928170]
+layout_mode = 3
+anchors_preset = 9
+anchor_bottom = 1.0
+grow_vertical = 2
+script = ExtResource("1_1k6iy")
+
+[node name="Panel" type="Panel" parent="." unique_id=1134306107]
+custom_minimum_size = Vector2(150, 50)
+layout_mode = 1
+anchors_preset = 9
+anchor_bottom = 1.0
+offset_right = 295.0
+grow_vertical = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_1k6iy")
+
+[node name="TeamLabel" type="Label" parent="Panel" unique_id=93251811]
+visible = false
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+offset_bottom = 31.0
+grow_horizontal = 2
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_constants/line_spacing = 1
+theme_override_constants/outline_size = 2
+theme_override_constants/shadow_outline_size = 5
+theme_override_font_sizes/font_size = 24
+text = "Team Label"
+horizontal_alignment = 1
+vertical_alignment = 1
+autowrap_mode = 2
+
+[node name="EventTitleLabel" type="Label" parent="Panel" unique_id=431372534]
+layout_mode = 1
+anchors_preset = 14
+anchor_top = 0.5
+anchor_right = 1.0
+anchor_bottom = 0.5
+offset_left = 12.0
+offset_top = -390.0
+offset_right = 1.0
+offset_bottom = -351.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_constants/line_spacing = 1
+theme_override_font_sizes/font_size = 20
+text = "ttttttttttt"
+horizontal_alignment = 1
+vertical_alignment = 1
+autowrap_mode = 2
+
+[node name="EventBodyLabel" type="Label" parent="Panel" unique_id=215468523]
+layout_mode = 1
+anchors_preset = 14
+anchor_top = 0.5
+anchor_right = 1.0
+anchor_bottom = 0.5
+offset_left = 20.0
+offset_top = -337.0
+offset_right = -8.0
+offset_bottom = -298.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.42400002)
+theme_override_constants/line_spacing = 1
+theme_override_font_sizes/font_size = 16
+text = "eeeeeeeeeeee"
+horizontal_alignment = 1
+vertical_alignment = 1
+autowrap_mode = 2

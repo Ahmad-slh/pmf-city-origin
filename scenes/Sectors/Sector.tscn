@@ -1,0 +1,64 @@
+[gd_scene format=3 uid="uid://03q1evho2m8x"]
+
+[ext_resource type="Script" uid="uid://yqtrl56n0ls1" path="res://scripts/sector.gd" id="1_o0oex"]
+[ext_resource type="Texture2D" uid="uid://iwvhqrxhkm48" path="res://assets/images/Locks/lock_red.png" id="2_awj8g"]
+[ext_resource type="Texture2D" uid="uid://cx755pgsvysv7" path="res://assets/images/sectors/s1.png" id="2_fq5c5"]
+[ext_resource type="Texture2D" uid="uid://cbj8gg7vov161" path="res://assets/images/Locks/lock_blue.png" id="3_fq5c5"]
+[ext_resource type="Texture2D" uid="uid://dmlwtshukniqm" path="res://assets/images/Locks/lock_gray.png" id="4_sjo4g"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_yonaq"]
+size = Vector2(262, 233)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_o0oex"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_fq5c5"]
+bg_color = Color(0.6, 0.23921569, 0.6, 1)
+
+[node name="Area2D" type="Area2D" unique_id=1962568554]
+script = ExtResource("1_o0oex")
+red_lock_texture = ExtResource("2_awj8g")
+blue_lock_texture = ExtResource("3_fq5c5")
+gray_lock_texture = ExtResource("4_sjo4g")
+neutral_lock_texture = ExtResource("4_sjo4g")
+
+[node name="Sprite2D" type="Sprite2D" parent="." unique_id=579697765]
+scale = Vector2(0.4, 0.4)
+texture = ExtResource("2_fq5c5")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=461560585 groups=["sectors"]]
+position = Vector2(-1, -4.5)
+shape = SubResource("RectangleShape2D_yonaq")
+
+[node name="OwnerMark" type="ColorRect" parent="." unique_id=1677886856]
+visible = false
+offset_left = 68.0
+offset_top = -97.0
+offset_right = 111.0
+offset_bottom = -52.0
+color = Color(0.28763464, 0.28763464, 0.28763464, 0.49500003)
+
+[node name="Label" type="Label" parent="." unique_id=1311332393]
+offset_left = 51.0
+offset_top = -90.0
+offset_right = 68.0
+offset_bottom = -59.0
+theme_override_styles/normal = SubResource("StyleBoxFlat_o0oex")
+
+[node name="StepLabel" type="Label" parent="." unique_id=796085644]
+visible = false
+z_index = 1
+offset_left = 10.0
+offset_top = 9.0
+offset_right = 46.0
+offset_bottom = 67.0
+theme_override_colors/font_color = Color(0.06666667, 0.047058824, 0.078431375, 1)
+theme_override_colors/font_shadow_color = Color(0.8666667, 0.15686275, 0.4627451, 0)
+theme_override_colors/font_outline_color = Color(0.6392157, 0.5764706, 0.57254905, 1)
+theme_override_font_sizes/font_size = 30
+theme_override_styles/normal = SubResource("StyleBoxFlat_fq5c5")
+
+[node name="LockSprite" type="Sprite2D" parent="." unique_id=1888776215]
+z_index = 100
+scale = Vector2(0.09, 0.09)
+
+[connection signal="input_event" from="." to="." method="_on_input_event"]

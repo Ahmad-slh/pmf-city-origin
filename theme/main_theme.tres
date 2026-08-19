@@ -1,0 +1,6 @@
+[gd_resource type="Theme" format=3 uid="uid://tlt527c6qmum"]
+
+[ext_resource type="FontFile" uid="uid://u7k65f6drtyk" path="res://assets/fonts/Cairo-Regular.ttf" id="1_afw5t"]
+
+[resource]
+default_font = ExtResource("1_afw5t")

@@ -1,0 +1,157 @@
+[gd_scene format=3 uid="uid://djo6ov33phfpw"]
+
+[ext_resource type="Script" uid="uid://cyiacm1etvlkw" path="res://scripts/BattlePopup.gd" id="1_cw7ot"]
+[ext_resource type="Texture2D" uid="uid://cb1kfceri758s" path="res://assets/images/buttel/buttel_effect.png" id="2_lvb1t"]
+[ext_resource type="Texture2D" uid="uid://d1cqi13uevad3" path="res://assets/images/buttel/buttel_background.png" id="3_m2wj0"]
+[ext_resource type="FontFile" uid="uid://u7k65f6drtyk" path="res://assets/fonts/Cairo-Regular.ttf" id="4_fk5km"]
+[ext_resource type="AudioStream" uid="uid://7h272svpdqt5" path="res://assets/audio/battle_start.wav" id="4_m2wj0"]
+[ext_resource type="AudioStream" uid="uid://blhwyv11j725t" path="res://assets/audio/battle_win.wav" id="5_ucv7a"]
+[ext_resource type="AudioStream" uid="uid://cmygkl3nr1a3i" path="res://assets/audio/battle_lose.wav" id="6_fk5km"]
+
+[node name="BattlePopup" type="Control" unique_id=1922644025]
+visible = false
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+size_flags_vertical = 4
+script = ExtResource("1_cw7ot")
+
+[node name="DarkOverlay" type="ColorRect" parent="." unique_id=602546042]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0, 0.019607844, 0.039215688, 0.5411765)
+
+[node name="BattleFlash" type="ColorRect" parent="." unique_id=1587772549]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(1, 0, 0, 0)
+
+[node name="BattleEffect" type="TextureRect" parent="." unique_id=647965898]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("2_lvb1t")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="BattleCard" type="TextureRect" parent="." unique_id=1788992500]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 2.0
+offset_right = 2.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("3_m2wj0")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="ContentBox" type="VBoxContainer" parent="." unique_id=1905789629]
+custom_minimum_size = Vector2(450, 450)
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -229.0
+offset_top = -271.0
+offset_right = 221.0
+offset_bottom = 329.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme_override_constants/separation = 20
+alignment = 1
+metadata/_edit_group_ = true
+
+[node name="TitleLabel" type="Label" parent="ContentBox" unique_id=1779833164]
+custom_minimum_size = Vector2(0, 50)
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0, 0, 1)
+theme_override_font_sizes/font_size = 42
+text = "⚔️ معركة"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="MessageLabel" type="Label" parent="ContentBox" unique_id=636502669]
+layout_mode = 2
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_font_sizes/font_size = 32
+text = "اختر من سيجيب على السؤال"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="BattleTeamsLabel" type="Label" parent="ContentBox" unique_id=699924681]
+layout_mode = 2
+theme_override_colors/font_color = Color(0, 0.20739882, 0.23826468, 1)
+theme_override_font_sizes/font_size = 20
+text = "الفريق الأزرق وصل
+إلى قطاع الفريق
+الأحمر
+
+🔵   VS   🔴"
+horizontal_alignment = 1
+vertical_alignment = 1
+autowrap_mode = 3
+
+[node name="BattleResultLabel" type="Label" parent="ContentBox" unique_id=1624412034]
+visible = false
+layout_mode = 2
+theme_override_font_sizes/font_size = 26
+horizontal_alignment = 1
+autowrap_mode = 2
+
+[node name="SpaceSmall" type="Control" parent="ContentBox" unique_id=1628118688]
+custom_minimum_size = Vector2(0, 30)
+layout_mode = 2
+
+[node name="HBoxContainer" type="HBoxContainer" parent="ContentBox" unique_id=1879181990]
+layout_mode = 2
+theme_override_constants/separation = 30
+alignment = 1
+
+[node name="AttackerButton" type="Button" parent="ContentBox/HBoxContainer" unique_id=926803096]
+custom_minimum_size = Vector2(120, 55)
+layout_mode = 2
+theme_override_fonts/font = ExtResource("4_fk5km")
+theme_override_font_sizes/font_size = 20
+text = "المهاجم"
+
+[node name="DefenderButton" type="Button" parent="ContentBox/HBoxContainer" unique_id=144168846]
+custom_minimum_size = Vector2(120, 55)
+layout_mode = 2
+theme_override_fonts/font = ExtResource("4_fk5km")
+theme_override_font_sizes/font_size = 20
+text = "المدافع"
+
+[node name="BattleStartSound" type="AudioStreamPlayer" parent="." unique_id=32701921]
+stream = ExtResource("4_m2wj0")
+
+[node name="BattleWinSound" type="AudioStreamPlayer" parent="." unique_id=628901607]
+stream = ExtResource("5_ucv7a")
+
+[node name="BattleLoseSound" type="AudioStreamPlayer" parent="." unique_id=1876664701]
+stream = ExtResource("6_fk5km")
+
+[connection signal="pressed" from="ContentBox/HBoxContainer/AttackerButton" to="." method="_on_attacker_button_pressed"]
+[connection signal="pressed" from="ContentBox/HBoxContainer/DefenderButton" to="." method="_on_defender_button_pressed"]

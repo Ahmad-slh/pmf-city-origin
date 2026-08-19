@@ -1,0 +1,62 @@
+[gd_scene format=3 uid="uid://cmhucssu1tc7n"]
+
+[ext_resource type="Script" uid="uid://b2h6te80ploex" path="res://scripts/dice.gd" id="1_pb8pk"]
+[ext_resource type="Texture2D" uid="uid://bun6ld1si857" path="res://assets/images/dice/Screenshot 2026-07-20 092140.png" id="2_ocjtb"]
+[ext_resource type="Texture2D" uid="uid://dmj2voeikol1t" path="res://assets/images/dice/Screenshot 2026-07-20 092132.png" id="3_dicg2"]
+[ext_resource type="Texture2D" uid="uid://ccm0u12n000im" path="res://assets/images/dice/Screenshot 2026-07-20 092123.png" id="4_pgf55"]
+[ext_resource type="Texture2D" uid="uid://dddnhv53d3wr4" path="res://assets/images/dice/Screenshot 2026-07-20 092109.png" id="5_dlvbc"]
+[ext_resource type="Texture2D" uid="uid://cfq1amwrhiy87" path="res://assets/images/dice/Screenshot 2026-07-20 092055.png" id="6_skxya"]
+[ext_resource type="Texture2D" uid="uid://diox1v11w8hxb" path="res://assets/images/dice/Screenshot 2026-07-20 092032.png" id="7_4kp1s"]
+[ext_resource type="Texture2D" uid="uid://bkr5o3yrbwsn" path="res://assets/images/dice/dice_frame.png" id="8_frame"]
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_nkpnt"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("2_ocjtb")
+}, {
+"duration": 1.0,
+"texture": ExtResource("3_dicg2")
+}, {
+"duration": 1.0,
+"texture": ExtResource("4_pgf55")
+}, {
+"duration": 1.0,
+"texture": ExtResource("5_dlvbc")
+}, {
+"duration": 1.0,
+"texture": ExtResource("6_skxya")
+}, {
+"duration": 1.0,
+"texture": ExtResource("7_4kp1s")
+}],
+"loop": true,
+"name": &"roll",
+"speed": 13.0
+}]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_pb8pk"]
+size = Vector2(127, 103)
+
+[node name="Dice" type="Area2D" unique_id=858812595]
+script = ExtResource("1_pb8pk")
+
+[node name="FrameSprite" type="Sprite2D" parent="." unique_id=311204877]
+z_index = -1
+position = Vector2(2.4999986, -1.0000026)
+scale = Vector2(0.177, 0.177)
+texture = ExtResource("8_frame")
+
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="." unique_id=2135372960]
+position = Vector2(2.4999986, -1.0000026)
+scale = Vector2(0.1221, 0.1221)
+sprite_frames = SubResource("SpriteFrames_nkpnt")
+animation = &"roll"
+speed_scale = 0.5
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=458462379]
+position = Vector2(3.5, 1.5)
+scale = Vector2(0.6, 0.6)
+shape = SubResource("RectangleShape2D_pb8pk")
+
+[connection signal="input_event" from="." to="." method="_on_input_event"]

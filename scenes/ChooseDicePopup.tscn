@@ -1,0 +1,215 @@
+[gd_scene format=3 uid="uid://vys8mxuhwrvs"]
+
+[ext_resource type="Script" uid="uid://cmbt2bepi2vta" path="res://scripts/choose_dice_popup.gd" id="1_3j7ri"]
+[ext_resource type="Texture2D" uid="uid://bgwtbfiivmlst" path="res://assets/images/events-images/popup dice.png" id="2_2vwjs"]
+[ext_resource type="Texture2D" uid="uid://babfc1y32lwr6" path="res://assets/images/events-images/two_rolls.png" id="3_ouv1a"]
+[ext_resource type="Texture2D" uid="uid://b4lmculxcgslb" path="res://assets/images/events-images/Choos First Player2.png" id="4_f2rgn"]
+
+[sub_resource type="CanvasItemMaterial" id="CanvasItemMaterial_vifkx"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_2vwjs"]
+bg_color = Color(0.60038817, 0.60038817, 0.60038817, 0.012)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_ouv1a"]
+bg_color = Color(0.60038817, 0.60038817, 0.60038817, 0.012)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_3j7ri"]
+bg_color = Color(0.60038817, 0.60038817, 0.60038817, 0.006)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_mfjpq"]
+bg_color = Color(0.60038817, 0.60038817, 0.60038817, 0.012)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_f2rgn"]
+bg_color = Color(0.60038817, 0.60038817, 0.60038817, 0)
+
+[node name="CanvasLayer" type="CanvasLayer" unique_id=2059025195]
+script = ExtResource("1_3j7ri")
+
+[node name="ColorRect" type="ColorRect" parent="." unique_id=57783214]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0, 0, 0, 0.16600001)
+
+[node name="ChooseNumberPanel" type="Panel" parent="." unique_id=343864785]
+offset_right = 642.0
+offset_bottom = 571.0
+
+[node name="Label" type="Label" parent="ChooseNumberPanel" unique_id=656387712]
+layout_mode = 0
+offset_right = 319.0
+offset_bottom = 31.0
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="HBoxContainer" type="HBoxContainer" parent="ChooseNumberPanel" unique_id=1400119637]
+material = SubResource("CanvasItemMaterial_vifkx")
+layout_mode = 0
+offset_top = 41.0
+offset_right = 331.0
+offset_bottom = 81.0
+
+[node name="PopupDice" type="Sprite2D" parent="ChooseNumberPanel/HBoxContainer" unique_id=756150486]
+position = Vector2(324.00003, 246)
+scale = Vector2(0.9, 0.9)
+texture = ExtResource("2_2vwjs")
+
+[node name="Button1" type="Button" parent="ChooseNumberPanel/HBoxContainer/PopupDice" unique_id=1556747992]
+custom_minimum_size = Vector2(50, 0)
+offset_left = -270.00006
+offset_top = -41.42858
+offset_right = -111.42862
+offset_bottom = 81.428535
+mouse_default_cursor_shape = 2
+theme_override_styles/normal = SubResource("StyleBoxFlat_2vwjs")
+
+[node name="Button2" type="Button" parent="ChooseNumberPanel/HBoxContainer/PopupDice" unique_id=1666995955]
+custom_minimum_size = Vector2(50, 0)
+offset_left = -72.85721
+offset_top = -40.000015
+offset_right = 74.285645
+offset_bottom = 80.000015
+mouse_default_cursor_shape = 2
+theme_override_styles/normal = SubResource("StyleBoxFlat_ouv1a")
+
+[node name="Button3" type="Button" parent="ChooseNumberPanel/HBoxContainer/PopupDice" unique_id=1318081625]
+custom_minimum_size = Vector2(50, 0)
+offset_left = 121.4285
+offset_top = -37.1429
+offset_right = 265.71417
+offset_bottom = 79.999985
+mouse_default_cursor_shape = 2
+theme_override_styles/normal = SubResource("StyleBoxFlat_3j7ri")
+
+[node name="Button4" type="Button" parent="ChooseNumberPanel/HBoxContainer/PopupDice" unique_id=1196149361]
+custom_minimum_size = Vector2(50, 0)
+offset_left = -267.14285
+offset_top = 112.85712
+offset_right = -115.714325
+offset_bottom = 234.28568
+mouse_default_cursor_shape = 2
+theme_override_styles/normal = SubResource("StyleBoxFlat_3j7ri")
+
+[node name="Button5" type="Button" parent="ChooseNumberPanel/HBoxContainer/PopupDice" unique_id=1622788897]
+custom_minimum_size = Vector2(50, 0)
+offset_left = -77.14291
+offset_top = 111.42856
+offset_right = 78.57139
+offset_bottom = 235.7143
+mouse_default_cursor_shape = 2
+theme_override_styles/normal = SubResource("StyleBoxFlat_3j7ri")
+
+[node name="Button6" type="Button" parent="ChooseNumberPanel/HBoxContainer/PopupDice" unique_id=1027327495]
+custom_minimum_size = Vector2(50, 0)
+offset_left = 117.14279
+offset_top = 111.42853
+offset_right = 268.57138
+offset_bottom = 235.7142
+mouse_default_cursor_shape = 2
+theme_override_styles/normal = SubResource("StyleBoxFlat_3j7ri")
+
+[node name="TwoRollsPanel" type="Panel" parent="." unique_id=1729631585]
+self_modulate = Color(1, 1, 1, 0.036000002)
+offset_left = 642.0
+offset_top = 11.0
+offset_right = 1402.0
+offset_bottom = 560.0
+
+[node name="Label" type="Label" parent="TwoRollsPanel" unique_id=1254303262]
+layout_mode = 0
+offset_right = 523.0
+offset_bottom = 77.0
+theme_override_font_sizes/font_size = 30
+text = "إختر  الرقم الافضل لتقدم فريقك"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="HBoxContainer" type="HBoxContainer" parent="TwoRollsPanel" unique_id=926235049]
+material = SubResource("CanvasItemMaterial_vifkx")
+layout_mode = 0
+offset_top = 41.0
+offset_right = 331.0
+offset_bottom = 81.0
+
+[node name="PopupDice2" type="Sprite2D" parent="TwoRollsPanel/HBoxContainer" unique_id=413285486]
+position = Vector2(385.50003, 230.99997)
+scale = Vector2(0.6, 0.6)
+texture = ExtResource("3_ouv1a")
+
+[node name="Button10" type="Button" parent="TwoRollsPanel/HBoxContainer/PopupDice2" unique_id=2024513384]
+custom_minimum_size = Vector2(200, 120)
+offset_left = -465.1994
+offset_top = 226.85748
+offset_right = -65.234924
+offset_bottom = 358.85748
+mouse_default_cursor_shape = 2
+theme_override_font_sizes/font_size = 70
+theme_override_styles/normal = SubResource("StyleBoxFlat_mfjpq")
+text = "الرمية الثانية"
+
+[node name="Button11" type="Button" parent="TwoRollsPanel/HBoxContainer/PopupDice2" unique_id=1236099460]
+custom_minimum_size = Vector2(200, 120)
+offset_left = 63.09607
+offset_top = 227.83969
+offset_right = 456.73413
+offset_bottom = 359.8397
+mouse_default_cursor_shape = 2
+theme_override_font_sizes/font_size = 70
+theme_override_styles/normal = SubResource("StyleBoxFlat_f2rgn")
+text = "الرمية الاولى"
+
+[node name="ChoosFirst" type="Panel" parent="." unique_id=293257611]
+self_modulate = Color(1, 1, 1, 0.036000002)
+offset_left = 418.0
+offset_top = 18.0
+offset_right = 1178.0
+offset_bottom = 567.0
+
+[node name="Label" type="Label" parent="ChoosFirst" unique_id=2033851219]
+layout_mode = 0
+offset_right = 523.0
+offset_bottom = 77.0
+theme_override_font_sizes/font_size = 30
+text = "إختر  الرقم الافضل لتقدم فريقك"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="HBoxContainer" type="HBoxContainer" parent="ChoosFirst" unique_id=179456140]
+material = SubResource("CanvasItemMaterial_vifkx")
+layout_mode = 0
+offset_top = 41.0
+offset_right = 331.0
+offset_bottom = 81.0
+mouse_filter = 2
+
+[node name="PopupDice3" type="Sprite2D" parent="ChoosFirst/HBoxContainer" unique_id=1646860604]
+position = Vector2(385.50003, 230.99997)
+scale = Vector2(0.6, 0.6)
+texture = ExtResource("4_f2rgn")
+
+[node name="Button20" type="Button" parent="ChoosFirst/HBoxContainer/PopupDice3" unique_id=1903271666]
+custom_minimum_size = Vector2(200, 120)
+offset_left = -507.5
+offset_top = 240.0
+offset_right = -82.5
+offset_bottom = 366.6667
+mouse_default_cursor_shape = 2
+theme_override_font_sizes/font_size = 70
+theme_override_styles/normal = SubResource("StyleBoxFlat_mfjpq")
+
+[node name="Button30" type="Button" parent="ChoosFirst/HBoxContainer/PopupDice3" unique_id=1188917135]
+custom_minimum_size = Vector2(200, 120)
+offset_left = 85.833374
+offset_top = 240.00003
+offset_right = 507.5
+offset_bottom = 363.33334
+mouse_default_cursor_shape = 2
+theme_override_font_sizes/font_size = 70
+theme_override_styles/normal = SubResource("StyleBoxFlat_f2rgn")
+
+[connection signal="pressed" from="TwoRollsPanel/HBoxContainer/PopupDice2/Button10" to="." method="_on_button_10_pressed"]
+[connection signal="pressed" from="TwoRollsPanel/HBoxContainer/PopupDice2/Button11" to="." method="_on_button_11_pressed"]
+[connection signal="pressed" from="ChoosFirst/HBoxContainer/PopupDice3/Button20" to="." method="_on_button_10_pressed"]
+[connection signal="pressed" from="ChoosFirst/HBoxContainer/PopupDice3/Button30" to="." method="_on_button_11_pressed"]

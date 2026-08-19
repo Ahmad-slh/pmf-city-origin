@@ -1,0 +1,129 @@
+[gd_scene format=3 uid="uid://xx14y7ghkg"]
+
+[ext_resource type="Script" uid="uid://w1cmf05250tv" path="res://scripts/player.gd" id="1_3vyb7"]
+[ext_resource type="Texture2D" uid="uid://bb5mjhrwn4ysg" path="res://assets/images/player/1.png" id="2_g2els"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_qhqgy"]
+size = Vector2(61, 101)
+
+[sub_resource type="Animation" id="Animation_qhqgy"]
+length = 0.001
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Area2D2/Area2D:rotation")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [0.0]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("Area2D2/Area2D:position")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector2(0, 0)]
+}
+tracks/2/type = "value"
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/path = NodePath("Area2D2/Area2D:self_modulate")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Color(1, 1, 1, 1)]
+}
+
+[sub_resource type="Animation" id="Animation_g2els"]
+resource_name = "active_turn"
+length = 5.0
+loop_mode = 1
+step = 1.2
+markers = [{
+"color": Color(1, 0.28235295, 0.38039216, 1),
+"name": &"new_marker",
+"time": 1.52
+}, {
+"color": Color(0.3372549, 0.08627451, 1, 1),
+"name": &"new_marker_2",
+"time": 2.69
+}, {
+"color": Color(1, 0.1254902, 1, 1),
+"name": &"new_marker_3",
+"time": 4.49
+}]
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Area2D2/Area2D:rotation")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 2, 3, 4),
+"transitions": PackedFloat32Array(1.4640887, 0.6597539, 1, 1.5157173),
+"update": 0,
+"values": [-0.1361356816555579, 0.2007128639793479, -0.2251474735072681, 0.13788101090755164]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("Area2D2/Area2D:position")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0, 1, 3, 5),
+"transitions": PackedFloat32Array(2.0705304, 1.4640859, 2.6390157, 3.2490098),
+"update": 0,
+"values": [Vector2(2, 2), Vector2(3, 4), Vector2(-2, -3), Vector2(4, 4)]
+}
+tracks/2/type = "value"
+tracks/2/imported = false
+tracks/2/enabled = false
+tracks/2/path = NodePath("Area2D2/Area2D:self_modulate")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/keys = {
+"times": PackedFloat32Array(0, 1, 3, 5),
+"transitions": PackedFloat32Array(1, 1, 1, 1),
+"update": 0,
+"values": [Color(1, 1, 1, 1), Color(0.8148396, 0.71602225, 0.8148396, 0.49411765), Color(1, 1, 1, 0.99981797), Color(1, 1, 1, 0.7411765)]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_qhqgy"]
+_data = {
+&"RESET": SubResource("Animation_qhqgy"),
+&"active_turn": SubResource("Animation_g2els")
+}
+
+[node name="Player" type="Node2D" unique_id=1512941029]
+script = ExtResource("1_3vyb7")
+
+[node name="Area2D2" type="Area2D" parent="." unique_id=1843696117]
+self_modulate = Color(0.905434, 0.30747664, 1, 1)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Area2D2" unique_id=414697197]
+position = Vector2(2.5, 0.5)
+shape = SubResource("RectangleShape2D_qhqgy")
+
+[node name="Area2D" type="Sprite2D" parent="Area2D2" unique_id=1996686211]
+scale = Vector2(0.18, 0.144)
+texture = ExtResource("2_g2els")
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="Area2D2" unique_id=1327304441]
+root_node = NodePath("../..")
+libraries/ = SubResource("AnimationLibrary_qhqgy")
+autoplay = &"active_turn"
+
+[connection signal="input_event" from="Area2D2" to="." method="_on_area_2d_2_input_event"]
+[connection signal="mouse_entered" from="Area2D2" to="." method="_on_area_2d_2_mouse_entered"]

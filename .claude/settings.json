@@ -1,0 +1,17 @@
+{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "f=$(node -p \"JSON.parse(require('fs').readFileSync(0,'utf8')).tool_input.file_path\" 2>/dev/null); case \"$f\" in *.gd) out=$(\"../Godot_v4.6.1-stable_win64_console.exe\" --path . --headless --check-only --script \"$f\" 2>&1 | grep \"Parse Error\"); [ -n \"$out\" ] && { echo \"GDScript parse errors in $f:\" >&2; echo \"$out\" >&2; exit 2; };; esac; true",
+            "timeout": 60,
+            "statusMessage": "Parse-checking GDScript..."
+          }
+        ]
+      }
+    ]
+  }
+}

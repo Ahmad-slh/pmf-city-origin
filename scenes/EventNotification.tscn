@@ -1,0 +1,61 @@
+[gd_scene format=3 uid="uid://dby3bmkxex8kb"]
+
+[ext_resource type="Script" uid="uid://5owwddflf1dp" path="res://scripts/EventNotification.gd" id="1_1hlbx"]
+[ext_resource type="Texture2D" uid="uid://b20uphwn22a5b" path="res://assets/images/background/notification_icon_blue2.png" id="2_nefm5"]
+[ext_resource type="Texture2D" uid="uid://dxl1rcqce4jmh" path="res://assets/images/background/notification_icon_red2.png" id="3_nefm5"]
+
+[node name="EventNotification" type="CanvasLayer" unique_id=535641083]
+layer = 20
+scale = Vector2(0.8, 0.8)
+transform = Transform2D(0.8, 0, 0, 0.8, 0, 0)
+script = ExtResource("1_1hlbx")
+blue_small_icon = ExtResource("2_nefm5")
+red_small_icon = ExtResource("3_nefm5")
+
+[node name="Panel" type="Panel" parent="." unique_id=404777565]
+offset_top = 260.0
+offset_right = 320.0
+offset_bottom = 430.0
+
+[node name="TitleLabel" type="Label" parent="Panel" unique_id=1053325099]
+layout_mode = 0
+offset_left = 15.0
+offset_top = 15.0
+offset_right = 305.0
+offset_bottom = 46.0
+text = " حدث الفريق	"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="EventLabel" type="Label" parent="Panel" unique_id=1040027288]
+layout_mode = 0
+offset_left = 15.0
+offset_top = 60.0
+offset_right = 305.0
+offset_bottom = 130.0
+horizontal_alignment = 1
+vertical_alignment = 1
+autowrap_mode = 2
+
+[node name="CloseButton" type="Button" parent="Panel" unique_id=875384025]
+layout_mode = 0
+offset_left = 115.0
+offset_top = 135.0
+offset_right = 195.0
+offset_bottom = 174.0
+scale = Vector2(0.8, 0.8)
+text = "إخفاء"
+
+[node name="SmallIconButton" type="Button" parent="." unique_id=47483878]
+custom_minimum_size = Vector2(5, 2)
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -8.750016
+offset_top = 65.0
+offset_right = -1495.0
+offset_bottom = -765.0
+grow_horizontal = 2
+grow_vertical = 2
+scale = Vector2(1, 0.7)
+text = "!"

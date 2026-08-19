@@ -1,0 +1,29 @@
+# Godot 4+ specific ignores
+.godot/
+/android/
+
+# Godot export output
+build/
+exports/
+*.pck
+*.zip
+*.exe
+*.wasm
+
+# Claude Code local overrides
+.claude/settings.local.json
+
+# OS / editor cruft
+.DS_Store
+Thumbs.db
+desktop.ini
+*.tmp
+*~
+
+# لقطات الشاشة الناتجة عن جلسات الفحص
+_debug_screenshots/
+
+# ملفات حفظت بامتداد مزدوج بالخطأ، ولا يشير إليها أي مشهد
+# الأصل المستخدم فعلا هو home_icon.png و dice_frame.png
+*.png.png
+*.png.png.import

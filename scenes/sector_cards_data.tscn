@@ -1,0 +1,6 @@
+[gd_scene format=3 uid="uid://br6153aysl5m4"]
+
+[ext_resource type="Script" uid="uid://c22xvdc7c532j" path="res://scripts/sector_cards_data.gd" id="1_diwux"]
+
+[node name="SectorCardsData" type="Node2D" unique_id=984948637]
+script = ExtResource("1_diwux")

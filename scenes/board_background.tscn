@@ -1,0 +1,273 @@
+[gd_scene format=3 uid="uid://bs151g6mq2w3u"]
+
+[ext_resource type="Texture2D" uid="uid://cun3d7dlm2o0g" path="res://assets/images/background/background1.jpg" id="1_gumd1"]
+[ext_resource type="Script" uid="uid://c4djf7m34m3iv" path="res://scripts/BoardBackground.gd" id="1_pblq0"]
+[ext_resource type="Texture2D" uid="uid://cov1kgbwi2eki" path="res://assets/images/MainPageItems/RightPanel.png" id="3_rckw6"]
+[ext_resource type="PackedScene" uid="uid://bnmxx236n7yud" path="res://scenes/board.tscn" id="4_e248q"]
+[ext_resource type="PackedScene" uid="uid://10fqe6kfps8d" path="res://scenes/TeamEventPanel.tscn" id="5_eabhc"]
+[ext_resource type="Texture2D" uid="uid://d21un5ohop7tv" path="res://assets/images/MainPageItems/LeftPanel.png" id="5_n5l2u"]
+[ext_resource type="Texture2D" uid="uid://dq6trg8fc7qlk" path="res://assets/images/MainPageItems/TeamLabelName-blue.png" id="6_27j5c"]
+[ext_resource type="Texture2D" uid="uid://bv5g0lhm1qdod" path="res://assets/images/MainPageItems/UP Panel.png" id="6_cguuw"]
+[ext_resource type="Texture2D" uid="uid://vcs4386uex4b" path="res://assets/images/MainPageItems/TeamLabelName-red.png" id="9_y3wg4"]
+[ext_resource type="Texture2D" uid="uid://djwo7eec2aceo" path="res://assets/images/MainPageItems/effects-red.png" id="12_27j5c"]
+[ext_resource type="Texture2D" uid="uid://bn47lolo0i6bd" path="res://assets/images/timer/Timer-image.png" id="12_c725k"]
+[ext_resource type="Texture2D" uid="uid://ch3k6psdkmjd7" path="res://assets/images/MainPageItems/effects-blue.png" id="13_62jyy"]
+[ext_resource type="PackedScene" uid="uid://dby3bmkxex8kb" path="res://scenes/EventNotification.tscn" id="14_xbdsl"]
+[ext_resource type="PackedScene" uid="uid://eppplix32qj1" path="res://scenes/debug_event_panel.tscn" id="15_lr428"]
+[ext_resource type="Texture2D" uid="uid://byhbjt21f0o60" path="res://assets/images/background/home_icon.png" id="20_homeicon"]
+
+[sub_resource type="FontFile" id="FontFile_c725k"]
+resource_local_to_scene = true
+cache/0/variation_coordinates = {}
+cache/0/face_index = 0
+cache/0/embolden = 0.0
+cache/0/transform = Transform2D(1, 0, 0, 1, 0, 0)
+cache/0/spacing_top = 0
+cache/0/spacing_bottom = 0
+cache/0/spacing_space = 0
+cache/0/spacing_glyph = 0
+cache/0/baseline_offset = 0.0
+cache/0/16/0/ascent = 0.0
+cache/0/16/0/descent = 0.0
+cache/0/16/0/underline_position = 0.0
+cache/0/16/0/underline_thickness = 0.0
+cache/0/16/0/scale = 1.0
+cache/0/200/0/ascent = 0.0
+cache/0/200/0/descent = 0.0
+cache/0/200/0/underline_position = 0.0
+cache/0/200/0/underline_thickness = 0.0
+cache/0/200/0/scale = 1.0
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_exit_n"]
+bg_color = Color(0.18, 0.373, 0.639, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.918, 0.949, 1, 1)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_exit_h"]
+bg_color = Color(0.239, 0.463, 0.769, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(1, 1, 1, 1)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+
+[node name="BoardBackground" type="Node2D" unique_id=747300420]
+script = ExtResource("1_pblq0")
+event_notification_scene = ExtResource("14_xbdsl")
+
+[node name="UpPanel" type="Sprite2D" parent="." unique_id=822681294]
+visible = false
+position = Vector2(1039, 62)
+texture = ExtResource("6_cguuw")
+
+[node name="RoundLabel" type="Label" parent="UpPanel" unique_id=1256752833]
+visible = false
+offset_left = 319.0
+offset_top = -4.0
+offset_right = 442.0
+offset_bottom = 51.0
+theme_override_colors/font_color = Color(18.892157, 18.78118, 18.892157, 1)
+theme_override_colors/font_shadow_color = Color(0.9376289, 0.9376289, 0.9376289, 0.081)
+theme_override_colors/font_outline_color = Color(0.9355579, 0.9276323, 0.9355579, 0.52900004)
+theme_override_constants/outline_size = 2
+theme_override_constants/shadow_outline_size = 10
+theme_override_font_sizes/font_size = 29
+text = " 0	"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="RightPanel" type="Sprite2D" parent="UpPanel" unique_id=123441392]
+visible = false
+position = Vector2(915, 474)
+scale = Vector2(1.0547945, 1.152231)
+texture = ExtResource("3_rckw6")
+
+[node name="TeamLabelNameRed" type="Sprite2D" parent="UpPanel/RightPanel" unique_id=100665984]
+visible = false
+texture_filter = 1
+position = Vector2(2, -329.79498)
+scale = Vector2(1, 0.86788154)
+texture = ExtResource("9_y3wg4")
+
+[node name="LeftPanel" type="Sprite2D" parent="UpPanel" unique_id=1590604846]
+visible = false
+position = Vector2(-840.74994, 468.25)
+scale = Vector2(1.1195287, 1.1577896)
+texture = ExtResource("5_n5l2u")
+
+[node name="TeamLabelNameBlue" type="Sprite2D" parent="UpPanel/LeftPanel" unique_id=1405743848]
+visible = false
+position = Vector2(-4.6894684, -325.83643)
+scale = Vector2(0.89323306, 0.8637148)
+texture = ExtResource("6_27j5c")
+
+[node name="GameRoot" type="Node2D" parent="." unique_id=1330413708]
+scale = Vector2(0.9, 0.9)
+
+[node name="TextureRect" type="TextureRect" parent="GameRoot" unique_id=1322107951]
+z_index = -10
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+scale = Vector2(1, 0.74)
+mouse_filter = 2
+texture = ExtResource("1_gumd1")
+expand_mode = 1
+stretch_mode = 2
+metadata/_edit_use_anchors_ = true
+
+[node name="Board" parent="GameRoot" unique_id=2020624565 instance=ExtResource("4_e248q")]
+position = Vector2(-109.22221, 24.000046)
+
+[node name="EventsUI" type="CanvasLayer" parent="." unique_id=923672193]
+layer = 2
+
+[node name="RightEventPanel" parent="EventsUI" unique_id=568824193 instance=ExtResource("5_eabhc")]
+visible = false
+offset_left = 44.0
+offset_right = 44.0
+mouse_filter = 2
+
+[node name="Panel" parent="EventsUI/RightEventPanel" index="0" unique_id=1134306107]
+visible = false
+anchors_preset = 11
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = 1667.0
+offset_top = 8.0
+offset_right = 2001.0
+offset_bottom = 94.0
+grow_horizontal = 0
+mouse_filter = 2
+
+[node name="TeamLabel" parent="EventsUI/RightEventPanel/Panel" index="0" unique_id=93251811]
+offset_left = 17.0
+offset_right = -24.0
+offset_bottom = 46.0
+theme_override_colors/font_color = Color(2.8634555, 0, 0, 1)
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.381)
+
+[node name="EventTitleLabel" parent="EventsUI/RightEventPanel/Panel" index="1" unique_id=431372534]
+offset_left = 33.0
+offset_top = -204.0
+offset_right = -45.0
+offset_bottom = -165.0
+
+[node name="EventBodyLabel" parent="EventsUI/RightEventPanel/Panel" index="2" unique_id=215468523]
+offset_left = 42.0
+offset_top = -125.0
+offset_right = -39.0
+offset_bottom = -86.0
+
+[node name="LeftEventPanel" parent="EventsUI" unique_id=1026013869 instance=ExtResource("5_eabhc")]
+visible = false
+mouse_filter = 2
+
+[node name="Panel" parent="EventsUI/LeftEventPanel" index="0" unique_id=1134306107]
+visible = false
+offset_left = -1.0
+offset_top = 60.0
+offset_right = 346.0
+offset_bottom = 83.0
+mouse_filter = 2
+
+[node name="TeamLabel" parent="EventsUI/LeftEventPanel/Panel" index="0" unique_id=93251811]
+offset_left = 14.0
+offset_right = -17.0
+offset_bottom = 46.0
+theme_override_colors/font_color = Color(0, 0, 1, 1)
+theme_override_colors/font_shadow_color = Color(0.5495049, 0.56731814, 0.5698782, 0.53800005)
+
+[node name="EventTitleLabel" parent="EventsUI/LeftEventPanel/Panel" index="1" unique_id=431372534]
+offset_left = 53.0
+offset_top = -268.0
+offset_right = -37.0
+offset_bottom = -229.0
+
+[node name="EventBodyLabel" parent="EventsUI/LeftEventPanel/Panel" index="2" unique_id=215468523]
+offset_left = 51.0
+offset_top = -111.0
+offset_right = -34.0
+offset_bottom = -72.0
+
+[node name="EffectsRed" type="Sprite2D" parent="EventsUI/LeftEventPanel" unique_id=1561007822]
+visible = false
+position = Vector2(1955.0001, 217.99998)
+scale = Vector2(0.4872262, 0.642857)
+texture = ExtResource("12_27j5c")
+
+[node name="EffectsBlue" type="Sprite2D" parent="EventsUI/LeftEventPanel" unique_id=1159193203]
+visible = false
+position = Vector2(182, 216.92758)
+scale = Vector2(0.5193693, 0.57004774)
+texture = ExtResource("13_62jyy")
+
+[node name="DebugEventPanel" parent="." unique_id=1696037410 instance=ExtResource("15_lr428")]
+visible = false
+
+[node name="TimerImage" type="Sprite2D" parent="." unique_id=724480552]
+position = Vector2(1467, 47)
+scale = Vector2(0.14276004, 0.14527027)
+texture = ExtResource("12_c725k")
+
+[node name="GameTimerLabel" type="Label" parent="TimerImage" unique_id=1586888424]
+custom_minimum_size = Vector2(800, 250)
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -1023.4238
+offset_top = -453.01147
+offset_right = -223.42383
+offset_bottom = -256.01147
+grow_horizontal = 2
+grow_vertical = 2
+size_flags_horizontal = 3
+size_flags_vertical = 6
+theme_override_fonts/font = SubResource("FontFile_c725k")
+theme_override_font_sizes/font_size = 200
+text = "60:00	"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="GameTimer" type="Timer" parent="." unique_id=2055150361]
+autostart = true
+
+[node name="ExitUI" type="CanvasLayer" parent="." unique_id=70821985]
+layer = 10
+
+[node name="ExitToMenuButton" type="Button" parent="ExitUI" unique_id=1902134359]
+anchors_preset = 2
+anchor_top = 1.0
+anchor_bottom = 1.0
+offset_left = 12.0
+offset_top = -49.0
+offset_right = 58.0
+offset_bottom = -3.0
+grow_vertical = 0
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_pressed_color = Color(1, 1, 1, 1)
+theme_override_colors/font_hover_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 13
+theme_override_styles/normal = SubResource("StyleBoxFlat_exit_n")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_exit_h")
+theme_override_styles/hover = SubResource("StyleBoxFlat_exit_h")
+icon = ExtResource("20_homeicon")
+expand_icon = true
+
+[editable path="EventsUI/RightEventPanel"]
+[editable path="EventsUI/LeftEventPanel"]

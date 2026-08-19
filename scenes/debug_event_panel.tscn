@@ -1,0 +1,33 @@
+[gd_scene format=3 uid="uid://eppplix32qj1"]
+
+[ext_resource type="Script" uid="uid://onal5nlq4xe6" path="res://scripts/DebugEventPanel.gd" id="1_0oawl"]
+
+[node name="DebugEventPanel" type="CanvasLayer" unique_id=1696037410]
+script = ExtResource("1_0oawl")
+
+[node name="Panel" type="Panel" parent="." unique_id=1775189831]
+offset_right = 40.0
+offset_bottom = 40.0
+
+[node name="VBoxContainer" type="VBoxContainer" parent="Panel" unique_id=1001037205]
+layout_mode = 0
+offset_right = 318.0
+offset_bottom = 112.0
+
+[node name="TitleLabel" type="Label" parent="Panel/VBoxContainer" unique_id=1613672183]
+visible = false
+layout_mode = 2
+
+[node name="EventList" type="ItemList" parent="Panel/VBoxContainer" unique_id=1121794255]
+custom_minimum_size = Vector2(500, 800)
+layout_mode = 2
+select_mode = 1
+allow_reselect = true
+auto_width = true
+
+[node name="TestButton" type="Button" parent="Panel/VBoxContainer" unique_id=1589299970]
+layout_mode = 2
+
+[node name="CloseButton" type="Button" parent="Panel/VBoxContainer" unique_id=2059770331]
+visible = false
+layout_mode = 2

@@ -1,0 +1,311 @@
+[gd_scene format=3 uid="uid://btg73844tiq5r"]
+
+[ext_resource type="Script" uid="uid://p0isvurmmqy4" path="res://scripts/sector_question_card.gd" id="1_libg3"]
+[ext_resource type="Texture2D" uid="uid://cj1wubt0ulbk8" path="res://assets/images/QuastionCards/Blue01_F2.png" id="2_7m7h8"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_yiiku"]
+bg_color = Color(0.11372549, 0.22352941, 0.16862746, 0.9137255)
+corner_radius_top_left = 20
+corner_radius_top_right = 21
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_1mrr0"]
+bg_color = Color(0.60038817, 0.60038817, 0.60038817, 0.006)
+
+[sub_resource type="SystemFont" id="SystemFont_7m7h8"]
+subpixel_positioning = 0
+
+[sub_resource type="StyleBoxLine" id="StyleBoxLine_7m7h8"]
+grow_begin = 0.0
+grow_end = 0.0
+thickness = 0
+
+[sub_resource type="StyleBoxLine" id="StyleBoxLine_32ud2"]
+thickness = 3
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_7m7h8"]
+bg_color = Color(0.60038817, 0.60038817, 0.60038817, 0.006)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_32ud2"]
+bg_color = Color(0.29803923, 0.57254905, 1, 1)
+corner_radius_top_left = 20
+corner_radius_top_right = 20
+corner_radius_bottom_right = 20
+corner_radius_bottom_left = 20
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_0jn74"]
+bg_color = Color(1, 1, 1, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_iwbe4"]
+bg_color = Color(0.29803923, 0.57254905, 1, 1)
+corner_radius_top_left = 20
+corner_radius_top_right = 20
+corner_radius_bottom_right = 20
+corner_radius_bottom_left = 20
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_h47xs"]
+bg_color = Color(1, 1, 1, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_1yrjf"]
+bg_color = Color(0.29803923, 0.57254905, 1, 1)
+corner_radius_top_left = 20
+corner_radius_top_right = 20
+corner_radius_bottom_right = 20
+corner_radius_bottom_left = 20
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_h1ofa"]
+bg_color = Color(0.11372549, 0.22352941, 0.16862746, 0.9137255)
+corner_radius_top_left = 20
+corner_radius_top_right = 20
+corner_radius_bottom_right = 20
+corner_radius_bottom_left = 20
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_k0g2v"]
+bg_color = Color(0.29803923, 0.57254905, 1, 1)
+corner_radius_top_left = 20
+corner_radius_top_right = 20
+corner_radius_bottom_right = 20
+corner_radius_bottom_left = 20
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_8o4qr"]
+bg_color = Color(0.6, 0.6, 0.6, 0.44705883)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_2cl4s"]
+bg_color = Color(0.6, 0.6, 0.6, 0.3372549)
+
+[node name="SectorQuestionCard" type="CanvasLayer" unique_id=1894017259]
+scale = Vector2(0.4, 0.4)
+transform = Transform2D(0.4, 0, 0, 0.4, 0, 0)
+script = ExtResource("1_libg3")
+
+[node name="TextureRect" type="TextureRect" parent="." unique_id=680842703]
+offset_left = 1219.9999
+offset_top = 159.99998
+offset_right = 2891.0
+offset_bottom = 2219.0
+mouse_filter = 2
+texture = ExtResource("2_7m7h8")
+expand_mode = 1
+
+[node name="background_label" type="Label" parent="TextureRect" unique_id=480550671]
+layout_mode = 0
+offset_left = 332.50012
+offset_top = 347.49997
+offset_right = 623.1251
+offset_bottom = 542.5
+scale = Vector2(4, 4)
+theme_override_font_sizes/font_size = 16
+horizontal_alignment = 2
+vertical_alignment = 1
+autowrap_mode = 3
+
+[node name="CloseButton" type="Button" parent="TextureRect" unique_id=307771105]
+show_behind_parent = true
+custom_minimum_size = Vector2(36, 57)
+layout_mode = 0
+offset_left = 302.50012
+offset_top = 1697.5
+offset_right = 1382.5001
+offset_bottom = 2032.4999
+size_flags_vertical = 8
+mouse_default_cursor_shape = 2
+theme_override_colors/font_color = Color(0.7529412, 0.22352941, 0.16862746, 0.95686275)
+theme_override_colors/font_focus_color = Color(0.7529412, 0.22352941, 0.16862746, 1)
+theme_override_colors/font_hover_color = Color(0.039215688, 0.4745098, 1, 1)
+theme_override_font_sizes/font_size = 23
+theme_override_styles/normal = SubResource("StyleBoxFlat_yiiku")
+text = "إغلاق"
+flat = true
+autowrap_trim_flags = 192
+clip_text = true
+expand_icon = true
+
+[node name="Panel" type="Panel" parent="TextureRect" unique_id=1169812214]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -611.6666
+offset_top = -475.1667
+offset_right = 631.6662
+offset_bottom = 1314.833
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_1mrr0")
+
+[node name="TimerLabel" type="Label" parent="TextureRect/Panel" unique_id=1297843217]
+layout_mode = 0
+offset_left = 111.16675
+offset_top = -386.8333
+offset_right = 264.50006
+offset_bottom = -334.3333
+scale = Vector2(3, 3)
+size_flags_vertical = 0
+theme_override_colors/font_color = Color(0.039215688, 0.03529412, 0.08627451, 1)
+theme_override_fonts/font = SubResource("SystemFont_7m7h8")
+theme_override_font_sizes/font_size = 23
+
+[node name="VBoxContainer" type="VBoxContainer" parent="TextureRect/Panel" unique_id=1307690358]
+layout_mode = 0
+offset_left = 74.42859
+offset_top = -303.33337
+offset_right = 672.7976
+offset_bottom = -26.333374
+scale = Vector2(2, 2)
+size_flags_vertical = 0
+theme_override_constants/separation = 14
+alignment = 1
+
+[node name="QuestionNumberLabel" type="Label" parent="TextureRect/Panel/VBoxContainer" unique_id=1909727386]
+clip_contents = true
+layout_mode = 2
+size_flags_horizontal = 8
+size_flags_vertical = 0
+theme_override_colors/font_color = Color(0.039215688, 0.039215688, 0.03529412, 1)
+theme_override_font_sizes/font_size = 14
+theme_override_styles/normal = SubResource("StyleBoxLine_7m7h8")
+horizontal_alignment = 2
+
+[node name="SectorNameLabel" type="Label" parent="TextureRect/Panel/VBoxContainer" unique_id=706513597]
+layout_mode = 2
+size_flags_vertical = 1
+theme_override_colors/font_color = Color(0.09854885, 0.22504607, 0.18049762, 0.972549)
+theme_override_font_sizes/font_size = 25
+theme_override_styles/normal = SubResource("StyleBoxLine_32ud2")
+horizontal_alignment = 2
+
+[node name="QuestionTextLabel" type="Label" parent="TextureRect/Panel/VBoxContainer" unique_id=1924430975]
+layout_mode = 2
+size_flags_vertical = 1
+theme_override_colors/font_color = Color(0.028524743, 0.17080298, 0.14042404, 1)
+theme_override_font_sizes/font_size = 22
+horizontal_alignment = 2
+autowrap_mode = 3
+
+[node name="ResultLabel" type="Label" parent="TextureRect/Panel/VBoxContainer" unique_id=963221588]
+layout_mode = 2
+theme_override_font_sizes/font_size = 26
+
+[node name="HSeparator" type="HSeparator" parent="TextureRect/Panel/VBoxContainer" unique_id=2119566686]
+layout_mode = 2
+
+[node name="MarginContainer" type="MarginContainer" parent="TextureRect/Panel" unique_id=938438746]
+layout_mode = 1
+anchors_preset = -1
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 475.2378
+offset_top = 535.9287
+offset_right = -565.2853
+offset_bottom = -1090.9913
+grow_horizontal = 2
+grow_vertical = 2
+scale = Vector2(3, 3)
+mouse_filter = 2
+
+[node name="AnswersContainer" type="VBoxContainer" parent="TextureRect/Panel/MarginContainer" unique_id=919737505]
+layout_mode = 2
+size_flags_vertical = 8
+mouse_filter = 2
+theme_override_constants/separation = 5
+alignment = 1
+
+[node name="AnswerAButton" type="Button" parent="TextureRect/Panel/MarginContainer/AnswersContainer" unique_id=790635097]
+custom_minimum_size = Vector2(0, 50)
+layout_mode = 2
+mouse_default_cursor_shape = 2
+theme_override_colors/font_color = Color(0.57254905, 0.34509805, 0.14117648, 1)
+theme_override_colors/font_hover_color = Color(0.5176471, 0.39215687, 0.2784314, 1)
+theme_override_constants/outline_size = 1
+theme_override_font_sizes/font_size = 18
+theme_override_styles/normal = SubResource("StyleBoxFlat_7m7h8")
+theme_override_styles/hover = SubResource("StyleBoxFlat_32ud2")
+text = "A"
+alignment = 2
+text_overrun_behavior = 1
+
+[node name="AnswerBButton" type="Button" parent="TextureRect/Panel/MarginContainer/AnswersContainer" unique_id=1707729400]
+custom_minimum_size = Vector2(0, 50)
+layout_mode = 2
+mouse_default_cursor_shape = 2
+theme_override_colors/font_color = Color(0.54509807, 0.43529412, 0.34117648, 1)
+theme_override_colors/font_hover_color = Color(0.49803922, 0.31764707, 0.15686275, 1)
+theme_override_constants/outline_size = 1
+theme_override_font_sizes/font_size = 16
+theme_override_styles/normal = SubResource("StyleBoxFlat_0jn74")
+theme_override_styles/hover = SubResource("StyleBoxFlat_iwbe4")
+text = "B"
+alignment = 2
+text_overrun_behavior = 1
+
+[node name="AnswerCButton" type="Button" parent="TextureRect/Panel/MarginContainer/AnswersContainer" unique_id=991950118]
+custom_minimum_size = Vector2(0, 50)
+layout_mode = 2
+mouse_default_cursor_shape = 2
+theme_override_colors/font_color = Color(0.49803922, 0.3529412, 0.22352941, 1)
+theme_override_colors/font_hover_color = Color(0.5019608, 0.3137255, 0.14901961, 1)
+theme_override_constants/outline_size = 1
+theme_override_font_sizes/font_size = 16
+theme_override_styles/normal = SubResource("StyleBoxFlat_h47xs")
+theme_override_styles/hover = SubResource("StyleBoxFlat_1yrjf")
+text = "C"
+alignment = 2
+text_overrun_behavior = 1
+
+[node name="AnswerDButton" type="Button" parent="TextureRect/Panel/MarginContainer/AnswersContainer" unique_id=1647414147]
+visible = false
+custom_minimum_size = Vector2(0, 50)
+layout_mode = 2
+mouse_default_cursor_shape = 2
+theme_override_font_sizes/font_size = 22
+theme_override_styles/normal = SubResource("StyleBoxFlat_h1ofa")
+theme_override_styles/hover = SubResource("StyleBoxFlat_k0g2v")
+text = "D"
+autowrap_mode = 3
+
+[node name="ChoosPlayer1" type="ColorRect" parent="." unique_id=123256906]
+custom_minimum_size = Vector2(200, 230)
+offset_left = 2837.5
+offset_top = 587.5001
+offset_right = 3370.0
+offset_bottom = 817.5001
+
+[node name="Button1" type="Button" parent="ChoosPlayer1" unique_id=71789933]
+custom_minimum_size = Vector2(200, 200)
+layout_mode = 0
+offset_left = 17.500305
+offset_top = 14.5000305
+offset_right = 519.5003
+offset_bottom = 214.50003
+mouse_default_cursor_shape = 2
+theme_override_colors/font_color = Color(0, 0, 1, 1)
+theme_override_constants/outline_size = 7
+theme_override_font_sizes/font_size = 80
+theme_override_styles/normal = SubResource("StyleBoxFlat_8o4qr")
+text = "الفريق الازرق"
+
+[node name="ChoosPlayer2" type="ColorRect" parent="." unique_id=133383826]
+custom_minimum_size = Vector2(200, 230)
+offset_left = 817.5001
+offset_top = 602.5001
+offset_right = 1345.0
+offset_bottom = 832.5001
+
+[node name="Button2" type="Button" parent="ChoosPlayer2" unique_id=1348671018]
+custom_minimum_size = Vector2(200, 200)
+layout_mode = 0
+offset_left = 12.499878
+offset_top = 15.000011
+offset_right = 514.4999
+offset_bottom = 215.00002
+theme_override_colors/font_color = Color(0.39607844, 0, 0, 1)
+theme_override_constants/outline_size = 8
+theme_override_font_sizes/font_size = 80
+theme_override_styles/normal = SubResource("StyleBoxFlat_2cl4s")
+text = "الفريق الاحمر"
+
+[connection signal="pressed" from="TextureRect/CloseButton" to="." method="_on_close_button_pressed"]
+[connection signal="pressed" from="ChoosPlayer1/Button1" to="." method="_on_button_1_pressed"]
+[connection signal="pressed" from="ChoosPlayer2/Button2" to="." method="_on_button_2_pressed"]

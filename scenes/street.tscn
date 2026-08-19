@@ -1,0 +1,17 @@
+[gd_scene format=3 uid="uid://b0dg82cbeljes"]
+
+[ext_resource type="Script" uid="uid://ccbaolum50afh" path="res://scripts/street.gd" id="1_l8dq3"]
+[ext_resource type="Texture2D" uid="uid://cs1wgv7vrf00v" path="res://assets/images/streets/normal/horizentel.png" id="1_tr5t1"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_l8dq3"]
+size = Vector2(252, 149)
+
+[node name="Street" type="Area2D" unique_id=1270767113]
+script = ExtResource("1_l8dq3")
+
+[node name="Sprite2D" type="Sprite2D" parent="." unique_id=1861266456]
+texture = ExtResource("1_tr5t1")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=58471640]
+position = Vector2(0, -0.5)
+shape = SubResource("RectangleShape2D_l8dq3")

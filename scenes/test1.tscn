@@ -1,0 +1,13 @@
+[gd_scene format=3 uid="uid://wsm777fvv1hy"]
+
+[ext_resource type="Script" uid="uid://qwwromsjanxo" path="res://scripts/GameManager.gd" id="1_oydga"]
+
+[node name="Node2D" type="Node2D" unique_id=1886245951]
+script = ExtResource("1_oydga")
+
+[node name="Button" type="Button" parent="." unique_id=1748340536]
+offset_right = 88.0
+offset_bottom = 35.0
+text = "Ok"
+
+[connection signal="pressed" from="Button" to="Button" method="_on_pressed"]

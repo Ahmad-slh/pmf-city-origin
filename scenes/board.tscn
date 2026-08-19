@@ -1,0 +1,1179 @@
+[gd_scene format=3 uid="uid://bnmxx236n7yud"]
+
+[ext_resource type="Script" uid="uid://dixerjgbwfx2g" path="res://scripts/board.gd" id="1_ba0us"]
+[ext_resource type="PackedScene" uid="uid://03q1evho2m8x" path="res://scenes/Sectors/Sector.tscn" id="1_fv4ni"]
+[ext_resource type="Texture2D" uid="uid://c6f08u6b66agh" path="res://assets/images/sectors/s2.png" id="2_dxjtj"]
+[ext_resource type="Texture2D" uid="uid://bdx0ypl1bh6wa" path="res://assets/images/sectors/s7.png" id="2_mvl7x"]
+[ext_resource type="PackedScene" uid="uid://vys8mxuhwrvs" path="res://scenes/ChooseDicePopup.tscn" id="2_u1rxi"]
+[ext_resource type="Texture2D" uid="uid://c5a7sj5fkgy8i" path="res://assets/images/sectors/s3.png" id="3_dun80"]
+[ext_resource type="Texture2D" uid="uid://mrcgnmq8s8hw" path="res://assets/images/sectors/s8.png" id="3_mwcd8"]
+[ext_resource type="Texture2D" uid="uid://coloywjhyn8tl" path="res://assets/images/sectors/grey/Sector_01.png" id="3_y0uh0"]
+[ext_resource type="Texture2D" uid="uid://cs1wgv7vrf00v" path="res://assets/images/streets/normal/horizentel.png" id="4_4bs3u"]
+[ext_resource type="Texture2D" uid="uid://doh01abck6ug3" path="res://assets/images/sectors/s9.png" id="4_74c1j"]
+[ext_resource type="Texture2D" uid="uid://dmpuib4vuigsf" path="res://assets/images/sectors/blue/Sector_01.png" id="4_716ee"]
+[ext_resource type="Texture2D" uid="uid://cg05ado24ueny" path="res://assets/images/sectors/s4.png" id="4_c3r7o"]
+[ext_resource type="Texture2D" uid="uid://bg2i50pk5rw2q" path="res://assets/images/sectors/red/Sector_01.png" id="5_pln8w"]
+[ext_resource type="Texture2D" uid="uid://cj688p0onhsjv" path="res://assets/images/sectors/s14.png" id="6_ba0us"]
+[ext_resource type="Texture2D" uid="uid://dxw6l1ahl4w8s" path="res://assets/images/sectors/s10.png" id="7_1huyh"]
+[ext_resource type="Texture2D" uid="uid://cpknh86cucb1d" path="res://assets/images/sectors/grey/Sector_02.png" id="7_mhvla"]
+[ext_resource type="Texture2D" uid="uid://cdr0w1ordt2hg" path="res://assets/images/sectors/grey/Sector_06.png" id="8_0qo51"]
+[ext_resource type="Texture2D" uid="uid://vbc6gesehwrb" path="res://assets/images/sectors/blue/Sector_02.png" id="8_fier5"]
+[ext_resource type="Texture2D" uid="uid://cd1ckthgxsasx" path="res://assets/images/sectors/s11.png" id="8_vevib"]
+[ext_resource type="Texture2D" uid="uid://fe3bp70ul0mj" path="res://assets/images/sectors/blue/Sector_06.png" id="9_5pkjh"]
+[ext_resource type="Texture2D" uid="uid://c3slagr3wwc6l" path="res://assets/images/sectors/s6.png" id="9_m4vny"]
+[ext_resource type="Texture2D" uid="uid://cagajh0ktsr2a" path="res://assets/images/sectors/red/Sector_02.png" id="9_nn6ox"]
+[ext_resource type="Texture2D" uid="uid://c1nljimad66g4" path="res://assets/images/sectors/s5.png" id="10_74c1j"]
+[ext_resource type="Texture2D" uid="uid://cboph07sxv6ix" path="res://assets/images/sectors/s12.png" id="11_ba0us"]
+[ext_resource type="Texture2D" uid="uid://b03ofsjxlfa3q" path="res://assets/images/sectors/blue/Sector_03.png" id="11_e06g1"]
+[ext_resource type="Texture2D" uid="uid://boro677jinbja" path="res://assets/images/sectors/grey/Sector_03.png" id="11_ui3pw"]
+[ext_resource type="Texture2D" uid="uid://p1210d368sqj" path="res://assets/images/sectors/s13.png" id="12_4bs3u"]
+[ext_resource type="Texture2D" uid="uid://6lcptw8lnyd5" path="res://assets/images/sectors/red/Sector_03.png" id="12_knfb1"]
+[ext_resource type="Texture2D" uid="uid://bawsk6crox2wh" path="res://assets/images/sectors/grey/Sector_04.png" id="14_snsby"]
+[ext_resource type="Texture2D" uid="uid://hwrjuffpr5nx" path="res://assets/images/sectors/blue/Sector_04.png" id="15_wdjlu"]
+[ext_resource type="PackedScene" uid="uid://cmhucssu1tc7n" path="res://scenes/dice.tscn" id="16_1huyh"]
+[ext_resource type="Texture2D" uid="uid://b4pew0m414a3x" path="res://assets/images/sectors/red/Sector_04.png" id="16_uhtl7"]
+[ext_resource type="Texture2D" uid="uid://difw8fls3ib77" path="res://assets/images/streets/normal/virtical.png" id="17_r6ya7"]
+[ext_resource type="PackedScene" uid="uid://xx14y7ghkg" path="res://scenes/player.tscn" id="17_vevib"]
+[ext_resource type="Texture2D" uid="uid://ircgfkruo0nm" path="res://assets/images/sectors/grey/Sector_05.png" id="18_ui3pw"]
+[ext_resource type="Texture2D" uid="uid://c6ehhke0aleqo" path="res://assets/images/sectors/blue/Sector_05.png" id="19_ai5g0"]
+[ext_resource type="Texture2D" uid="uid://lgabui0q6pdh" path="res://assets/images/sectors/red/Sector_05.png" id="20_u1rxi"]
+[ext_resource type="Script" uid="uid://04at0dsxwdf3" path="res://scripts/board_CellActionHandler.gd" id="21_i85x2"]
+[ext_resource type="Texture2D" uid="uid://4mf6nfr7n0i" path="res://assets/images/player/2.png" id="21_os6cd"]
+[ext_resource type="PackedScene" uid="uid://btg73844tiq5r" path="res://scenes/sector_question_card.tscn" id="22_b7otg"]
+[ext_resource type="PackedScene" uid="uid://djo6ov33phfpw" path="res://scenes/BattlePopup.tscn" id="24_v21d4"]
+[ext_resource type="PackedScene" uid="uid://12ou74im58rt" path="res://scenes/StreetCard.tscn" id="25_5pkjh"]
+[ext_resource type="Texture2D" uid="uid://cr5th3aixkcso" path="res://assets/images/sectors/grey/Sector_07.png" id="26_jg0oi"]
+[ext_resource type="Texture2D" uid="uid://bic4o8a2ngnra" path="res://assets/images/sectors/red/Sector_06.jpeg" id="26_u1rxi"]
+[ext_resource type="Texture2D" uid="uid://dtyr0mjk2wies" path="res://assets/images/sectors/blue/Sector_07.png" id="27_jjavo"]
+[ext_resource type="Texture2D" uid="uid://54bb0xbr48s" path="res://assets/images/sectors/red/Sector_07.jpeg" id="30_jg0oi"]
+[ext_resource type="Texture2D" uid="uid://bdfpeypinb6t1" path="res://assets/images/sectors/grey/Sector_08.png" id="30_jk51t"]
+[ext_resource type="Texture2D" uid="uid://cp8i7700lecse" path="res://assets/images/streets/normal/first.png" id="30_stfirst"]
+[ext_resource type="Texture2D" uid="uid://2vu3mxxy1jpo" path="res://assets/images/sectors/blue/Sector_08.png" id="31_hiqtb"]
+[ext_resource type="Texture2D" uid="uid://db87j2kd4ti18" path="res://assets/images/streets/normal/second.png" id="31_stsecond"]
+[ext_resource type="Texture2D" uid="uid://hrjpiitt25mb" path="res://assets/images/sectors/red/Sector_08.png" id="32_p6u6b"]
+[ext_resource type="Texture2D" uid="uid://b6f83m05a1dpq" path="res://assets/images/sectors/grey/Sector_09.png" id="34_163du"]
+[ext_resource type="Texture2D" uid="uid://ddiv8eul80348" path="res://assets/images/sectors/blue/Sector_09.png" id="35_66j3w"]
+[ext_resource type="Texture2D" uid="uid://fnx3q78afeu8" path="res://assets/images/sectors/red/Sector_09.png" id="36_r384n"]
+[ext_resource type="Texture2D" uid="uid://d4bixot5m15ad" path="res://assets/images/sectors/red/Sector_10.png" id="38_8ajax"]
+[ext_resource type="Texture2D" uid="uid://w1bja54etffu" path="res://assets/images/sectors/grey/Sector_10.png" id="39_ai5g0"]
+[ext_resource type="Texture2D" uid="uid://7bg88opsepdv" path="res://assets/images/sectors/blue/Sector_10.png" id="39_kkq8p"]
+[ext_resource type="Texture2D" uid="uid://3shpdm1fo6is" path="res://assets/images/sectors/grey/Sector_11.png" id="41_xu7is"]
+[ext_resource type="Texture2D" uid="uid://bqyfh0dpb8wv8" path="res://assets/images/sectors/blue/Sector_11.png" id="42_dsl04"]
+[ext_resource type="Texture2D" uid="uid://cvec5go0ntnnf" path="res://assets/images/sectors/red/Sector_11.png" id="43_37cmb"]
+[ext_resource type="Texture2D" uid="uid://dkektqget6jk2" path="res://assets/images/sectors/grey/Sector_12.png" id="45_w0lqw"]
+[ext_resource type="Texture2D" uid="uid://c26wamofcrhep" path="res://assets/images/sectors/blue/Sector_12.png" id="46_eh060"]
+[ext_resource type="Texture2D" uid="uid://80am0u6jdqot" path="res://assets/images/sectors/red/Sector_12.png" id="47_u8hpe"]
+[ext_resource type="Texture2D" uid="uid://umr1rt2duj5i" path="res://assets/images/sectors/grey/Sector_13.png" id="49_wdjlu"]
+[ext_resource type="Texture2D" uid="uid://diihfstskfpvu" path="res://assets/images/sectors/blue/Sector_13.png" id="50_uhtl7"]
+[ext_resource type="Texture2D" uid="uid://dhsram0rhk4g" path="res://assets/images/sectors/red/Sector_13.png" id="51_ui3pw"]
+[ext_resource type="Texture2D" uid="uid://c03krlgida7rc" path="res://assets/images/sectors/grey/Sector_14.png" id="53_ai5g0"]
+[ext_resource type="Texture2D" uid="uid://2gt7otnewk0h" path="res://assets/images/sectors/blue/Sector_14.png" id="54_u1rxi"]
+[ext_resource type="Texture2D" uid="uid://bpxradgn5jcs5" path="res://assets/images/sectors/red/Sector_14.png" id="55_jg0oi"]
+[ext_resource type="Texture2D" uid="uid://cx755pgsvysv7" path="res://assets/images/sectors/s1.png" id="58_ai5g0"]
+[ext_resource type="Texture2D" uid="uid://4ceyhjd0ow0i" path="res://assets/images/streets/normal/first_virtical.png" id="vst_first"]
+[ext_resource type="Texture2D" uid="uid://6kxed75lghx7" path="res://assets/images/streets/normal/second_virtical.png" id="vst_second"]
+
+[sub_resource type="LabelSettings" id="LabelSettings_m4vny"]
+outline_size = 1
+outline_color = Color(0.51584375, 0.5847179, 0.6253981, 1)
+shadow_size = 6
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_v21d4"]
+
+[node name="Board" type="Node2D" unique_id=2020624565 groups=["board"]]
+position = Vector2(-3, 0)
+script = ExtResource("1_ba0us")
+choose_dice_popup_scene = ExtResource("2_u1rxi")
+
+[node name="Sectors" type="Node2D" parent="." unique_id=40368564]
+
+[node name="Sector_01" parent="Sectors" unique_id=1962568554 groups=["board_sectors"] instance=ExtResource("1_fv4ni")]
+position = Vector2(383, 112)
+priority = 1
+normal_texture = ExtResource("3_y0uh0")
+blue_texture = ExtResource("4_716ee")
+red_texture = ExtResource("5_pln8w")
+basic_texture = ExtResource("2_mvl7x")
+sector_id = 1
+sector_name = "Sector_01"
+
+[node name="Sprite2D" parent="Sectors/Sector_01" index="0" unique_id=579697765]
+position = Vector2(32.287476, -14.375)
+texture = ExtResource("2_mvl7x")
+
+[node name="CollisionShape2D" parent="Sectors/Sector_01" index="1" unique_id=461560585]
+position = Vector2(4, -34.5)
+
+[node name="OwnerMark" parent="Sectors/Sector_01" index="2" unique_id=1677886856]
+offset_left = 58.0
+offset_bottom = -38.0
+metadata/_edit_use_anchors_ = true
+
+[node name="Label" parent="Sectors/Sector_01" index="3" unique_id=1311332393]
+metadata/_edit_use_anchors_ = true
+
+[node name="Sector_02" parent="Sectors" unique_id=1238350695 groups=["board_sectors"] instance=ExtResource("1_fv4ni")]
+texture_filter = 1
+position = Vector2(774, 123)
+priority = 2
+normal_texture = ExtResource("7_mhvla")
+blue_texture = ExtResource("8_fier5")
+red_texture = ExtResource("9_nn6ox")
+basic_texture = ExtResource("3_mwcd8")
+sector_id = 2
+sector_name = "Sector_02"
+grid_pos = Vector2i(2, 0)
+
+[node name="Sprite2D" parent="Sectors/Sector_02" index="0" unique_id=579697765]
+position = Vector2(-1.5000052, -24.375)
+texture = ExtResource("3_mwcd8")
+
+[node name="CollisionShape2D" parent="Sectors/Sector_02" index="1" unique_id=461560585]
+position = Vector2(-1, -40.5)
+
+[node name="OwnerMark" parent="Sectors/Sector_02" index="2" unique_id=1677886856]
+offset_left = 51.0
+offset_bottom = -40.0
+metadata/_edit_use_anchors_ = true
+
+[node name="Label" parent="Sectors/Sector_02" index="3" unique_id=1311332393]
+metadata/_edit_use_anchors_ = true
+
+[node name="StepLabel" parent="Sectors/Sector_02" index="4" unique_id=796085644]
+offset_left = 6.0
+offset_top = 6.0
+offset_right = 27.0
+offset_bottom = 64.0
+
+[node name="Sector_03" parent="Sectors" unique_id=685116263 groups=["board_sectors"] instance=ExtResource("1_fv4ni")]
+position = Vector2(1137, 122)
+normal_texture = ExtResource("11_ui3pw")
+blue_texture = ExtResource("11_e06g1")
+red_texture = ExtResource("12_knfb1")
+basic_texture = ExtResource("4_74c1j")
+sector_id = 3
+sector_name = "Sector_03"
+grid_pos = Vector2i(4, 0)
+
+[node name="Sprite2D" parent="Sectors/Sector_03" index="0" unique_id=579697765]
+position = Vector2(-11.212524, -25.875)
+texture = ExtResource("4_74c1j")
+
+[node name="CollisionShape2D" parent="Sectors/Sector_03" index="1" unique_id=461560585]
+position = Vector2(-12, -47.5)
+
+[node name="OwnerMark" parent="Sectors/Sector_03" index="2" unique_id=1677886856]
+offset_left = 30.0
+offset_right = 104.0
+offset_bottom = -43.0
+metadata/_edit_use_anchors_ = true
+
+[node name="Label" parent="Sectors/Sector_03" index="3" unique_id=1311332393]
+metadata/_edit_use_anchors_ = true
+
+[node name="Sector_04" parent="Sectors" unique_id=981140214 groups=["board_sectors"] instance=ExtResource("1_fv4ni")]
+position = Vector2(1500, 124)
+normal_texture = ExtResource("14_snsby")
+blue_texture = ExtResource("15_wdjlu")
+red_texture = ExtResource("16_uhtl7")
+basic_texture = ExtResource("7_1huyh")
+sector_id = 4
+sector_name = "Sector_04"
+grid_pos = Vector2i(6, 0)
+
+[node name="Sprite2D" parent="Sectors/Sector_04" index="0" unique_id=579697765]
+position = Vector2(-16, -18.375015)
+texture = ExtResource("7_1huyh")
+
+[node name="CollisionShape2D" parent="Sectors/Sector_04" index="1" unique_id=461560585]
+position = Vector2(-12, -36.5)
+
+[node name="OwnerMark" parent="Sectors/Sector_04" index="2" unique_id=1677886856]
+offset_left = 36.0
+offset_top = -105.0
+offset_right = 118.0
+offset_bottom = -29.0
+metadata/_edit_use_anchors_ = true
+
+[node name="Label" parent="Sectors/Sector_04" index="3" unique_id=1311332393]
+metadata/_edit_use_anchors_ = true
+
+[node name="Sector_05" parent="Sectors" unique_id=136979556 groups=["board_sectors"] instance=ExtResource("1_fv4ni")]
+position = Vector2(376, 388)
+normal_texture = ExtResource("18_ui3pw")
+blue_texture = ExtResource("19_ai5g0")
+red_texture = ExtResource("20_u1rxi")
+basic_texture = ExtResource("9_m4vny")
+sector_id = 5
+sector_name = "Sector_05"
+grid_pos = Vector2i(0, 2)
+
+[node name="Sprite2D" parent="Sectors/Sector_05" index="0" unique_id=579697765]
+position = Vector2(10.287506, -55.875)
+texture = ExtResource("9_m4vny")
+
+[node name="CollisionShape2D" parent="Sectors/Sector_05" index="1" unique_id=461560585]
+position = Vector2(11, -41)
+scale = Vector2(1, 0.8)
+
+[node name="OwnerMark" parent="Sectors/Sector_05" index="2" unique_id=1677886856]
+offset_left = 75.0
+offset_top = -84.0
+offset_right = 135.0
+metadata/_edit_use_anchors_ = true
+
+[node name="Label" parent="Sectors/Sector_05" index="3" unique_id=1311332393]
+metadata/_edit_use_anchors_ = true
+
+[node name="Sector_06" parent="Sectors" unique_id=425553386 groups=["board_sectors"] instance=ExtResource("1_fv4ni")]
+position = Vector2(708, 390)
+normal_texture = ExtResource("8_0qo51")
+blue_texture = ExtResource("9_5pkjh")
+red_texture = ExtResource("26_u1rxi")
+basic_texture = ExtResource("6_ba0us")
+sector_id = 6
+sector_name = "Sector_06"
+grid_pos = Vector2i(2, 2)
+extra_grid_positions = Array[Vector2i]([Vector2i(2, 3), Vector2i(2, 4)])
+
+[node name="Sprite2D" parent="Sectors/Sector_06" index="0" unique_id=579697765]
+position = Vector2(61.5625, 79)
+texture = ExtResource("6_ba0us")
+
+[node name="CollisionShape2D" parent="Sectors/Sector_06" index="1" unique_id=461560585]
+position = Vector2(63, 84.000015)
+scale = Vector2(0.95, 1.7)
+
+[node name="OwnerMark" parent="Sectors/Sector_06" index="2" unique_id=1677886856]
+offset_left = 123.0
+offset_top = -67.0
+offset_right = 185.0
+offset_bottom = -4.0
+metadata/_edit_use_anchors_ = true
+
+[node name="Label" parent="Sectors/Sector_06" index="3" unique_id=1311332393]
+metadata/_edit_use_anchors_ = true
+
+[node name="StepLabel" parent="Sectors/Sector_06" index="4" unique_id=796085644]
+offset_bottom = 217.0
+
+[node name="Sector_07" parent="Sectors" unique_id=64984151 groups=["board_sectors"] instance=ExtResource("1_fv4ni")]
+position = Vector2(1174, 347)
+normal_texture = ExtResource("26_jg0oi")
+blue_texture = ExtResource("27_jjavo")
+red_texture = ExtResource("30_jg0oi")
+basic_texture = ExtResource("12_4bs3u")
+sector_id = 7
+sector_name = "Sector_07"
+grid_pos = Vector2i(4, 2)
+extra_grid_positions = Array[Vector2i]([Vector2i(4, 3), Vector2i(4, 4)])
+
+[node name="Sprite2D" parent="Sectors/Sector_07" index="0" unique_id=579697765]
+position = Vector2(-42, 124.599976)
+texture = ExtResource("12_4bs3u")
+
+[node name="CollisionShape2D" parent="Sectors/Sector_07" index="1" unique_id=461560585]
+position = Vector2(-37, 120)
+scale = Vector2(0.95, 1.8)
+
+[node name="OwnerMark" parent="Sectors/Sector_07" index="2" unique_id=1677886856]
+offset_left = -1.0
+offset_top = -73.0
+offset_right = 75.0
+offset_bottom = -2.0
+metadata/_edit_use_anchors_ = true
+
+[node name="Label" parent="Sectors/Sector_07" index="3" unique_id=1311332393]
+metadata/_edit_use_anchors_ = true
+
+[node name="Sector_08" parent="Sectors" unique_id=1955264820 groups=["board_sectors"] instance=ExtResource("1_fv4ni")]
+position = Vector2(1487, 402)
+normal_texture = ExtResource("30_jk51t")
+blue_texture = ExtResource("31_hiqtb")
+red_texture = ExtResource("32_p6u6b")
+basic_texture = ExtResource("8_vevib")
+sector_id = 8
+sector_name = "Sector_08"
+grid_pos = Vector2i(6, 2)
+
+[node name="Sprite2D" parent="Sectors/Sector_08" index="0" unique_id=579697765]
+position = Vector2(7, -47.375008)
+scale = Vector2(0.45, 0.41706344)
+texture = ExtResource("8_vevib")
+
+[node name="CollisionShape2D" parent="Sectors/Sector_08" index="1" unique_id=461560585]
+position = Vector2(18, -43.5)
+scale = Vector2(1, 0.75)
+
+[node name="OwnerMark" parent="Sectors/Sector_08" index="2" unique_id=1677886856]
+offset_left = 54.0
+offset_top = -93.0
+offset_right = 136.0
+offset_bottom = -18.0
+metadata/_edit_use_anchors_ = true
+
+[node name="Label" parent="Sectors/Sector_08" index="3" unique_id=1311332393]
+metadata/_edit_use_anchors_ = true
+
+[node name="Sector_09" parent="Sectors" unique_id=1877622070 groups=["board_sectors"] instance=ExtResource("1_fv4ni")]
+position = Vector2(378, 664)
+normal_texture = ExtResource("34_163du")
+blue_texture = ExtResource("35_66j3w")
+red_texture = ExtResource("36_r384n")
+basic_texture = ExtResource("10_74c1j")
+sector_id = 9
+sector_name = "Sector_09"
+grid_pos = Vector2i(0, 4)
+
+[node name="Sprite2D" parent="Sectors/Sector_09" index="0" unique_id=579697765]
+position = Vector2(-1.2124939, -78.375)
+scale = Vector2(0.43490875, 0.40436512)
+texture = ExtResource("10_74c1j")
+metadata/_edit_group_ = true
+
+[node name="CollisionShape2D" parent="Sectors/Sector_09" index="1" unique_id=461560585]
+position = Vector2(10, -72.5)
+scale = Vector2(1, 0.8)
+
+[node name="OwnerMark" parent="Sectors/Sector_09" index="2" unique_id=1677886856]
+offset_left = 65.0
+offset_top = -101.0
+offset_right = 138.0
+offset_bottom = -46.0
+metadata/_edit_use_anchors_ = true
+
+[node name="Label" parent="Sectors/Sector_09" index="3" unique_id=1311332393]
+metadata/_edit_use_anchors_ = true
+
+[node name="Sector_10" parent="Sectors" unique_id=1389756455 groups=["board_sectors"] instance=ExtResource("1_fv4ni")]
+position = Vector2(1500, 603)
+normal_texture = ExtResource("39_ai5g0")
+blue_texture = ExtResource("39_kkq8p")
+red_texture = ExtResource("38_8ajax")
+basic_texture = ExtResource("11_ba0us")
+sector_id = 10
+sector_name = "Sector_10"
+grid_pos = Vector2i(6, 4)
+
+[node name="Sprite2D" parent="Sectors/Sector_10" index="0" unique_id=579697765]
+position = Vector2(-0.7125183, -18.875006)
+scale = Vector2(0.4518579, 0.39007932)
+texture = ExtResource("11_ba0us")
+
+[node name="CollisionShape2D" parent="Sectors/Sector_10" index="1" unique_id=461560585]
+position = Vector2(2, -7.5)
+scale = Vector2(1, 0.8)
+
+[node name="OwnerMark" parent="Sectors/Sector_10" index="2" unique_id=1677886856]
+offset_left = 51.0
+offset_top = -90.0
+offset_right = 128.0
+offset_bottom = -18.0
+metadata/_edit_use_anchors_ = true
+
+[node name="Label" parent="Sectors/Sector_10" index="3" unique_id=1311332393]
+metadata/_edit_use_anchors_ = true
+
+[node name="Sector_11" parent="Sectors" unique_id=1078490431 groups=["board_sectors"] instance=ExtResource("1_fv4ni")]
+position = Vector2(383, 860)
+normal_texture = ExtResource("41_xu7is")
+blue_texture = ExtResource("42_dsl04")
+red_texture = ExtResource("43_37cmb")
+basic_texture = ExtResource("4_c3r7o")
+sector_id = 11
+sector_name = "Sector_11"
+grid_pos = Vector2i(0, 6)
+
+[node name="Sprite2D" parent="Sectors/Sector_11" index="0" unique_id=579697765]
+position = Vector2(3.7874756, -20.875)
+scale = Vector2(0.41144067, 0.37738097)
+texture = ExtResource("4_c3r7o")
+metadata/_edit_group_ = true
+
+[node name="CollisionShape2D" parent="Sectors/Sector_11" index="1" unique_id=461560585]
+position = Vector2(4, -0.5)
+
+[node name="OwnerMark" parent="Sectors/Sector_11" index="2" unique_id=1677886856]
+offset_left = 53.0
+offset_right = 139.0
+offset_bottom = -39.0
+metadata/_edit_use_anchors_ = true
+
+[node name="Label" parent="Sectors/Sector_11" index="3" unique_id=1311332393]
+metadata/_edit_use_anchors_ = true
+
+[node name="Sector_12" parent="Sectors" unique_id=2100608134 groups=["board_sectors"] instance=ExtResource("1_fv4ni")]
+position = Vector2(766, 828)
+normal_texture = ExtResource("45_w0lqw")
+blue_texture = ExtResource("46_eh060")
+red_texture = ExtResource("47_u8hpe")
+basic_texture = ExtResource("3_dun80")
+sector_id = 12
+sector_name = "Sector_12"
+grid_pos = Vector2i(2, 6)
+
+[node name="Sprite2D" parent="Sectors/Sector_12" index="0" unique_id=579697765]
+position = Vector2(-0.7125244, 19.125)
+scale = Vector2(0.43360493, 0.37420627)
+texture = ExtResource("3_dun80")
+
+[node name="CollisionShape2D" parent="Sectors/Sector_12" index="1" unique_id=461560585]
+position = Vector2(2, 37.5)
+
+[node name="OwnerMark" parent="Sectors/Sector_12" index="2" unique_id=1677886856]
+offset_left = 63.0
+offset_top = -115.0
+offset_right = 132.0
+offset_bottom = -50.0
+metadata/_edit_use_anchors_ = true
+
+[node name="Label" parent="Sectors/Sector_12" index="3" unique_id=1311332393]
+metadata/_edit_use_anchors_ = true
+
+[node name="Sector_13" parent="Sectors" unique_id=477388455 groups=["board_sectors"] instance=ExtResource("1_fv4ni")]
+position = Vector2(1141, 867)
+normal_texture = ExtResource("49_wdjlu")
+blue_texture = ExtResource("50_uhtl7")
+red_texture = ExtResource("51_ui3pw")
+basic_texture = ExtResource("2_dxjtj")
+sector_id = 13
+sector_name = "Sector_13"
+grid_pos = Vector2i(4, 6)
+
+[node name="Sprite2D" parent="Sectors/Sector_13" index="0" unique_id=579697765]
+position = Vector2(-4.2125244, -28.875)
+scale = Vector2(0.42447847, 0.39007947)
+texture = ExtResource("2_dxjtj")
+
+[node name="CollisionShape2D" parent="Sectors/Sector_13" index="1" unique_id=461560585]
+position = Vector2(-6, -17.5)
+
+[node name="OwnerMark" parent="Sectors/Sector_13" index="2" unique_id=1677886856]
+offset_left = 45.0
+offset_top = -108.0
+offset_right = 122.0
+offset_bottom = -37.0
+metadata/_edit_use_anchors_ = true
+
+[node name="Label" parent="Sectors/Sector_13" index="3" unique_id=1311332393]
+metadata/_edit_use_anchors_ = true
+
+[node name="Sector_14" parent="Sectors" unique_id=65752971 groups=["board_sectors"] instance=ExtResource("1_fv4ni")]
+position = Vector2(1496, 881)
+normal_texture = ExtResource("53_ai5g0")
+blue_texture = ExtResource("54_u1rxi")
+red_texture = ExtResource("55_jg0oi")
+basic_texture = ExtResource("58_ai5g0")
+sector_id = 14
+sector_name = "Sector_14"
+grid_pos = Vector2i(6, 6)
+
+[node name="Sprite2D" parent="Sectors/Sector_14" index="0" unique_id=579697765]
+position = Vector2(3.2874756, -30.375)
+scale = Vector2(0.44142765, 0.3757936)
+
+[node name="CollisionShape2D" parent="Sectors/Sector_14" index="1" unique_id=461560585]
+position = Vector2(4, -4.5)
+
+[node name="OwnerMark" parent="Sectors/Sector_14" index="2" unique_id=1677886856]
+offset_left = 51.0
+offset_top = -103.0
+offset_right = 128.0
+offset_bottom = -22.0
+metadata/_edit_use_anchors_ = true
+
+[node name="Label" parent="Sectors/Sector_14" index="3" unique_id=1311332393]
+metadata/_edit_use_anchors_ = true
+
+[node name="Streets" type="Node2D" parent="." unique_id=1596604923]
+
+[node name="Street_01" parent="Streets" unique_id=759465077 groups=["board_sectors"] instance=ExtResource("1_fv4ni")]
+texture_filter = 1
+position = Vector2(544, 115)
+priority = 1
+cell_type = 1
+sector_id = 1
+sector_name = "Sector_01"
+grid_pos = Vector2i(1, 0)
+red_lock_texture = null
+blue_lock_texture = null
+gray_lock_texture = null
+neutral_lock_texture = null
+street_first_texture = ExtResource("30_stfirst")
+street_second_texture = ExtResource("31_stsecond")
+metadata/_edit_group_ = true
+
+[node name="Sprite2D" parent="Streets/Street_01" index="0" unique_id=579697765]
+position = Vector2(36.450012, 10.999994)
+scale = Vector2(0.557967, 0.41025642)
+texture = ExtResource("4_4bs3u")
+
+[node name="CollisionShape2D" parent="Streets/Street_01" index="1" unique_id=461560585]
+position = Vector2(34, 10)
+scale = Vector2(0.52, 0.22)
+
+[node name="OwnerMark" parent="Streets/Street_01" index="2" unique_id=1677886856]
+metadata/_edit_use_anchors_ = true
+
+[node name="Label" parent="Streets/Street_01" index="3" unique_id=1311332393]
+metadata/_edit_use_anchors_ = true
+
+[node name="Street_02" parent="Streets" unique_id=490549593 groups=["board_sectors"] instance=ExtResource("1_fv4ni")]
+texture_filter = 1
+position = Vector2(922, 136)
+priority = 1
+cell_type = 1
+sector_id = 2
+sector_name = "Sector_02"
+grid_pos = Vector2i(3, 0)
+street_first_texture = ExtResource("30_stfirst")
+street_second_texture = ExtResource("31_stsecond")
+metadata/_edit_group_ = true
+
+[node name="Sprite2D" parent="Streets/Street_02" index="0" unique_id=579697765]
+position = Vector2(32.000042, 5.9749966)
+scale = Vector2(0.45604417, 0.37344325)
+texture = ExtResource("4_4bs3u")
+
+[node name="CollisionShape2D" parent="Streets/Street_02" index="1" unique_id=461560585]
+position = Vector2(32, 6)
+scale = Vector2(0.4, 0.22)
+
+[node name="OwnerMark" parent="Streets/Street_02" index="2" unique_id=1677886856]
+metadata/_edit_use_anchors_ = true
+
+[node name="Label" parent="Streets/Street_02" index="3" unique_id=1311332393]
+metadata/_edit_use_anchors_ = true
+
+[node name="Street_03" parent="Streets" unique_id=1081261667 groups=["board_sectors"] instance=ExtResource("1_fv4ni")]
+texture_filter = 1
+position = Vector2(1269, 121)
+priority = 1
+cell_type = 1
+sector_id = 3
+sector_name = "Sector_03"
+grid_pos = Vector2i(5, 0)
+street_first_texture = ExtResource("30_stfirst")
+street_second_texture = ExtResource("31_stsecond")
+metadata/_edit_group_ = true
+
+[node name="Sprite2D" parent="Streets/Street_03" index="0" unique_id=579697765]
+position = Vector2(32.500023, 4.4749937)
+scale = Vector2(0.42582422, 0.3844323)
+texture = ExtResource("4_4bs3u")
+
+[node name="CollisionShape2D" parent="Streets/Street_03" index="1" unique_id=461560585]
+position = Vector2(34, 6)
+scale = Vector2(0.4, 0.22)
+
+[node name="OwnerMark" parent="Streets/Street_03" index="2" unique_id=1677886856]
+metadata/_edit_use_anchors_ = true
+
+[node name="Label" parent="Streets/Street_03" index="3" unique_id=1311332393]
+metadata/_edit_use_anchors_ = true
+
+[node name="Street_04" parent="Streets" unique_id=2495419 groups=["board_sectors"] instance=ExtResource("1_fv4ni")]
+texture_filter = 1
+position = Vector2(370, 216)
+priority = 1
+cell_type = 1
+sector_id = 4
+sector_name = "Sector_04"
+grid_pos = Vector2i(0, 1)
+red_lock_texture = null
+blue_lock_texture = null
+gray_lock_texture = null
+neutral_lock_texture = null
+street_first_texture = ExtResource("vst_first")
+street_second_texture = ExtResource("vst_second")
+metadata/_edit_group_ = true
+
+[node name="Sprite2D" parent="Streets/Street_04" index="0" unique_id=579697765]
+position = Vector2(32.500023, 16)
+scale = Vector2(0.42582422, 0.3)
+texture = ExtResource("17_r6ya7")
+
+[node name="CollisionShape2D" parent="Streets/Street_04" index="1" unique_id=461560585]
+position = Vector2(34, 5)
+scale = Vector2(0.23, 0.4)
+
+[node name="OwnerMark" parent="Streets/Street_04" index="2" unique_id=1677886856]
+metadata/_edit_use_anchors_ = true
+
+[node name="Label" parent="Streets/Street_04" index="3" unique_id=1311332393]
+metadata/_edit_use_anchors_ = true
+
+[node name="Street_05" parent="Streets" unique_id=796177012 groups=["board_sectors"] instance=ExtResource("1_fv4ni")]
+texture_filter = 1
+position = Vector2(743, 226)
+priority = 1
+cell_type = 1
+sector_id = 5
+sector_name = "Sector_05"
+grid_pos = Vector2i(2, 1)
+street_first_texture = ExtResource("vst_first")
+street_second_texture = ExtResource("vst_second")
+
+[node name="Sprite2D" parent="Streets/Street_05" index="0" unique_id=579697765]
+position = Vector2(28.499943, 14.000017)
+scale = Vector2(0.4212453, 0.3846154)
+texture = ExtResource("17_r6ya7")
+
+[node name="CollisionShape2D" parent="Streets/Street_05" index="1" unique_id=461560585]
+position = Vector2(30, 13)
+scale = Vector2(0.22, 0.36)
+
+[node name="OwnerMark" parent="Streets/Street_05" index="2" unique_id=1677886856]
+metadata/_edit_use_anchors_ = true
+
+[node name="Label" parent="Streets/Street_05" index="3" unique_id=1311332393]
+metadata/_edit_use_anchors_ = true
+
+[node name="Street_06" parent="Streets" unique_id=995179843 groups=["board_sectors"] instance=ExtResource("1_fv4ni")]
+texture_filter = 1
+position = Vector2(1100, 218)
+priority = 1
+cell_type = 1
+sector_id = 6
+sector_name = "Sector_06"
+grid_pos = Vector2i(4, 1)
+street_first_texture = ExtResource("vst_first")
+street_second_texture = ExtResource("vst_second")
+metadata/_edit_group_ = true
+
+[node name="Sprite2D" parent="Streets/Street_06" index="0" unique_id=579697765]
+position = Vector2(29.999983, 14.000017)
+scale = Vector2(0.41758245, 0.3846154)
+texture = ExtResource("17_r6ya7")
+
+[node name="CollisionShape2D" parent="Streets/Street_06" index="1" unique_id=461560585]
+position = Vector2(34, 9)
+scale = Vector2(0.2, 0.35)
+
+[node name="OwnerMark" parent="Streets/Street_06" index="2" unique_id=1677886856]
+metadata/_edit_use_anchors_ = true
+
+[node name="Label" parent="Streets/Street_06" index="3" unique_id=1311332393]
+metadata/_edit_use_anchors_ = true
+
+[node name="Street_07" parent="Streets" unique_id=1994756462 groups=["board_sectors"] instance=ExtResource("1_fv4ni")]
+texture_filter = 1
+position = Vector2(1446, 216)
+priority = 1
+cell_type = 1
+sector_id = 7
+sector_name = "Sector_07"
+grid_pos = Vector2i(6, 1)
+street_first_texture = ExtResource("vst_first")
+street_second_texture = ExtResource("vst_second")
+metadata/_edit_group_ = true
+
+[node name="Sprite2D" parent="Streets/Street_07" index="0" unique_id=579697765]
+position = Vector2(32.406235, 22.000011)
+scale = Vector2(0.40590665, 0.31318685)
+texture = ExtResource("17_r6ya7")
+
+[node name="CollisionShape2D" parent="Streets/Street_07" index="1" unique_id=461560585]
+position = Vector2(34, 22)
+scale = Vector2(0.2, 0.35)
+
+[node name="OwnerMark" parent="Streets/Street_07" index="2" unique_id=1677886856]
+metadata/_edit_use_anchors_ = true
+
+[node name="Label" parent="Streets/Street_07" index="3" unique_id=1311332393]
+metadata/_edit_use_anchors_ = true
+
+[node name="Street_08" parent="Streets" unique_id=1391966984 groups=["board_sectors"] instance=ExtResource("1_fv4ni")]
+texture_filter = 1
+position = Vector2(544, 340)
+priority = 1
+cell_type = 1
+sector_id = 8
+sector_name = "Sector_08"
+grid_pos = Vector2i(1, 2)
+street_first_texture = ExtResource("30_stfirst")
+street_second_texture = ExtResource("31_stsecond")
+metadata/_edit_group_ = true
+
+[node name="Sprite2D" parent="Streets/Street_08" index="0" unique_id=579697765]
+position = Vector2(39.95001, 3.500011)
+scale = Vector2(0.5771978, 0.4432235)
+texture = ExtResource("4_4bs3u")
+
+[node name="CollisionShape2D" parent="Streets/Street_08" index="1" unique_id=461560585]
+position = Vector2(41, 3)
+scale = Vector2(0.55, 0.22)
+
+[node name="OwnerMark" parent="Streets/Street_08" index="2" unique_id=1677886856]
+metadata/_edit_use_anchors_ = true
+
+[node name="Label" parent="Streets/Street_08" index="3" unique_id=1311332393]
+metadata/_edit_use_anchors_ = true
+
+[node name="Street_09" parent="Streets" unique_id=193390344 groups=["board_sectors"] instance=ExtResource("1_fv4ni")]
+texture_filter = 1
+position = Vector2(1288, 299)
+priority = 1
+cell_type = 1
+sector_id = 9
+sector_name = "Sector_09"
+grid_pos = Vector2i(5, 2)
+street_first_texture = ExtResource("30_stfirst")
+street_second_texture = ExtResource("31_stsecond")
+metadata/_edit_group_ = true
+
+[node name="Sprite2D" parent="Streets/Street_09" index="0" unique_id=579697765]
+position = Vector2(25.5, 7)
+scale = Vector2(0.45329654, 0.41025653)
+texture = ExtResource("4_4bs3u")
+
+[node name="CollisionShape2D" parent="Streets/Street_09" index="1" unique_id=461560585]
+position = Vector2(30, 7)
+scale = Vector2(0.45, 0.22)
+
+[node name="OwnerMark" parent="Streets/Street_09" index="2" unique_id=1677886856]
+metadata/_edit_use_anchors_ = true
+
+[node name="Label" parent="Streets/Street_09" index="3" unique_id=1311332393]
+metadata/_edit_use_anchors_ = true
+
+[node name="Street_10" parent="Streets" unique_id=2079126661 groups=["board_sectors"] instance=ExtResource("1_fv4ni")]
+texture_filter = 1
+position = Vector2(355, 448)
+priority = 1
+cell_type = 1
+sector_id = 10
+sector_name = "Sector_10"
+grid_pos = Vector2i(0, 3)
+street_first_texture = ExtResource("vst_first")
+street_second_texture = ExtResource("vst_second")
+metadata/_edit_group_ = true
+
+[node name="Sprite2D" parent="Streets/Street_10" index="0" unique_id=579697765]
+position = Vector2(33.687504, 16.500013)
+scale = Vector2(0.43452376, 0.35439554)
+texture = ExtResource("17_r6ya7")
+
+[node name="CollisionShape2D" parent="Streets/Street_10" index="1" unique_id=461560585]
+position = Vector2(34, 13)
+scale = Vector2(0.23, 0.35)
+
+[node name="OwnerMark" parent="Streets/Street_10" index="2" unique_id=1677886856]
+metadata/_edit_use_anchors_ = true
+
+[node name="Label" parent="Streets/Street_10" index="3" unique_id=1311332393]
+metadata/_edit_use_anchors_ = true
+
+[node name="Street_11" parent="Streets" unique_id=1042788328 groups=["board_sectors"] instance=ExtResource("1_fv4ni")]
+texture_filter = 1
+position = Vector2(358, 710)
+priority = 1
+cell_type = 1
+sector_id = 11
+sector_name = "Sector_11"
+grid_pos = Vector2i(0, 5)
+street_first_texture = ExtResource("vst_first")
+street_second_texture = ExtResource("vst_second")
+metadata/_edit_group_ = true
+
+[node name="Sprite2D" parent="Streets/Street_11" index="0" unique_id=579697765]
+position = Vector2(33.687504, 16.500013)
+scale = Vector2(0.43452376, 0.35439554)
+texture = ExtResource("17_r6ya7")
+
+[node name="CollisionShape2D" parent="Streets/Street_11" index="1" unique_id=461560585]
+position = Vector2(37, 9)
+scale = Vector2(0.22, 0.4)
+
+[node name="OwnerMark" parent="Streets/Street_11" index="2" unique_id=1677886856]
+metadata/_edit_use_anchors_ = true
+
+[node name="Label" parent="Streets/Street_11" index="3" unique_id=1311332393]
+metadata/_edit_use_anchors_ = true
+
+[node name="Street_12" parent="Streets" unique_id=2063196915 groups=["board_sectors"] instance=ExtResource("1_fv4ni")]
+texture_filter = 1
+position = Vector2(545, 568)
+priority = 1
+cell_type = 1
+sector_id = 12
+sector_name = "Sector_12"
+grid_pos = Vector2i(1, 4)
+street_first_texture = ExtResource("30_stfirst")
+street_second_texture = ExtResource("31_stsecond")
+metadata/_edit_group_ = true
+
+[node name="Sprite2D" parent="Streets/Street_12" index="0" unique_id=579697765]
+position = Vector2(39.950012, 22.5)
+scale = Vector2(0.5771978, 0.43589738)
+texture = ExtResource("4_4bs3u")
+
+[node name="CollisionShape2D" parent="Streets/Street_12" index="1" unique_id=461560585]
+position = Vector2(34, 23)
+scale = Vector2(0.52, 0.25)
+
+[node name="OwnerMark" parent="Streets/Street_12" index="2" unique_id=1677886856]
+metadata/_edit_use_anchors_ = true
+
+[node name="Label" parent="Streets/Street_12" index="3" unique_id=1311332393]
+metadata/_edit_use_anchors_ = true
+
+[node name="Street_13" parent="Streets" unique_id=618305771 groups=["board_sectors"] instance=ExtResource("1_fv4ni")]
+texture_filter = 1
+position = Vector2(915, 570)
+priority = 1
+cell_type = 1
+sector_id = 13
+sector_name = "Sector_13"
+grid_pos = Vector2i(3, 4)
+street_first_texture = ExtResource("30_stfirst")
+street_second_texture = ExtResource("31_stsecond")
+metadata/_edit_group_ = true
+
+[node name="Sprite2D" parent="Streets/Street_13" index="0" unique_id=579697765]
+position = Vector2(39.950012, 19.499987)
+scale = Vector2(0.5771978, 0.4578755)
+texture = ExtResource("4_4bs3u")
+
+[node name="CollisionShape2D" parent="Streets/Street_13" index="1" unique_id=461560585]
+position = Vector2(42, 19)
+scale = Vector2(0.52, 0.25)
+
+[node name="OwnerMark" parent="Streets/Street_13" index="2" unique_id=1677886856]
+metadata/_edit_use_anchors_ = true
+
+[node name="Label" parent="Streets/Street_13" index="3" unique_id=1311332393]
+metadata/_edit_use_anchors_ = true
+
+[node name="Street_14" parent="Streets" unique_id=1949734328 groups=["board_sectors"] instance=ExtResource("1_fv4ni")]
+texture_filter = 1
+position = Vector2(1460, 473)
+priority = 1
+cell_type = 1
+sector_id = 14
+sector_name = "Sector_14"
+grid_pos = Vector2i(6, 3)
+street_first_texture = ExtResource("vst_first")
+street_second_texture = ExtResource("vst_second")
+metadata/_edit_group_ = true
+
+[node name="Sprite2D" parent="Streets/Street_14" index="0" unique_id=579697765]
+position = Vector2(33.687504, 16.500013)
+scale = Vector2(0.43452376, 0.35439554)
+texture = ExtResource("17_r6ya7")
+
+[node name="CollisionShape2D" parent="Streets/Street_14" index="1" unique_id=461560585]
+position = Vector2(34, 10)
+scale = Vector2(0.2, 0.35)
+
+[node name="OwnerMark" parent="Streets/Street_14" index="2" unique_id=1677886856]
+metadata/_edit_use_anchors_ = true
+
+[node name="Label" parent="Streets/Street_14" index="3" unique_id=1311332393]
+metadata/_edit_use_anchors_ = true
+
+[node name="Street_15" parent="Streets" unique_id=736638389 groups=["board_sectors"] instance=ExtResource("1_fv4ni")]
+texture_filter = 1
+position = Vector2(1267, 575)
+priority = 1
+cell_type = 1
+sector_id = 15
+sector_name = "Sector_15"
+grid_pos = Vector2i(5, 4)
+street_first_texture = ExtResource("30_stfirst")
+street_second_texture = ExtResource("31_stsecond")
+metadata/_edit_group_ = true
+
+[node name="Sprite2D" parent="Streets/Street_15" index="0" unique_id=579697765]
+position = Vector2(48.50004, 19.499987)
+scale = Vector2(0.5302197, 0.4578755)
+texture = ExtResource("4_4bs3u")
+
+[node name="CollisionShape2D" parent="Streets/Street_15" index="1" unique_id=461560585]
+position = Vector2(48, 19)
+scale = Vector2(0.52, 0.25)
+
+[node name="OwnerMark" parent="Streets/Street_15" index="2" unique_id=1677886856]
+metadata/_edit_use_anchors_ = true
+
+[node name="Label" parent="Streets/Street_15" index="3" unique_id=1311332393]
+metadata/_edit_use_anchors_ = true
+
+[node name="Street_16" parent="Streets" unique_id=404210100 groups=["board_sectors"] instance=ExtResource("1_fv4ni")]
+texture_filter = 1
+position = Vector2(731, 706)
+priority = 1
+cell_type = 1
+sector_id = 16
+sector_name = "Sector_16"
+grid_pos = Vector2i(2, 5)
+street_first_texture = ExtResource("vst_first")
+street_second_texture = ExtResource("vst_second")
+metadata/_edit_group_ = true
+
+[node name="Sprite2D" parent="Streets/Street_16" index="0" unique_id=579697765]
+position = Vector2(33.687504, 7.500002)
+scale = Vector2(0.43452376, 0.40384614)
+texture = ExtResource("17_r6ya7")
+
+[node name="CollisionShape2D" parent="Streets/Street_16" index="1" unique_id=461560585]
+position = Vector2(34, 1)
+scale = Vector2(0.2, 0.4)
+
+[node name="OwnerMark" parent="Streets/Street_16" index="2" unique_id=1677886856]
+metadata/_edit_use_anchors_ = true
+
+[node name="Label" parent="Streets/Street_16" index="3" unique_id=1311332393]
+metadata/_edit_use_anchors_ = true
+
+[node name="Street_17" parent="Streets" unique_id=445185505 groups=["board_sectors"] instance=ExtResource("1_fv4ni")]
+texture_filter = 1
+position = Vector2(1089, 692)
+priority = 1
+cell_type = 1
+sector_id = 17
+sector_name = "Sector_17"
+grid_pos = Vector2i(4, 5)
+street_first_texture = ExtResource("vst_first")
+street_second_texture = ExtResource("vst_second")
+
+[node name="Sprite2D" parent="Streets/Street_17" index="0" unique_id=579697765]
+position = Vector2(33.687504, 7.500002)
+scale = Vector2(0.43452376, 0.40384614)
+texture = ExtResource("17_r6ya7")
+
+[node name="CollisionShape2D" parent="Streets/Street_17" index="1" unique_id=461560585]
+position = Vector2(36, 14)
+scale = Vector2(0.2, 0.35)
+
+[node name="OwnerMark" parent="Streets/Street_17" index="2" unique_id=1677886856]
+metadata/_edit_use_anchors_ = true
+
+[node name="Label" parent="Streets/Street_17" index="3" unique_id=1311332393]
+metadata/_edit_use_anchors_ = true
+
+[node name="Street_18" parent="Streets" unique_id=874406953 groups=["board_sectors"] instance=ExtResource("1_fv4ni")]
+texture_filter = 1
+position = Vector2(1361, 724)
+priority = 1
+cell_type = 1
+sector_id = 18
+sector_name = "Sector_18"
+grid_pos = Vector2i(6, 5)
+street_first_texture = ExtResource("vst_first")
+street_second_texture = ExtResource("vst_second")
+metadata/_edit_group_ = true
+
+[node name="Sprite2D" parent="Streets/Street_18" index="0" unique_id=579697765]
+position = Vector2(33.687504, 7.500002)
+scale = Vector2(0.43452376, 0.40384614)
+texture = ExtResource("17_r6ya7")
+
+[node name="CollisionShape2D" parent="Streets/Street_18" index="1" unique_id=461560585]
+position = Vector2(37, -4)
+scale = Vector2(0.2, 0.35)
+
+[node name="OwnerMark" parent="Streets/Street_18" index="2" unique_id=1677886856]
+metadata/_edit_use_anchors_ = true
+
+[node name="Label" parent="Streets/Street_18" index="3" unique_id=1311332393]
+metadata/_edit_use_anchors_ = true
+
+[node name="Street_19" parent="Streets" unique_id=1144540386 groups=["board_sectors"] instance=ExtResource("1_fv4ni")]
+texture_filter = 1
+position = Vector2(522, 817)
+priority = 1
+cell_type = 1
+sector_id = 19
+sector_name = "Sector_19"
+grid_pos = Vector2i(1, 6)
+street_first_texture = ExtResource("30_stfirst")
+street_second_texture = ExtResource("31_stsecond")
+metadata/_edit_group_ = true
+
+[node name="Sprite2D" parent="Streets/Street_19" index="0" unique_id=579697765]
+position = Vector2(54.50002, 19.499987)
+scale = Vector2(0.4972527, 0.4578755)
+texture = ExtResource("4_4bs3u")
+
+[node name="CollisionShape2D" parent="Streets/Street_19" index="1" unique_id=461560585]
+position = Vector2(58, 19)
+scale = Vector2(0.45, 0.275)
+
+[node name="OwnerMark" parent="Streets/Street_19" index="2" unique_id=1677886856]
+metadata/_edit_use_anchors_ = true
+
+[node name="Label" parent="Streets/Street_19" index="3" unique_id=1311332393]
+metadata/_edit_use_anchors_ = true
+
+[node name="Street_20" parent="Streets" unique_id=556647430 groups=["board_sectors"] instance=ExtResource("1_fv4ni")]
+texture_filter = 1
+position = Vector2(899, 817)
+priority = 1
+cell_type = 1
+sector_id = 20
+sector_name = "Sector_20"
+grid_pos = Vector2i(3, 6)
+street_first_texture = ExtResource("30_stfirst")
+street_second_texture = ExtResource("31_stsecond")
+metadata/_edit_group_ = true
+
+[node name="Sprite2D" parent="Streets/Street_20" index="0" unique_id=579697765]
+position = Vector2(54.50002, 19.499987)
+scale = Vector2(0.4972527, 0.4578755)
+texture = ExtResource("4_4bs3u")
+
+[node name="CollisionShape2D" parent="Streets/Street_20" index="1" unique_id=461560585]
+position = Vector2(53, 19)
+scale = Vector2(0.45, 0.23)
+
+[node name="OwnerMark" parent="Streets/Street_20" index="2" unique_id=1677886856]
+metadata/_edit_use_anchors_ = true
+
+[node name="Label" parent="Streets/Street_20" index="3" unique_id=1311332393]
+metadata/_edit_use_anchors_ = true
+
+[node name="Street_21" parent="Streets" unique_id=385105377 groups=["board_sectors"] instance=ExtResource("1_fv4ni")]
+texture_filter = 1
+position = Vector2(1259, 841)
+priority = 1
+cell_type = 1
+sector_id = 21
+sector_name = "Sector_21"
+grid_pos = Vector2i(5, 6)
+street_first_texture = ExtResource("30_stfirst")
+street_second_texture = ExtResource("31_stsecond")
+metadata/_edit_group_ = true
+
+[node name="Sprite2D" parent="Streets/Street_21" index="0" unique_id=579697765]
+position = Vector2(54.50002, 19.499987)
+scale = Vector2(0.4972527, 0.4578755)
+texture = ExtResource("4_4bs3u")
+
+[node name="CollisionShape2D" parent="Streets/Street_21" index="1" unique_id=461560585]
+position = Vector2(59, 19)
+scale = Vector2(0.45, 0.23)
+
+[node name="OwnerMark" parent="Streets/Street_21" index="2" unique_id=1677886856]
+metadata/_edit_use_anchors_ = true
+
+[node name="Label" parent="Streets/Street_21" index="3" unique_id=1311332393]
+metadata/_edit_use_anchors_ = true
+
+[node name="Dice" parent="." unique_id=858812595 instance=ExtResource("16_1huyh")]
+position = Vector2(1720, 460)
+metadata/_edit_group_ = true
+
+[node name="Players" type="Node2D" parent="." unique_id=1120027942]
+
+[node name="Player_Blue" parent="Players" unique_id=1512941029 instance=ExtResource("17_vevib")]
+position = Vector2(197, 204)
+metadata/_edit_group_ = true
+
+[node name="Player_Green" parent="Players" unique_id=1476391776 instance=ExtResource("17_vevib")]
+position = Vector2(1734, 213)
+metadata/_edit_group_ = true
+
+[node name="Area2D2" parent="Players/Player_Green" index="0" unique_id=1843696117]
+position = Vector2(-6, -1)
+
+[node name="Area2D" parent="Players/Player_Green/Area2D2" index="1" unique_id=1996686211]
+texture = ExtResource("21_os6cd")
+metadata/_edit_group_ = true
+
+[node name="Button" type="Button" parent="." unique_id=1248683069]
+visible = false
+offset_left = 168.0
+offset_top = 3.0
+offset_right = 254.0
+offset_bottom = 43.0
+text = "End Turn"
+
+[node name="Label" type="Label" parent="." unique_id=1986277795]
+visible = false
+offset_left = 121.0
+offset_top = 146.0
+offset_right = 212.0
+offset_bottom = 177.0
+theme_override_constants/outline_size = 2
+theme_override_constants/shadow_outline_size = 2
+text = "Team: BLUE"
+label_settings = SubResource("LabelSettings_m4vny")
+horizontal_alignment = 1
+vertical_alignment = 1
+metadata/_edit_group_ = true
+metadata/_edit_use_anchors_ = true
+
+[node name="board_CellActionHandler" type="Node2D" parent="." unique_id=398105982]
+script = ExtResource("21_i85x2")
+
+[node name="SectorQuestionCard" parent="." unique_id=1894017259 instance=ExtResource("22_b7otg")]
+layer = 2
+visible = false
+
+[node name="TurnLayer" type="CanvasLayer" parent="." unique_id=368231276]
+layer = 2
+visible = false
+
+[node name="TurnLabel" type="Label" parent="TurnLayer" unique_id=2047343490]
+offset_left = 63.0
+offset_top = 189.0
+offset_right = 208.0
+offset_bottom = 228.0
+size_flags_vertical = 0
+theme_override_colors/font_color = Color(0, 0.03579041, 0.28678992, 1)
+theme_override_colors/font_shadow_color = Color(0.8666667, 0.93333334, 0.78431374, 0.61960787)
+theme_override_colors/font_outline_color = Color(0, 0, 0.6039216, 1)
+theme_override_font_sizes/font_size = 20
+theme_override_styles/focus = SubResource("StyleBoxFlat_v21d4")
+text = "الفريق الازرق"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="CanvasLayer" type="CanvasLayer" parent="." unique_id=1577569856]
+layer = 2
+
+[node name="BattlePopup" parent="CanvasLayer" unique_id=1922644025 instance=ExtResource("24_v21d4")]
+metadata/_edit_use_anchors_ = true
+
+[node name="StreetCard" parent="." unique_id=450592838 instance=ExtResource("25_5pkjh")]
+layer = 2
+visible = false
+
+[editable path="Sectors/Sector_01"]
+[editable path="Sectors/Sector_02"]
+[editable path="Sectors/Sector_03"]
+[editable path="Sectors/Sector_04"]
+[editable path="Sectors/Sector_05"]
+[editable path="Sectors/Sector_06"]
+[editable path="Sectors/Sector_07"]
+[editable path="Sectors/Sector_08"]
+[editable path="Sectors/Sector_09"]
+[editable path="Sectors/Sector_10"]
+[editable path="Sectors/Sector_11"]
+[editable path="Sectors/Sector_12"]
+[editable path="Sectors/Sector_13"]
+[editable path="Sectors/Sector_14"]
+[editable path="Streets/Street_01"]
+[editable path="Streets/Street_02"]
+[editable path="Streets/Street_03"]
+[editable path="Streets/Street_04"]
+[editable path="Streets/Street_05"]
+[editable path="Streets/Street_06"]
+[editable path="Streets/Street_07"]
+[editable path="Streets/Street_08"]
+[editable path="Streets/Street_09"]
+[editable path="Streets/Street_10"]
+[editable path="Streets/Street_11"]
+[editable path="Streets/Street_12"]
+[editable path="Streets/Street_13"]
+[editable path="Streets/Street_14"]
+[editable path="Streets/Street_15"]
+[editable path="Streets/Street_16"]
+[editable path="Streets/Street_17"]
+[editable path="Streets/Street_18"]
+[editable path="Streets/Street_19"]
+[editable path="Streets/Street_20"]
+[editable path="Streets/Street_21"]
+[editable path="Players/Player_Blue"]
+[editable path="Players/Player_Green"]
