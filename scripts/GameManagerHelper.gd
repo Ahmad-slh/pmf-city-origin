@@ -782,3 +782,78 @@ func set_effect_display_turns(team_id: int, effect_type: int, turns: int) -> voi
 	team_effects[team_id][effect_type]["display_turns_left"] = turns
 
 	effects_changed.emit(team_id)	
+
+
+# ======================================================
+# اسم الدالة: format_mm_ss
+# وظيفتها:
+# تنسيق موحّد للوقت بصيغة MM:SS لكل مؤقتات اللعبة
+# خانتان للدقائق وخانتان للثواني، بلا ساعات
+# ======================================================
+func format_mm_ss(total_seconds: int) -> String:
+
+	var clamped := clampi(total_seconds, 0, 99 * 60 + 59)
+
+	return "%02d:%02d" % [clamped / 60, clamped % 60]
+
+
+# ======================================================
+# اسم الدالة: format_time_label
+# وظيفتها:
+# النص الكامل الموحّد للمؤقتات: أيقونة ساعة + "الوقت:" + MM:SS
+# ======================================================
+func format_time_label(total_seconds: int) -> String:
+
+	return "⏳ الوقت: " + format_mm_ss(total_seconds)
+
+
+# ======================================================
+#   قفل التفاعل: منع رمي النرد أثناء أي تفاعل معلّق
+# ------------------------------------------------------
+# كل نافذة أو بطاقة تنتظر تفاعل اللاعب تسجّل نفسها هنا،
+# بدل أن يفحص النرد كل نافذة بالاسم. أي نافذة جديدة تحصل
+# على الحماية تلقائيا بمجرد استدعاء push_input_block.
+#
+# المفتاح هو instance_id، و is_input_locked تتجاهل وتحذف
+# أي عقدة حُرّرت دون تنظيف، فلا يبقى القفل عالقا للأبد
+# ======================================================
+var _input_blockers: Dictionary = {}
+
+
+func push_input_block(node: Node, reason: String = "") -> void:
+
+	if node == null:
+		return
+
+	_input_blockers[node.get_instance_id()] = reason
+
+
+func pop_input_block(node: Node) -> void:
+
+	if node == null:
+		return
+
+	_input_blockers.erase(node.get_instance_id())
+
+
+# تحذف المسجّلين المحرّرين ثم ترجع هل بقي أي مانع فعّال
+func is_input_locked() -> bool:
+
+	var stale: Array = []
+
+	for id in _input_blockers:
+		if not is_instance_valid(instance_from_id(id)):
+			stale.append(id)
+
+	for id in stale:
+		_input_blockers.erase(id)
+
+	return not _input_blockers.is_empty()
+
+
+# أسماء الموانع الفعّالة، للتشخيص والاختبار
+func active_input_blockers() -> Array:
+
+	is_input_locked()
+
+	return _input_blockers.values()

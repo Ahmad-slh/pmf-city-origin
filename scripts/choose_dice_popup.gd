@@ -26,8 +26,21 @@ extends CanvasLayer
 signal dice_value_selected(value: int)
 
 
+# نقطة تحرير واحدة مهما كان سبب إغلاق النافذة
+func _notification(what: int) -> void:
+	if what == NOTIFICATION_PREDELETE:
+		if is_instance_valid(GameManagerHelper):
+			GameManagerHelper.pop_input_block(self)
+
+
 # Called when the node enters the scene tree for the first time.
 func _ready() -> void:
+	# النافذة بأوضاعها الثلاثة تنتظر ضغطة اللاعب، فتقفل النرد.
+	# التحرير يتم في NOTIFICATION_PREDELETE ليغطي مسارات
+	# الإغلاق الثلاثة (_select_value و _select_two_rolls_value
+	# و _select_choos_first) من مكان واحد
+	GameManagerHelper.push_input_block(self, "choose_dice_popup")
+
 	choose_number_panel.visible = false
 	two_rolls_panel.visible = false
 	choos_first.visible = false

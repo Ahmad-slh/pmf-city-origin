@@ -43,6 +43,21 @@ var team_positions := {
 
 var main_ui = null
 
+# ======================================================
+#   قرعة البداية: كل فريق يرمي النرد، وصاحب الرقم الأعلى يبدأ
+# ------------------------------------------------------
+# roll_off_active يعطّل منطق الدور العادي داخل _on_dice_rolled
+# ويمنع رمي النرد أثناء عرض الإعلانات، بنفس أسلوب
+# is_any_card_open المستخدم في dice.gd
+# ======================================================
+signal roll_off_rolled(value)
+
+const ROLL_OFF_MAX_ROUNDS := 20
+
+var roll_off_active := false
+var roll_off_accepting_click := false
+var roll_off_value := 0
+
 # Called when the node enters the scene tree for the first time.
 func _ready() -> void:
 	player_blue.board = self
@@ -134,6 +149,13 @@ func _on_dice_twice_choose_best(value:int =0)->bool:
 
 func _on_dice_rolled(value: int) -> void:
 	#print("START DICE")
+
+	# قرعة البداية تستهلك الرمية بنفسها، فلا نشغّل منطق الدور
+	if roll_off_active:
+		roll_off_value = value
+		roll_off_rolled.emit(value)
+		return
+
 	var team_id = GameManager.current_team
 	clear_sector_highlights()
 	
@@ -144,8 +166,10 @@ func _on_dice_rolled(value: int) -> void:
 	if GoodEffects.use_choose_next_starting_team(current_team_id):
 		GameManagerHelper.remove_effect(current_team_id,GameManagerHelper.EffectType.CHOOSE_NEXT_STARTING_TEAM)
 			
-	if SectorQuestionCard != null:
-		SectorQuestionCard.timer_running = false
+	# سابقا كان هنا SectorQuestionCard.timer_running = false، وهو
+	# سطر يوقف مؤقت السؤال عند كل رمية. لم يعد له داع:
+	# is_dice_locked يمنع الرمي أصلا ما دامت البطاقة معروضة،
+	# و hide_card توقف المؤقت بنفسها قبل أن تخفي البطاقة
 
 	var current_player = get_current_player()
 	
@@ -253,6 +277,9 @@ func _show_direction_popup(controller_team: int, moving_team: int, steps: int) -
 	add_child(layer)
 	direction_popup = layer
 
+	# تنتظر ضغطة اللاعب، فتقفل النرد حتى يختار اتجاها
+	GameManagerHelper.push_input_block(layer, "direction_popup")
+
 	var panel_size := Vector2(460, 300)
 	var screen_size: Vector2 = get_viewport().get_visible_rect().size
 
@@ -280,14 +307,171 @@ func _show_direction_popup(controller_team: int, moving_team: int, steps: int) -
 
 	# الأزرار الأربعة موزعة على شكل صليب
 	var mid := panel_size.x / 2.0
-	_add_direction_button(panel, "▲", DIRECTION_UP,
+	# أسهم الاتجاهات: نستخدم U+2190..U+2193 لأن الخط arial.ttf
+	# لا يحتوي على مثلثي اليسار/اليمين (U+25C0 / U+25B6) فتظهر مربعات رموز
+	_add_direction_button(panel, "↑", DIRECTION_UP,
 		Vector2(mid - 55, 70), moving_team, steps, controller_team)
-	_add_direction_button(panel, "◀", DIRECTION_LEFT,
+	_add_direction_button(panel, "←", DIRECTION_LEFT,
 		Vector2(mid - 175, 160), moving_team, steps, controller_team)
-	_add_direction_button(panel, "▶", DIRECTION_RIGHT,
+	_add_direction_button(panel, "→", DIRECTION_RIGHT,
 		Vector2(mid + 65, 160), moving_team, steps, controller_team)
-	_add_direction_button(panel, "▼", DIRECTION_DOWN,
+	_add_direction_button(panel, "↓", DIRECTION_DOWN,
 		Vector2(mid - 55, 220), moving_team, steps, controller_team)
+
+
+# ======================================================
+# اسم الدالة: run_opening_roll_off
+# وظيفتها:
+# تدير قرعة البداية كاملة: كل فريق يضغط النرد بنفسه،
+# وصاحب الرقم الأعلى يبدأ. عند التعادل تعاد القرعة للفريقين
+# ======================================================
+func run_opening_roll_off() -> void:
+	roll_off_active = true
+
+	var winner := 0
+	var blue_roll := 0
+	var red_roll := 0
+	var round_index := 0
+
+	while winner == 0 and round_index < ROLL_OFF_MAX_ROUNDS:
+		round_index += 1
+
+		blue_roll = await _roll_off_wait_for_team(1)
+		red_roll = await _roll_off_wait_for_team(2)
+
+		if blue_roll > red_roll:
+			winner = 1
+		elif red_roll > blue_roll:
+			winner = 2
+		else:
+			await _show_roll_off_popup(
+				"تعادل! إعادة الرمي",
+				"%d — %d" % [blue_roll, red_roll],
+				0
+			)
+
+	# حماية من دورة لا تنتهي بسبب خطأ برمجي
+	if winner == 0:
+		push_warning("قرعة البداية لم تحسم بعد %d جولات، سيبدأ الفريق الأزرق" % ROLL_OFF_MAX_ROUNDS)
+		winner = 1
+
+	await _show_roll_off_popup(
+		_team_display_name(winner) + " سيبدأ اللعب",
+		"%d — %d" % [blue_roll, red_roll],
+		winner
+	)
+
+	# تسليم اللعب: نضبط الفريق البادئ دون إنقاص أي تأثيرات مؤقتة
+	roll_off_active = false
+	roll_off_accepting_click = false
+
+	GameManager.current_team = winner
+	GameManager.set_active_turn_players()
+	update_turn_label(winner)
+	GameManager.turn_changed.emit(winner)
+
+
+# ينتظر ضغطة الفريق على النرد ويرجع النتيجة
+func _roll_off_wait_for_team(team_id: int) -> int:
+	await _show_roll_off_popup(
+		_team_display_name(team_id) + ": اضغط النرد",
+		"",
+		team_id
+	)
+
+	# الآن فقط يقبل النرد الضغط
+	roll_off_accepting_click = true
+	var value: int = await roll_off_rolled
+	roll_off_accepting_click = false
+
+	return value
+
+
+# ======================================================
+# اسم الدالة: _show_roll_off_popup
+# وظيفتها:
+# إعلان مبني بالكود على نمط _show_direction_popup.
+# يغلق بالضغط أو تلقائيا بعد ثلاث ثوان
+# ======================================================
+const ROLL_OFF_POPUP_SECONDS := 3.0
+
+func _show_roll_off_popup(title_text: String, score_text: String, team_id: int) -> void:
+	var layer := CanvasLayer.new()
+	layer.layer = 130
+	add_child(layer)
+
+	# الإعلان نفسه مانع كبقية النوافذ. استثناء القرعة في dice.gd
+	# يخص نافذة "اضغط النرد" وحدها، وهي لحظة لا إعلان فيها
+	GameManagerHelper.push_input_block(layer, "roll_off_popup")
+
+	var panel_size := Vector2(540, 260 if score_text != "" else 200)
+	var screen_size: Vector2 = get_viewport().get_visible_rect().size
+
+	var panel := Panel.new()
+	panel.size = panel_size
+	panel.position = (screen_size - panel_size) / 2.0
+
+	var style := StyleBoxFlat.new()
+	style.bg_color = Color("#FFFFFF")
+	style.set_border_width_all(4)
+	if team_id == 1:
+		style.border_color = Color("#1976D2")
+	elif team_id == 2:
+		style.border_color = Color("#D32F2F")
+	else:
+		style.border_color = Color("#8A8A8A")
+	style.set_corner_radius_all(16)
+	panel.add_theme_stylebox_override("panel", style)
+
+	layer.add_child(panel)
+
+	var title := Label.new()
+	title.text = title_text
+	title.size = Vector2(panel_size.x - 40, 60)
+	title.position = Vector2(20, 40)
+	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	title.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	title.add_theme_font_size_override("font_size", 30)
+	title.add_theme_color_override("font_color", Color("#1F1F1F"))
+	panel.add_child(title)
+
+	if score_text != "":
+		var score := Label.new()
+		score.text = score_text
+		score.size = Vector2(panel_size.x - 40, 70)
+		score.position = Vector2(20, 120)
+		score.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		score.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+		score.add_theme_font_size_override("font_size", 44)
+		score.add_theme_color_override("font_color", Color("#1F1F1F"))
+		panel.add_child(score)
+
+	# زر شفاف يغطي اللوحة كلها ليغلقها بالضغط
+	var dismiss := Button.new()
+	dismiss.flat = true
+	dismiss.size = panel_size
+	dismiss.position = Vector2.ZERO
+	panel.add_child(dismiss)
+
+	# لامبدا GDScript تلتقط المتغيرات المحلية بالنسخة لا بالمرجع،
+	# فنستخدم قاموسا (نوع مرجعي) حتى يصل التغيير إلى هذه الدالة
+	var state := {"done": false}
+
+	dismiss.pressed.connect(func() -> void:
+		state["done"] = true
+	)
+
+	var timer := get_tree().create_timer(ROLL_OFF_POPUP_SECONDS)
+	timer.timeout.connect(func() -> void:
+		state["done"] = true
+	)
+
+	while not state["done"]:
+		await get_tree().process_frame
+
+	if is_instance_valid(layer):
+		GameManagerHelper.pop_input_block(layer)
+		layer.queue_free()
 
 
 func _add_direction_button(
@@ -316,9 +500,15 @@ func _on_direction_chosen(
 	steps: int,
 	controller_team: int
 ) -> void:
-	if direction_popup != null and is_instance_valid(direction_popup):
-		direction_popup.queue_free()
-		direction_popup = null
+	# النافذة مغلقة أصلاً: تجاهل النقر المكرر على أكثر من سهم
+	if direction_popup == null or not is_instance_valid(direction_popup):
+		return
+
+	# نحرّر القفل فورا: queue_free مؤجّل فتبقى العقدة صالحة هذا الإطار
+	GameManagerHelper.pop_input_block(direction_popup)
+
+	direction_popup.queue_free()
+	direction_popup = null
 
 	_clear_direction_effects(moving_team, controller_team)
 
@@ -507,6 +697,23 @@ func _on_sector_selected(cell) -> void:
 # الفحص يقرأ visible مباشرة بدل تتبع حالة منفصلة، فلا يمكن
 # أن تختل المزامنة لو أغلقت بطاقة من مسار لم نتوقعه
 # ======================================================
+# ======================================================
+# اسم الدالة: is_dice_locked
+# وظيفتها:
+# نقطة الفحص الوحيدة التي يستعملها النرد.
+#
+# البطاقات الثلاث تُفحص عبر is_any_card_open كما كانت، ولا
+# تسجّل نفسها في سجل الموانع حتى لا تُحجب مرتين. أما النوافذ
+# المبنية بالكود والمشاهد المنبثقة فتسجّل نفسها في السجل
+# ======================================================
+func is_dice_locked() -> bool:
+
+	if is_any_card_open():
+		return true
+
+	return GameManagerHelper.is_input_locked()
+
+
 func is_any_card_open() -> bool:
 	if is_instance_valid(SectorQuestionCard) and SectorQuestionCard.visible:
 		return true

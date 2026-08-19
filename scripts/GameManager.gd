@@ -168,6 +168,55 @@ func end_turn() -> void:
 	
 #-------------------------------------	
 	
+# ======================================================
+# اسم الدالة: reset_for_new_game
+# وظيفتها:
+# تصفير كل حالة اللعبة قبل بدء مباراة جديدة.
+#
+# GameManager و GameManagerHelper كلاهما autoload، فهما يبقيان
+# في الذاكرة بعد change_scene_to_file. بدون هذا التصفير تنتقل
+# حالة المباراة السابقة (الفريق الحالي، الجولات، التأثيرات)
+# إلى المباراة الجديدة في نفس الجلسة
+# ======================================================
+func reset_for_new_game() -> void:
+
+	current_team = Team.BLUE
+	core_team = Team.BLUE
+
+	total_rounds = 0
+	team_rounds = {
+		1: 0,
+		2: 0
+	}
+
+	g_is_battle = false
+	extra_turn_team = 0
+	g_team_clicks = 0
+
+	GameManagerHelper.team_effects.clear()
+
+	GameManagerHelper.effects_changed.emit(Team.BLUE)
+	GameManagerHelper.effects_changed.emit(Team.GREEN)
+
+
+# ======================================================
+# اسم الدالة: set_active_turn_players
+# وظيفتها:
+# تفعيل لاعب الفريق صاحب الدور دون أي أثر جانبي.
+#
+# update_active_players تنقص عدادات التأثيرات المؤقتة، وهو
+# سلوك مطلوب عند تبديل الأدوار لا عند تحديد البادئ في بداية
+# المباراة، فنفصل الجزء البصري وحده هنا
+# ======================================================
+func set_active_turn_players() -> void:
+
+	teams[Team.BLUE]["player"].set_active_turn(current_team == Team.BLUE)
+	teams[Team.GREEN]["player"].set_active_turn(current_team == Team.GREEN)
+
+	GameManagerHelper.effects_changed.emit(Team.BLUE)
+	GameManagerHelper.effects_changed.emit(Team.GREEN)
+
+
 func update_active_players() -> void:
 	teams[Team.BLUE]["player"].set_active_turn(current_team == Team.BLUE)
 	teams[Team.GREEN]["player"].set_active_turn(current_team == Team.GREEN)

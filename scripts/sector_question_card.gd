@@ -138,11 +138,7 @@ func _process(delta: float) -> void:
 
 	time_left -= delta
 
-	var minutes = int(time_left) / 60
-	var seconds = int(time_left) % 60
-	timer_label.text = "⏳ الوقت: %02d:%02d" % [minutes, seconds]
-	
-	#timer_label.text = "⏳ الوقت: " + str(ceil(time_left))
+	timer_label.text = GameManagerHelper.format_time_label(int(time_left))
 
 	if time_left <= 0:
 		timer_running = false
@@ -177,8 +173,10 @@ const OVERLAY_RIGHT := 0.80
 const OVERLAY_TOP := 0.01
 const OVERLAY_TIMER_BOTTOM := 0.098
 
-# النتيجة قد تكون سطرين، فتأخذ ارتفاعا أكبر من نفس النقطة العليا
-const OVERLAY_RESULT_BOTTOM := 0.126
+# النتيجة تجلس مباشرة تحت المؤقت بدل أن تحل محله،
+# حتى يبقى الوقت ظاهرا مع إشعار الإجابة في نفس المنطقة
+const OVERLAY_RESULT_TOP := 0.104
+const OVERLAY_RESULT_BOTTOM := 0.208
 
 var _overlay_timer: Label = null
 var _overlay_result: Label = null
@@ -230,7 +228,7 @@ func _ensure_image_mode_overlay() -> void:
 	_overlay_timer.name = "OverlayTimer"
 	texture_rect.add_child(_overlay_timer)
 
-	_overlay_result = _make_overlay_label(54, OVERLAY_TOP, OVERLAY_RESULT_BOTTOM)
+	_overlay_result = _make_overlay_label(54, OVERLAY_RESULT_TOP, OVERLAY_RESULT_BOTTOM)
 	_overlay_result.name = "OverlayResult"
 	texture_rect.add_child(_overlay_result)
 
@@ -252,9 +250,9 @@ func _sync_image_mode_overlay() -> void:
 
 	var has_result: bool = result_label.visible and result_label.text != ""
 
-	# النتيجة تحل محل المؤقت في نفس الموضع، فيظهر عنصر واحد في كل مرة
+	# المؤقت يبقى ظاهرا، وإشعار النتيجة يظهر تحته مباشرة
 	_overlay_timer.text = timer_label.text
-	_overlay_timer.visible = not has_result and timer_label.text != ""
+	_overlay_timer.visible = timer_label.text != ""
 
 	_overlay_result.text = result_label.text
 	_overlay_result.visible = has_result
@@ -348,6 +346,78 @@ func _make_option_zone_style() -> StyleBox:
 # مئة بكسل من كل جهة تبقيه داخل الرسم في كل البطاقات
 const OPTION_ZONE_HOVER_INSET_V := 12.0
 const OPTION_ZONE_HOVER_INSET_H := 100.0
+
+
+# ======================================================
+# إبراز الإجابة الصحيحة بعد إجابة خاطئة
+# ------------------------------------------------------
+# مناطق الضغط شفافة بالكامل عمدا، فنمنح منطقة الإجابة
+# الصحيحة وحدها نمطا أخضر مرئيا لمدة قصيرة، ثم نعيدها
+# شفافة كما كانت قبل قلب البطاقة
+# ======================================================
+const CORRECT_HIGHLIGHT_SECONDS := 3.0
+
+var _highlighted_zone: Button = null
+
+
+func _make_correct_zone_style() -> StyleBoxFlat:
+	var style := StyleBoxFlat.new()
+
+	style.bg_color = Color(0.16, 0.68, 0.27, 0.45)
+	style.border_color = Color(0.05, 0.45, 0.13, 0.95)
+	style.set_border_width_all(4)
+
+	# نفس إدخال نمط المرور حتى يبقى الإبراز داخل رسم البطاقة
+	style.expand_margin_left = -OPTION_ZONE_HOVER_INSET_H
+	style.expand_margin_right = -OPTION_ZONE_HOVER_INSET_H
+	style.expand_margin_top = -OPTION_ZONE_HOVER_INSET_V
+	style.expand_margin_bottom = -OPTION_ZONE_HOVER_INSET_V
+
+	var card_height: float = texture_rect.size.y
+	if card_height <= 0.0:
+		card_height = 2059.0
+
+	var row_height: float = card_height * OPTION_ZONE_HEIGHT
+	var radius: int = int((row_height - OPTION_ZONE_HOVER_INSET_V * 2.0) * 0.5)
+	style.set_corner_radius_all(max(radius, 8))
+
+	return style
+
+
+# يبرز منطقة الإجابة الصحيحة، ويرجع true إذا تم الإبراز فعلا
+func _highlight_correct_option_zone() -> bool:
+	if not uses_card_image:
+		return false
+
+	var correct_index: int = int(current_question.get("correct_index", -1))
+	if correct_index < 0 or correct_index >= option_buttons.size():
+		return false
+
+	_highlighted_zone = option_buttons[correct_index]
+
+	# الزر معطل بعد الإجابة، فنمط disabled هو الظاهر فعليا
+	var style := _make_correct_zone_style()
+	for style_name in ["normal", "pressed", "focus", "disabled", "hover"]:
+		_highlighted_zone.add_theme_stylebox_override(style_name, style)
+
+	return true
+
+
+func _clear_correct_zone_highlight() -> void:
+	if _highlighted_zone == null or not is_instance_valid(_highlighted_zone):
+		_highlighted_zone = null
+		return
+
+	for style_name in ["normal", "pressed", "focus", "disabled"]:
+		_highlighted_zone.add_theme_stylebox_override(
+			style_name, _make_option_zone_style()
+		)
+
+	_highlighted_zone.add_theme_stylebox_override(
+		"hover", _make_option_zone_hover_style()
+	)
+
+	_highlighted_zone = null
 
 
 func _make_option_zone_hover_style() -> StyleBox:
@@ -752,6 +822,9 @@ func handle_normal_answer(is_correct: bool) -> void:
 	else:
 		result_label.text = "❌ إجابة خاطئة"
 		result_label.add_theme_color_override("font_color", Color(0.281, 0.0, 0.015, 1.0))
+
+		# إجابة خاطئة فقط: أظهر للاعب أين كانت الإجابة الصحيحة
+		_highlight_correct_option_zone()
 		
 				# تكبير الخط
 		result_label.add_theme_font_size_override("font_size", 26)
@@ -1201,9 +1274,7 @@ func _start_answer_timer() -> void:
 	time_left = 30.0
 	timer_running = true
 
-	var minutes := int(time_left) / 60
-	var seconds := int(time_left) % 60
-	timer_label.text = "⏳ الوقت: %02d:%02d" % [minutes, seconds]
+	timer_label.text = GameManagerHelper.format_time_label(int(time_left))
 
 
 func hide_rolle_control() -> void:
@@ -1305,6 +1376,7 @@ func reset_question_card() -> void:
 
 	# نبدأ من الوضع النصي، و _apply_question_visuals يفعّل الصورة إن وجدت
 	uses_card_image = false
+	_clear_correct_zone_highlight()
 	_set_option_zones_visible(false)
 
 	enable_answer_buttons()
@@ -1326,6 +1398,12 @@ func flip_to_background_info() -> void:
 	# الانتظار هنا يغطي الأوضاع الثلاثة بنقطة واحدة
 	# ------------------------------------------------------
 	await get_tree().create_timer(RESULT_HOLD_SECONDS).timeout
+
+	# إجابة خاطئة على بطاقة صورة: امنح اللاعب وقتا ليرى الإجابة
+	# الصحيحة مبرزة قبل أن تنقلب البطاقة
+	if _highlighted_zone != null:
+		await get_tree().create_timer(CORRECT_HIGHLIGHT_SECONDS).timeout
+		_clear_correct_zone_highlight()
 
 	texture_rect.pivot_offset = texture_rect.size / 2.0
 	

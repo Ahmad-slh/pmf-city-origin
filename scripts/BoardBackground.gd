@@ -54,6 +54,9 @@ func _ready() -> void:
 	game_timer.timeout.connect(_on_game_timer_timeout)
 	update_game_timer()
 	game_timer.start()
+
+	# قرعة البداية تحدد الفريق الذي يلعب أولا قبل أي دور عادي
+	board.run_opening_roll_off()
 	
 	
 	
@@ -255,9 +258,10 @@ func _on_game_timer_timeout():
 
 func update_game_timer():
 
-	var minutes := remaining_seconds / 60
-	var seconds := remaining_seconds % 60
-	game_timer_label.text = "%02d:%02d" % [minutes, seconds]
+	# اعرض دائماً بصيغة MM:SS فقط — بدون ساعات
+	# ملاحظة: لا نضيف "⏳ الوقت:" هنا لأن الأيقونة موجودة أصلاً كصورة
+	# (TimerImage)، ولأن النص الأطول يفيض خارج الصندوق الأزرق
+	game_timer_label.text = GameManagerHelper.format_mm_ss(remaining_seconds)
 
 func end_game():
 

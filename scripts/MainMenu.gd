@@ -118,6 +118,10 @@ func _on_play_pressed() -> void:
 	_active_tweens.append(hold_tween)
 	await hold_tween.finished
 
+	# الـ autoload يبقى في الذاكرة بين المشاهد، فنصفّر حالة أي
+	# مباراة سابقة قبل الدخول إلى اللوحة
+	GameManager.reset_for_new_game()
+
 	get_tree().change_scene_to_file(GAME_SCENE_PATH)
 
 
