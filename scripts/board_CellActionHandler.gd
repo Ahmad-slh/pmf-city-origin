@@ -63,20 +63,11 @@ func handle_sector(cell, skip_investment: bool = false) -> void:
 		GameManager.end_turn()
 		return
 
-	if cell.sector_id == 10 and  GameManagerHelper.has_effect(team_id, GameManagerHelper.EffectType.BLOCK_ENERGY_INVESTMENT_TWO_ROUNDS):
-		print("الفريق ", team_id, " ممنوع من الاستثمار هذه الجولة في  قطاع الطاقة")
+	if is_sector_investment_blocked(cell, team_id):
 		if board != null and board.main_ui != null:
 			board.main_ui.refresh_team_effect_panel(team_id)
 		GameManager.end_turn()
-		return		
-	
-	if (cell.sector_id == 6) \
-		and  GameManagerHelper.has_effect(team_id, GameManagerHelper.EffectType.BLOCK_EDUCATION_INVESTMENT_TWO_ROUNDS):
-		print("الفريق ", team_id, " ممنوع من الاستثمار هذه الجولة في  قطاع الجامعات")
-		if board != null and board.main_ui != null:
-			board.main_ui.refresh_team_effect_panel(team_id)
-		GameManager.end_turn()
-		return		
+		return
 		
 
 
@@ -131,6 +122,41 @@ func handle_sector(cell, skip_investment: bool = false) -> void:
 	else:
 		print("CLOSE CELL FOR TEAM = ", GameManager.current_team)
 		cell.close_cell(team_id)
+
+# ======================================================
+#   المنع الخاص بقطاع بعينه
+# ------------------------------------------------------
+# فحص واحد يستدعيه مسار الهبوط العادي هنا، ومسار إعادة فتح
+# البطاقة ببطاقة "دعم إضافي" في sector_question_card.
+#
+# كان الفحص محصورا في handle_sector وحدها، فكان الاستثمار
+# الثاني عبر "دعم إضافي" يلتف عليه لأنه لا يمر بهذه الدالة
+# أصلا. دالة واحدة تمنع تكرار الالتفاف مستقبلا
+# ======================================================
+const ENERGY_SECTOR_ID := 10
+const EDUCATION_SECTOR_ID := 6
+
+
+func is_sector_investment_blocked(cell, team_id: int) -> bool:
+	if cell == null:
+		return false
+
+	if cell.sector_id == ENERGY_SECTOR_ID and GameManagerHelper.has_effect(
+		team_id,
+		GameManagerHelper.EffectType.BLOCK_ENERGY_INVESTMENT_TWO_ROUNDS
+	):
+		print("الفريق ", team_id, " ممنوع من الاستثمار هذه الجولة في  قطاع الطاقة")
+		return true
+
+	if cell.sector_id == EDUCATION_SECTOR_ID and GameManagerHelper.has_effect(
+		team_id,
+		GameManagerHelper.EffectType.BLOCK_EDUCATION_INVESTMENT_TWO_ROUNDS
+	):
+		print("الفريق ", team_id, " ممنوع من الاستثمار هذه الجولة في  قطاع الجامعات")
+		return true
+
+	return false
+
 
 func handle_street(cell) -> void:
 	if cell.is_closed:

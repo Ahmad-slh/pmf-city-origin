@@ -58,6 +58,15 @@ var roll_off_active := false
 var roll_off_accepting_click := false
 var roll_off_value := 0
 
+# مؤشر "ابدأ من هنا" فوق قطاع البداية.
+# لوحة عالية لأن DebugEventPanel و EventsUI طبقتا CanvasLayer
+# ترسمان فوق اللوحة مهما رفعنا z_index للمؤشر
+const START_HINT_SCRIPT := preload("res://scripts/start_hint.gd")
+const START_HINT_LAYER := 20
+var start_hint: Node2D = null
+var start_hint_layer: CanvasLayer = null
+var start_hint_used: bool = false
+
 # Called when the node enters the scene tree for the first time.
 func _ready() -> void:
 	player_blue.board = self
@@ -370,6 +379,67 @@ func run_opening_roll_off() -> void:
 	update_turn_label(winner)
 	GameManager.turn_changed.emit(winner)
 
+	# اللعب العادي بدأ الآن: أشر إلى قطاع البداية
+	show_start_hint()
+
+
+# ======================================================
+#   مؤشر "ابدأ من هنا"
+# ------------------------------------------------------
+# القطاع الذي يبدأ منه الفريقان هو sectors_map[team_positions]،
+# أي Sector_01 عند (0,0). نثبّت المؤشر على مركز CollisionShape2D
+# لا على الـ Sprite2D، لأن صورة القطاع فيها هوامش شفافة واسعة
+# ======================================================
+func show_start_hint() -> void:
+	if is_instance_valid(start_hint) or start_hint_used:
+		return
+
+	var start_pos: Vector2i = team_positions[GameManager.current_team]
+
+	if not sectors_map.has(start_pos):
+		push_warning("لا يوجد قطاع بداية عند %s، لن يظهر المؤشر" % str(start_pos))
+		return
+
+	var cell = sectors_map[start_pos]
+
+	# نلاحق CollisionShape2D لا العقدة نفسها، فهي مركز الخلية الحقيقي
+	var anchor: Node2D = cell.get_node_or_null("CollisionShape2D")
+	if anchor == null:
+		anchor = cell
+
+	var layer := CanvasLayer.new()
+	layer.layer = START_HINT_LAYER
+	add_child(layer)
+
+	var hint: Node2D = START_HINT_SCRIPT.new()
+	hint.follow_target = anchor
+
+	if anchor is CollisionShape2D:
+		var shape = (anchor as CollisionShape2D).shape
+		if shape is RectangleShape2D:
+			hint.cell_size = (shape as RectangleShape2D).size
+
+	layer.add_child(hint)
+
+	start_hint = hint
+	start_hint_layer = layer
+
+	print("مؤشر البداية: ظهر عند ", cell.name, " ", start_pos)
+
+
+# يستدعى بعد أول حركة حقيقية، ولا يعود المؤشر بعدها أبدا
+func hide_start_hint() -> void:
+	start_hint_used = true
+
+	if is_instance_valid(start_hint):
+		start_hint.dismiss()
+
+	if is_instance_valid(start_hint_layer):
+		start_hint_layer.queue_free()
+
+	start_hint = null
+	start_hint_layer = null
+
 
 # ينتظر ضغطة الفريق على النرد ويرجع النتيجة
 func _roll_off_wait_for_team(team_id: int) -> int:
@@ -673,6 +743,9 @@ func _on_sector_selected(cell) -> void:
 	active_player.global_position = active_player.allowed_position
 
 	team_positions[current_team] = cell.grid_pos
+
+	# أول حركة حقيقية اكتملت: لم يعد المؤشر لازما
+	hide_start_hint()
 
 	var team_id = GameManager.current_team
 	board_cell_action_handler.handle_cell(cell)
@@ -1038,9 +1111,11 @@ func show_choose_dice_popup(p_effect_no:int=1) -> void:
 	var popup = choose_dice_popup_scene.instantiate()
 	add_child(popup)
 	
-	if p_effect_no==2: 
+	# الأوضاع الثلاثة يستبعد بعضها بعضا: بدون elif كان الوضع 2
+	# يسقط في else فيستدعي show_choose_number ويخفي لوحة الرميتين
+	if p_effect_no==2:
 		popup.show_two_rolls(GoodEffects.firstRoll,GoodEffects.secondRoll)
-	if p_effect_no==3:
+	elif p_effect_no==3:
 		popup.show_choos_first()
 	else:
 		popup.show_choose_number()

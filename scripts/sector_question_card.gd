@@ -1130,13 +1130,32 @@ func _on_close_button_pressed() -> void:
 	# نفحص الملكية قبل use_double_invest_in_sector لأنها تستهلك
 	# التأثير، فلا نحرق البطاقة على قطاع لا تنطبق عليه
 	v_use_double_invest_in_sector=false
-	if current_cell.questions_used <= 1 and _sector_allows_double_investment(team_id):
+	if current_cell.questions_used <= 1 \
+		and _sector_allows_double_investment(team_id) \
+		and not _sector_investment_blocked(team_id):
 		if GoodEffects.use_double_invest_in_sector(team_id):
 			v_use_double_invest_in_sector=true
 			show_sector_card(current_cell, board)
 			return
 
 	hide_card()
+
+
+# المنع الخاص بقطاع (الطاقة/الجامعات) يجب أن يقطع مسار "دعم إضافي"
+# أيضا، وإلا صارت إعادة فتح البطاقة بابا خلفيا يلتف على الفحص.
+# الفحص قبل use_double_invest_in_sector حتى لا تحرق البطاقة على
+# قطاع ممنوع، تماما كفحص الملكية فوقه. عند المنع تكمل الدالة إلى
+# hide_card، وهي تغلق البطاقة وتنهي الدور بنفسها
+func _sector_investment_blocked(team_id: int) -> bool:
+	if board == null or current_cell == null:
+		return false
+
+	var handler = board.board_cell_action_handler
+
+	if handler == null:
+		return false
+
+	return handler.is_sector_investment_blocked(current_cell, team_id)
 
 
 # القطاع متاح للاستثمار المزدوج إذا كان غير مملوك أو مملوكا لنفس الفريق

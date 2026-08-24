@@ -208,8 +208,3 @@ offset_bottom = 363.33334
 mouse_default_cursor_shape = 2
 theme_override_font_sizes/font_size = 70
 theme_override_styles/normal = SubResource("StyleBoxFlat_f2rgn")
-
-[connection signal="pressed" from="TwoRollsPanel/HBoxContainer/PopupDice2/Button10" to="." method="_on_button_10_pressed"]
-[connection signal="pressed" from="TwoRollsPanel/HBoxContainer/PopupDice2/Button11" to="." method="_on_button_11_pressed"]
-[connection signal="pressed" from="ChoosFirst/HBoxContainer/PopupDice3/Button20" to="." method="_on_button_10_pressed"]
-[connection signal="pressed" from="ChoosFirst/HBoxContainer/PopupDice3/Button30" to="." method="_on_button_11_pressed"]
