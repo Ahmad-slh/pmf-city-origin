@@ -51,12 +51,13 @@ func _ready() -> void:
 	button_4.pressed.connect(func(): _select_value(4))
 	button_5.pressed.connect(func(): _select_value(5))
 	button_6.pressed.connect(func(): _select_value(6))
-	
-	
-	button_20.pressed.connect(func(): _select_choos_first(1))
-	button_30.pressed.connect(func(): _select_choos_first(2))
 
-	
+	# أزرار ChoosFirst تُربط في show_choos_first وحدها.
+	# كان الربط هنا أيضا وبقيم معكوسة (20←1 و 30←2)، فكان كل
+	# ضغط ينفّذ _select_choos_first مرتين بقيمتين متناقضتين.
+	# الترتيب الصحيح من صورة اللوحة: 20 اليسار = الأحمر (2)،
+	# و 30 اليمين = الأزرق (1)
+
 	center_panel()
 
 # ======================================================
@@ -86,10 +87,12 @@ func center_panel() -> void:
 	var panel2_size = two_rolls_panel.size
 	var panel3_size = choos_first.size
 
-	# وضع الـ Panel في المنتصف
+	# وضع كل لوحة في المنتصف بمقاسها هي.
+	# كانت الأسطر الثلاثة تكتب على choose_number_panel نفسها،
+	# فتنتهي بمقاس ChoosFirst، واللوحتان الأخريان لا تتوسطان أصلا
 	choose_number_panel.position = (screen_size - panel_size) / 2
-	choose_number_panel.position = (screen_size - panel2_size) / 2	
-	choose_number_panel.position = (screen_size - panel3_size) / 2			
+	two_rolls_panel.position = (screen_size - panel2_size) / 2
+	choos_first.position = (screen_size - panel3_size) / 2
 
 func show_choose_number() -> void:
 	choose_number_panel.visible = true

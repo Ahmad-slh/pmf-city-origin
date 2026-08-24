@@ -270,5 +270,134 @@ func end_game():
 	# هنا تستدعي شاشة النتائج		
 
 
+# ======================================================
+#   تأكيد الخروج إلى القائمة الرئيسية
+# ------------------------------------------------------
+# الخروج يفقد المباراة كاملة (لا يوجد حفظ)، فلا يكفي ضغط
+# زر واحد. النافذة مبنية بالكود على نمط _show_direction_popup:
+# CanvasLayer + خلفية معتمة + لوحة في المنتصف.
+#
+# طبقة 140 لأن زر الخروج نفسه على ExitUI بطبقة 10
+# ======================================================
+const EXIT_CONFIRM_LAYER := 140
+
+var exit_confirm_layer: CanvasLayer = null
+
+
 func _on_exit_to_menu_pressed() -> void:
+	# لا نفتح التأكيد فوق بطاقة أو نافذة مفتوحة أصلا.
+	# is_dice_locked تجمع is_any_card_open مع سجل الموانع،
+	# فهي تغطي أيضا ضغطة ثانية والنافذة مفتوحة
+	if board.is_dice_locked():
+		return
+
+	_show_exit_confirm_popup()
+
+
+func _show_exit_confirm_popup() -> void:
+	var layer := CanvasLayer.new()
+	layer.layer = EXIT_CONFIRM_LAYER
+	add_child(layer)
+	exit_confirm_layer = layer
+
+	# النافذة تنتظر ضغطة اللاعب، فتقفل النرد مثل بقية النوافذ
+	GameManagerHelper.push_input_block(layer, "exit_confirm_popup")
+
+	var screen_size: Vector2 = get_viewport().get_visible_rect().size
+
+	# خلفية معتمة تبتلع الضغطات خلف النافذة
+	var dim := ColorRect.new()
+	dim.color = Color(0, 0, 0, 0.45)
+	# المراسي وحدها تكفي لتغطية الشاشة، وضبط size معها
+	# يطلق تحذير "non-equal opposite anchors" ويُلغى بعد _ready
+	dim.set_anchors_preset(Control.PRESET_FULL_RECT)
+	dim.mouse_filter = Control.MOUSE_FILTER_STOP
+	layer.add_child(dim)
+
+	var panel_size := Vector2(600, 260)
+
+	var panel := Panel.new()
+	panel.size = panel_size
+	panel.position = (screen_size - panel_size) / 2.0
+
+	var style := StyleBoxFlat.new()
+	style.bg_color = Color("#FFFFFF")
+	style.set_border_width_all(4)
+	style.border_color = Color("#D32F2F")
+	style.set_corner_radius_all(16)
+	panel.add_theme_stylebox_override("panel", style)
+
+	layer.add_child(panel)
+
+	var message := Label.new()
+	message.text = "هل أنت متأكد؟ إذا خرجت سوف تبدأ من جديد"
+	message.size = Vector2(panel_size.x - 60, 100)
+	message.position = Vector2(30, 40)
+	message.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	message.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	message.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	message.add_theme_font_size_override("font_size", 26)
+	message.add_theme_color_override("font_color", Color("#1F1F1F"))
+	panel.add_child(message)
+
+	# اليمين في واجهة عربية هو الخيار الأول
+	_add_exit_confirm_button(
+		panel, "نعم، اخرج", Vector2(panel_size.x - 250, 165),
+		Color("#D32F2F"), _on_exit_confirmed
+	)
+	_add_exit_confirm_button(
+		panel, "إلغاء", Vector2(30, 165),
+		Color("#6B6B6B"), _on_exit_cancelled
+	)
+
+
+func _add_exit_confirm_button(
+	panel: Panel,
+	text: String,
+	pos: Vector2,
+	color: Color,
+	handler: Callable
+) -> void:
+	var button := Button.new()
+	button.text = text
+	button.size = Vector2(220, 60)
+	button.position = pos
+	button.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
+	button.add_theme_font_size_override("font_size", 24)
+	button.add_theme_color_override("font_color", Color("#FFFFFF"))
+	button.add_theme_color_override("font_hover_color", Color("#FFFFFF"))
+	button.add_theme_color_override("font_pressed_color", Color("#FFFFFF"))
+
+	var style := StyleBoxFlat.new()
+	style.bg_color = color
+	style.set_corner_radius_all(12)
+	button.add_theme_stylebox_override("normal", style)
+
+	var hover := style.duplicate()
+	hover.bg_color = color.lightened(0.12)
+	button.add_theme_stylebox_override("hover", hover)
+
+	var pressed := style.duplicate()
+	pressed.bg_color = color.darkened(0.12)
+	button.add_theme_stylebox_override("pressed", pressed)
+
+	button.pressed.connect(handler)
+	panel.add_child(button)
+
+
+func _close_exit_confirm_popup() -> void:
+	if is_instance_valid(exit_confirm_layer):
+		GameManagerHelper.pop_input_block(exit_confirm_layer)
+		exit_confirm_layer.queue_free()
+
+	exit_confirm_layer = null
+
+
+func _on_exit_confirmed() -> void:
+	# نحرر المانع قبل تبديل المشهد، فالسجل autoload يعيش بعده
+	_close_exit_confirm_popup()
 	get_tree().change_scene_to_file("res://scenes/MainMenu.tscn")
+
+
+func _on_exit_cancelled() -> void:
+	_close_exit_confirm_popup()
