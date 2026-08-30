@@ -23,6 +23,46 @@ corner_radius_top_right = 10
 corner_radius_bottom_right = 10
 corner_radius_bottom_left = 10
 
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_closenorm"]
+bg_color = Color(0.09, 0.145, 0.29, 0.78)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(1, 1, 1, 0.55)
+corner_radius_top_left = 28
+corner_radius_top_right = 28
+corner_radius_bottom_right = 28
+corner_radius_bottom_left = 28
+shadow_color = Color(0, 0, 0, 0.35)
+shadow_size = 4
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_closehover"]
+bg_color = Color(0.7529412, 0.22352941, 0.16862746, 0.92)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(1, 1, 1, 0.85)
+corner_radius_top_left = 28
+corner_radius_top_right = 28
+corner_radius_bottom_right = 28
+corner_radius_bottom_left = 28
+shadow_color = Color(0, 0, 0, 0.35)
+shadow_size = 4
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_closepress"]
+bg_color = Color(0.58, 0.16, 0.12, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(1, 1, 1, 0.85)
+corner_radius_top_left = 28
+corner_radius_top_right = 28
+corner_radius_bottom_right = 28
+corner_radius_bottom_left = 28
+
 [node name="StreetCard" type="CanvasLayer" unique_id=450592838]
 scale = Vector2(0.28, 0.28)
 transform = Transform2D(0.28, 0, 0, 0.28, 0, 0)
@@ -116,4 +156,27 @@ theme_override_styles/pressed = SubResource("StyleBoxFlat_jfkmy")
 theme_override_styles/hover = SubResource("StyleBoxFlat_bkdw7")
 autowrap_mode = 2
 
+[node name="CloseButton" type="Button" parent="player_image" unique_id=884213056]
+visible = false
+layout_mode = 0
+offset_left = 1200.0
+offset_top = 324.0
+offset_right = 1256.0
+offset_bottom = 380.0
+scale = Vector2(3.5, 3.5)
+mouse_default_cursor_shape = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_focus_color = Color(1, 1, 1, 1)
+theme_override_colors/font_hover_color = Color(1, 1, 1, 1)
+theme_override_colors/font_pressed_color = Color(1, 1, 1, 1)
+theme_override_constants/outline_size = 2
+theme_override_colors/font_outline_color = Color(0, 0, 0, 0.45)
+theme_override_font_sizes/font_size = 26
+theme_override_styles/normal = SubResource("StyleBoxFlat_closenorm")
+theme_override_styles/hover = SubResource("StyleBoxFlat_closehover")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_closepress")
+theme_override_styles/focus = SubResource("StyleBoxFlat_closenorm")
+text = "X"
+
 [connection signal="pressed" from="player_image/Panel/NextButton" to="." method="_on_next_button_pressed"]
+[connection signal="pressed" from="player_image/CloseButton" to="." method="_on_close_button_pressed"]
