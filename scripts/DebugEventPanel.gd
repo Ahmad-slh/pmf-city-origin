@@ -196,6 +196,24 @@ func _input(event: InputEvent) -> void:
 		if event.pressed and not event.echo:
 			if event.keycode == KEY_F9:
 				_toggle_debug_event_panel()
+			elif event.keycode == KEY_F10:
+				_debug_open_choose_dice_popup()
+
+# ======================================================
+# اسم الدالة: _debug_open_choose_dice_popup
+# وظيفتها:
+# اختصار تجريبي مؤقت: يفتح نافذة اختيار رقم حجر النرد
+# (١-٦) مباشرة دون الحاجة لسحب بطاقة "تحكم كامل" فعليا.
+# مخصص فقط لاختبار الأزرار الستة يدويا، محمي بنفس شرط
+# OS.is_debug_build() فلا يظهر إطلاقا في نسخة الإصدار.
+# ======================================================
+func _debug_open_choose_dice_popup() -> void:
+	if main_ui == null or main_ui.board == null:
+		print("main_ui/board غير موجودة، تعذر فتح نافذة اختيار الرقم")
+		return
+
+	print("[Debug F10] فتح نافذة اختيار رقم حجر النرد مباشرة")
+	main_ui.board.show_choose_dice_popup(1)
 
 # ======================================================
 # اسم الدالة: _toggle_debug_event_panel

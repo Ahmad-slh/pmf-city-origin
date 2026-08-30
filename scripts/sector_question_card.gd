@@ -55,8 +55,15 @@ var questions_data := {
 }
 
 
+# ======================================================
+# مدة الإجابة على السؤال بالثواني.
+# المصدر الوحيد للقيمة: كل من يضبط time_left يقرأ من هنا،
+# فلا يمكن أن يبقى موضع على قيمة قديمة عند تغيير المدة
+# ======================================================
+const ANSWER_TIME_SECONDS := 40.0
+
 var timer_running := false
-var time_left := 30.0
+var time_left := ANSWER_TIME_SECONDS
 
 
 # كم ثانية تبقى نتيجة الإجابة معروضة قبل أن تنقلب البطاقة
@@ -107,7 +114,7 @@ func _ready() -> void:
 	choos_player_2.visible = false
 	
 	timer_running = false
-	time_left = 30.0
+	time_left = ANSWER_TIME_SECONDS
 	
 
 	
@@ -1235,7 +1242,7 @@ func enable_answer_buttons() -> void:
 		_start_answer_timer()
 	else:
 		timer_running=false
-		time_left = 30.0
+		time_left = ANSWER_TIME_SECONDS
 		
 	
 	answer_a_button.disabled = false
@@ -1280,8 +1287,8 @@ func _battle_answerer_has_no_time_limit() -> bool:
 # ======================================================
 # اسم الدالة: _start_answer_timer
 # وظيفتها:
-# المكان الوحيد الذي يشغل فيه مؤقت الإجابة، حتى لا تتكرر
-# القيمة 30 في أكثر من موضع فتختلف السلوكيات
+# المكان الوحيد الذي يشغل فيه مؤقت الإجابة. المدة نفسها
+# في ANSWER_TIME_SECONDS، فلا تتكرر قيمتها في أكثر من موضع
 # ======================================================
 func _start_answer_timer() -> void:
 	if _battle_answerer_has_no_time_limit():
@@ -1290,7 +1297,7 @@ func _start_answer_timer() -> void:
 		timer_label.text = "⏳ بلا حد زمني"
 		return
 
-	time_left = 30.0
+	time_left = ANSWER_TIME_SECONDS
 	timer_running = true
 
 	timer_label.text = GameManagerHelper.format_time_label(int(time_left))

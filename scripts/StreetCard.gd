@@ -9,6 +9,7 @@ extends CanvasLayer
 @onready var title_label: Label = $player_image/Panel/TitleLabel
 @onready var body_label: Label = $player_image/Panel/BodyLabel
 @onready var next_button: Button = $player_image/Panel/NextButton
+@onready var close_button: Button = $player_image/CloseButton
 
 @onready var player_image: TextureRect = $player_image
 
@@ -31,6 +32,9 @@ func _ready() -> void:
 	if not next_button.pressed.is_connected(_on_next_button_pressed):
 		next_button.pressed.connect(_on_next_button_pressed)
 
+	if not close_button.pressed.is_connected(_on_close_button_pressed):
+		close_button.pressed.connect(_on_close_button_pressed)
+
 
 func show_street_card(card_data: Dictionary, cell, board_ref) -> void:
 	var team_id = GameManager.current_team
@@ -42,6 +46,10 @@ func show_street_card(card_data: Dictionary, cell, board_ref) -> void:
 	is_showing_info = true
 	
 	player_image.visible = true
+
+	# زر X يظهر فقط بعد قلب البطاقة إلى وجه الحدث
+	close_button.visible = false
+	close_button.disabled = false
 	
 	if team_id == 1:
 		player_image.texture = load(
@@ -77,14 +85,53 @@ func _on_next_button_pressed() -> void:
 			#"res://assets/images/streets/good_effects/Good01_F2.png"
 		#)
 	else:
-		apply_card_effect()
-		hide_card()
+		close_card()
+
+
+# ======================================================
+# اسم الدالة: _on_close_button_pressed
+# وظيفتها:
+# زر الإغلاق X في زاوية البطاقة. لا يفعل شيئا جديدا، بل
+# يسلك نفس مسار إغلاق الزر السفلي تماما عبر close_card،
+# فيطبق تأثير البطاقة ثم يخفيها وينهي الدور.
+#
+# الزر مخفي على وجه المعلومة ولا يظهر إلا بعد القلب، حتى لا
+# يغلق اللاعب البطاقة قبل أن يرى الحدث الذي سيطبق عليه
+# ======================================================
+func _on_close_button_pressed() -> void:
+
+	# لا إغلاق أثناء دوران البطاقة، كما في الزر السفلي
+	if is_flipping:
+		return
+
+	close_card()
+
+
+# ======================================================
+# اسم الدالة: close_card
+# وظيفتها:
+# مسار الإغلاق الوحيد للبطاقة: تطبيق التأثير ثم الإخفاء.
+# يستدعيه الزر السفلي وزر X معا حتى لا يتفرع المساران.
+#
+# current_card تُفرَّغ داخل hide_card، فاختبار الفراغ هنا
+# يمنع تطبيق التأثير أو إنهاء الدور مرتين لو وصل ضغطان
+# ======================================================
+func close_card() -> void:
+
+	if current_card.is_empty():
+		return
+
+	apply_card_effect()
+	hide_card()
 
 
 
 func show_event_side() -> void:
 
 	is_showing_info = false
+
+	# من هنا فصاعدا اللاعب رأى الحدث، فيحق له الإغلاق اليدوي
+	close_button.visible = true
 	
 	var card_type = current_card.get("type")
 	
@@ -216,6 +263,7 @@ func center_street_card() -> void:
 func flip_to_event_side_v1() -> void:
 	is_flipping = true
 	next_button.disabled = true
+	close_button.disabled = true
 	
 	# اجعل نقطة دوران البطاقة في منتصفها
 	player_image.pivot_offset = player_image.size / 2.0
@@ -254,12 +302,14 @@ func flip_to_event_side_v1() -> void:
 	
 	player_image.scale.x = 1.0
 	next_button.disabled = false
+	close_button.disabled = false
 	is_flipping = false
 
 func flip_to_event_side_v2() -> void:
 
 	is_flipping = true
 	next_button.disabled = true
+	close_button.disabled = true
 
 	# نقطة الدوران في منتصف البطاقة
 	player_image.pivot_offset = player_image.size / 2
@@ -335,4 +385,5 @@ func flip_to_event_side_v2() -> void:
 	player_image.scale = Vector2.ONE
 
 	next_button.disabled = false
+	close_button.disabled = false
 	is_flipping = false

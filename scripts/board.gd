@@ -443,14 +443,22 @@ func hide_start_hint() -> void:
 
 # ينتظر ضغطة الفريق على النرد ويرجع النتيجة
 func _roll_off_wait_for_team(team_id: int) -> int:
-	await _show_roll_off_popup(
+	# زر "العب" يظهر على هذه البطاقة وحدها (نداء الفريق ليرمي)،
+	# وليس على بطاقتي "تعادل" أو "سيبدأ اللعب" الإعلاميتين فقط
+	var play_pressed: bool = await _show_roll_off_popup(
 		_team_display_name(team_id) + ": اضغط النرد",
 		"",
-		team_id
+		team_id,
+		true
 	)
 
 	# الآن فقط يقبل النرد الضغط
 	roll_off_accepting_click = true
+
+	# "العب" ينفّذ نفس ما يفعله الضغط المباشر على النرد، دون تكرار المنطق
+	if play_pressed:
+		dice.roll_dice()
+
 	var value: int = await roll_off_rolled
 	roll_off_accepting_click = false
 
@@ -465,7 +473,10 @@ func _roll_off_wait_for_team(team_id: int) -> int:
 # ======================================================
 const ROLL_OFF_POPUP_SECONDS := 3.0
 
-func _show_roll_off_popup(title_text: String, score_text: String, team_id: int) -> void:
+# show_play_button: يضيف زر "العب" الذي يغلق البطاقة فورا ويرمي
+# النرد مباشرة، بدل انتظار اللاعب ليضغط قطعة النرد على اللوح.
+# يرجع true إذا أُغلقت البطاقة عبر هذا الزر تحديدا
+func _show_roll_off_popup(title_text: String, score_text: String, team_id: int, show_play_button: bool = false) -> bool:
 	var layer := CanvasLayer.new()
 	layer.layer = 130
 	add_child(layer)
@@ -525,11 +536,27 @@ func _show_roll_off_popup(title_text: String, score_text: String, team_id: int) 
 
 	# لامبدا GDScript تلتقط المتغيرات المحلية بالنسخة لا بالمرجع،
 	# فنستخدم قاموسا (نوع مرجعي) حتى يصل التغيير إلى هذه الدالة
-	var state := {"done": false}
+	var state := {"done": false, "play_pressed": false}
 
 	dismiss.pressed.connect(func() -> void:
 		state["done"] = true
 	)
+
+	if show_play_button:
+		var play_button := Button.new()
+		play_button.text = "العب"
+		play_button.size = Vector2(200, 56)
+		play_button.position = Vector2((panel_size.x - 200) / 2.0, panel_size.y - 76)
+		play_button.add_theme_font_size_override("font_size", 26)
+
+		# فوق زر dismiss الشفاف الذي يغطي اللوحة كلها، فيلتقط
+		# الضغط عليه هو تحديدا دون أن يمر إلى ما تحته
+		panel.add_child(play_button)
+
+		play_button.pressed.connect(func() -> void:
+			state["play_pressed"] = true
+			state["done"] = true
+		)
 
 	var timer := get_tree().create_timer(ROLL_OFF_POPUP_SECONDS)
 	timer.timeout.connect(func() -> void:
@@ -542,6 +569,8 @@ func _show_roll_off_popup(title_text: String, score_text: String, team_id: int) 
 	if is_instance_valid(layer):
 		GameManagerHelper.pop_input_block(layer)
 		layer.queue_free()
+
+	return state["play_pressed"]
 
 
 func _add_direction_button(
