@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://cdtfwy6538evp"
+path="res://.godot/imported/صوت الدخول للعبة.mp3-c19ad9f8535d0b6dbea826db3c23e4df.mp3str"
+
+[deps]
+
+source_file="res://assets/audio/sound effects/صوت الدخول للعبة.mp3"
+dest_files=["res://.godot/imported/صوت الدخول للعبة.mp3-c19ad9f8535d0b6dbea826db3c23e4df.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4
