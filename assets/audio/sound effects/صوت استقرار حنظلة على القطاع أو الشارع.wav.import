@@ -1,0 +1,24 @@
+[remap]
+
+importer="wav"
+type="AudioStreamWAV"
+uid="uid://q2py365oegbg"
+path="res://.godot/imported/صوت استقرار حنظلة على القطاع أو الشارع.wav-91d90c2de2453dd53fa1fc8dd84e1033.sample"
+
+[deps]
+
+source_file="res://assets/audio/sound effects/صوت استقرار حنظلة على القطاع أو الشارع.wav"
+dest_files=["res://.godot/imported/صوت استقرار حنظلة على القطاع أو الشارع.wav-91d90c2de2453dd53fa1fc8dd84e1033.sample"]
+
+[params]
+
+force/8_bit=false
+force/mono=false
+force/max_rate=false
+force/max_rate_hz=44100
+edit/trim=false
+edit/normalize=false
+edit/loop_mode=0
+edit/loop_begin=0
+edit/loop_end=-1
+compress/mode=2

@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://daw4pqxbvlg66"
+path="res://.godot/imported/صوت حدث جيد.mp3-ab9e3ee5ba6e0a208002db0bc919e917.mp3str"
+
+[deps]
+
+source_file="res://assets/audio/sound effects/صوت حدث جيد.mp3"
+dest_files=["res://.godot/imported/صوت حدث جيد.mp3-ab9e3ee5ba6e0a208002db0bc919e917.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4
