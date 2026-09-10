@@ -458,6 +458,394 @@ func _make_option_zone_hover_style() -> StyleBox:
 
 
 # ======================================================
+#   تلوين دائرة الخيار في البطاقات المصورة
+# ------------------------------------------------------
+# دوائر الاختيار مرسومة داخل صورة البطاقة نفسها، فلا توجد
+# عقدة نلونها. ولا تصلح نسب مناطق الضغط لتحديد مكانها:
+# قياس البطاقات الثماني والعشرين يعطي تنقلا لمركز الدائرة
+# يبلغ 6.2% من العرض و 4.5% من الارتفاع، ونصف قطرها 3.5%
+# من العرض فقط، أي أن الفرق بين بطاقة وأخرى يقارب ضعف نصف
+# القطر. ولهذا السبب نفسه تغطي منطقة الضغط صف الخيار كاملا.
+#
+# لذلك نكتشف الدوائر من الصورة عند أول عرض لكل بطاقة:
+# نفحص الجهة اليمنى من نصف البطاقة السفلي، ونعد كل بكسل
+# بعيد عن الأبيض حبرا دون افتراض لون بعينه، فالبطاقات ليست
+# بطابع واحد: منها الأزرق الداكن والبرتقالي والرمادي. ثم
+# نجمع المكونات المتصلة ونقبل ما كانت إحاطته شبه مربعة
+# ونسبة امتلائه تدل على حلقة مجوفة لا كتلة مصمتة.
+#
+# النتيجة تخزن بمفتاح مسار الصورة، فالفحص يجري مرة واحدة
+# لكل بطاقة مهما تكرر عرضها
+# ======================================================
+# النطاق مشتق من قياس البطاقات الثماني والعشرين: المركز بين
+# 0.79 و 0.85 من العرض ونصف القطر 0.037 كحد أقصى، أي أن الحلقة
+# تقع كلها بين 0.753 و 0.887. والهامش هنا أوسع من ذلك احتياطا.
+# تضييق النطاق يستبعد عمود النص كله، فيقل عدد العينات والمكونات
+const RING_SCAN_LEFT := 0.73
+const RING_SCAN_RIGHT := 0.92
+const RING_SCAN_TOP := 0.53
+const RING_SCAN_BOTTOM := 0.83
+
+# نفحص بكسلا من كل ثلاثة: قطر الحلقة نحو مئة بكسل فتبقى نحو
+# ثلاث وثلاثين خانة، وهو تمثيل واف. جربت الخطوات 2 و3 و4 على
+# البطاقات الثماني والعشرين فأعطت الثلاث النتيجة نفسها،
+# واخترنا الوسطى: أسرع من 2 وأبقى هامشا لو رقّت حلقة بطاقة جديدة
+const RING_SCAN_STRIDE := 3
+
+# مجموع القنوات الثلاث دون هذا الحد يعد حبرا لا خلفية
+const RING_INK_SUM_MAX := 660
+
+# قطر الحلقة بين 0.066 و 0.074 من العرض في كل البطاقات، فحد
+# أدنى عند 0.05 يستبعد الرسوم الصغيرة ويبقي الحلقات كلها
+const RING_MIN_SIDE_RATIO := 0.05   # أصغر ضلع مقبول، نسبة من عرض الصورة
+const RING_SQUARENESS_MAX := 0.22   # فرق الضلعين المسموح
+const RING_FILL_MIN := 0.15         # أقل من هذا: خط رفيع لا حلقة
+const RING_FILL_MAX := 0.70         # أكثر من هذا: كتلة مصمتة لا حلقة
+
+# أخضر داكن عن قصد: عند الإجابة الخاطئة ترسم هذه الحلقة فوق
+# شريط الإبراز الأخضر الفاتح، والأخضر الفاتح على الفاتح كانت
+# نسبة تباينه 1.88 فقط. هذا الأخضر يعطي 5.13 فوق الشريط
+# و 8.22 فوق أرضية البطاقة البيضاء، ويبقى أخضرا لا أسود
+const RING_COLOR_CORRECT := Color(0.04, 0.36, 0.11)
+const RING_COLOR_WRONG := Color(0.82, 0.18, 0.18)
+const RING_FILL_ALPHA := 0.28
+const RING_STROKE_RATIO := 0.22     # سمك الحلقة نسبة من نصف القطر
+
+var _ring_cache := {}
+var _ring_marks := {}
+var _current_image_path := ""
+var _option_ring_layer: Control = null
+
+
+# ======================================================
+# اسم الدالة: _detect_option_rings
+# وظيفتها:
+# مواضع دوائر الخيارات الثلاث في بطاقة بعينها، بالنسب.
+# ترجع مصفوفة فارغة إذا لم تكتشف ثلاثا بالضبط، فيبقى
+# الإبراز القديم على مستوى الصف هو الظاهر وحده
+# ======================================================
+func _detect_option_rings(image_path: String) -> Array:
+	if _ring_cache.has(image_path):
+		return _ring_cache[image_path]
+
+	var found: Array = []
+	var tex: Texture2D = load(image_path)
+
+	if tex != null:
+		var src: Image = tex.get_image()
+
+		if src != null:
+			# لا نعدل صورة المورد نفسها، فنعمل على نسخة
+			var img := Image.new()
+			img.copy_from(src)
+
+			if img.is_compressed():
+				img.decompress()
+
+			found = _scan_option_rings(img)
+
+	_ring_cache[image_path] = found
+	return found
+
+
+func _scan_option_rings(img: Image) -> Array:
+	img.convert(Image.FORMAT_RGBA8)
+
+	var img_w: int = img.get_width()
+	var img_h: int = img.get_height()
+
+	if img_w <= 0 or img_h <= 0:
+		return []
+
+	var x0: int = int(img_w * RING_SCAN_LEFT)
+	var x1: int = int(img_w * RING_SCAN_RIGHT)
+	var y0: int = int(img_h * RING_SCAN_TOP)
+	var y1: int = int(img_h * RING_SCAN_BOTTOM)
+
+	var cols: int = (x1 - x0) / RING_SCAN_STRIDE
+	var rows: int = (y1 - y0) / RING_SCAN_STRIDE
+
+	if cols <= 0 or rows <= 0:
+		return []
+
+	# قراءة البايتات مباشرة أسرع كثيرا من get_pixel لكل عينة
+	var data: PackedByteArray = img.get_data()
+
+	var ink := PackedByteArray()
+	ink.resize(cols * rows)
+
+	for ry in rows:
+		var sy: int = y0 + ry * RING_SCAN_STRIDE
+		var row_base: int = ry * cols
+		var pixel_base: int = sy * img_w
+
+		# الفهرس يتقدم بخطوة ثابتة، فنزيده بدل حسابه في كل دورة
+		var idx: int = (pixel_base + x0) * 4
+		var idx_step: int = RING_SCAN_STRIDE * 4
+
+		for rx in cols:
+			if data[idx] + data[idx + 1] + data[idx + 2] < RING_INK_SUM_MAX:
+				ink[row_base + rx] = 1
+
+			idx += idx_step
+
+	var found: Array = _collect_ring_components(ink, cols, rows, img_w, img_h, x0, y0)
+
+	# حلقات البطاقة الواحدة متطابقة الحجم، فأي شكل أصغر بوضوح
+	# ليس منها. بطاقة "التخطيط المالي" فيها رسم صغير كان يمر من
+	# باقي المرشحات ويجعل العدد أربعة فيسقط الاكتشاف كله
+	if found.size() > OPTION_ZONE_COUNT:
+		found = _keep_largest_ring_group(found)
+
+	if found.size() != OPTION_ZONE_COUNT:
+		return []
+
+	found.sort_custom(func(a, b): return a["center"].y < b["center"].y)
+	return found
+
+
+# يبقي المرشحات التي تقارب أكبرها حجما، ويسقط ما دونها
+func _keep_largest_ring_group(candidates: Array) -> Array:
+	var widest: float = 0.0
+
+	for c in candidates:
+		widest = max(widest, c["radius"].x)
+
+	var kept: Array = []
+
+	for c in candidates:
+		if c["radius"].x >= widest * 0.85:
+			kept.append(c)
+
+	return kept
+
+
+# تجميع المكونات المتصلة في شبكة الحبر، وترشيح الحلقات منها
+func _collect_ring_components(
+	ink: PackedByteArray,
+	cols: int,
+	rows: int,
+	img_w: int,
+	img_h: int,
+	x0: int,
+	y0: int
+) -> Array:
+	var visited := PackedByteArray()
+	visited.resize(cols * rows)
+
+	var min_side: float = (img_w * RING_MIN_SIDE_RATIO) / float(RING_SCAN_STRIDE)
+	var found: Array = []
+
+	# كومة واحدة تكفي كل المكونات: PackedInt32Array لا تملك pop_back
+	# فندير قمتها بأنفسنا، ونعيد استعمالها بدل تخصيص واحدة لكل مكون
+	var stack := PackedInt32Array()
+	stack.resize(cols * rows)
+
+	for start in cols * rows:
+		if ink[start] == 0 or visited[start] == 1:
+			continue
+
+		var top: int = 0
+		stack[top] = start
+		top += 1
+		visited[start] = 1
+
+		var count: int = 0
+		var min_x: int = cols
+		var max_x: int = -1
+		var min_y: int = rows
+		var max_y: int = -1
+
+		while top > 0:
+			top -= 1
+			var cur: int = stack[top]
+			var cur_y: int = cur / cols
+			var cur_x: int = cur % cols
+
+			count += 1
+			min_x = min(min_x, cur_x)
+			max_x = max(max_x, cur_x)
+			min_y = min(min_y, cur_y)
+			max_y = max(max_y, cur_y)
+
+			# جوار رباعي يكفي: حلقة البطاقة خط متصل لا نقاط متفرقة،
+			# وهو أرخص من الجوار الثماني بمقدار النصف
+			if cur_x > 0:
+				var left: int = cur - 1
+				if ink[left] == 1 and visited[left] == 0:
+					visited[left] = 1
+					stack[top] = left
+					top += 1
+
+			if cur_x < cols - 1:
+				var right: int = cur + 1
+				if ink[right] == 1 and visited[right] == 0:
+					visited[right] = 1
+					stack[top] = right
+					top += 1
+
+			if cur_y > 0:
+				var up: int = cur - cols
+				if ink[up] == 1 and visited[up] == 0:
+					visited[up] = 1
+					stack[top] = up
+					top += 1
+
+			if cur_y < rows - 1:
+				var down: int = cur + cols
+				if ink[down] == 1 and visited[down] == 0:
+					visited[down] = 1
+					stack[top] = down
+					top += 1
+
+		var box_w: int = max_x - min_x + 1
+		var box_h: int = max_y - min_y + 1
+
+		if box_w < min_side or box_h < min_side:
+			continue
+
+		# الحلقة إحاطتها شبه مربعة، بخلاف النص الممتد أفقيا
+		if abs(box_w - box_h) / float(max(box_w, box_h)) > RING_SQUARENESS_MAX:
+			continue
+
+		# ومجوفة: لا تملأ إحاطتها كما تفعل الكتلة المصمتة
+		var fill: float = count / float(box_w * box_h)
+		if fill < RING_FILL_MIN or fill > RING_FILL_MAX:
+			continue
+
+		var center_x: float = x0 + (min_x + max_x) * 0.5 * RING_SCAN_STRIDE
+		var center_y: float = y0 + (min_y + max_y) * 0.5 * RING_SCAN_STRIDE
+
+		found.append({
+			"center": Vector2(center_x / img_w, center_y / img_h),
+			"radius": Vector2(
+				(box_w * 0.5 * RING_SCAN_STRIDE) / img_w,
+				(box_h * 0.5 * RING_SCAN_STRIDE) / img_h
+			)
+		})
+
+	return found
+
+
+# ======================================================
+# اسم الدالة: _ensure_option_ring_layer
+# وظيفتها:
+# طبقة الرسم فوق صورة البطاقة. تضاف بعد أزرار الخيارات
+# حتى ترسم الحلقة فوق إبراز الصف الأخضر لا تحته، ولا
+# تلتقط الفأرة فلا تحجب الضغط عن الأزرار تحتها
+# ======================================================
+func _ensure_option_ring_layer() -> void:
+	if _option_ring_layer != null and is_instance_valid(_option_ring_layer):
+		return
+
+	var layer := Control.new()
+	layer.name = "OptionRingLayer"
+	layer.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	layer.set_anchors_preset(Control.PRESET_FULL_RECT)
+	layer.draw.connect(_draw_option_rings)
+
+	texture_rect.add_child(layer)
+	_option_ring_layer = layer
+
+
+func _draw_option_rings() -> void:
+	if _ring_marks.is_empty():
+		return
+
+	if not uses_card_image or _showing_info_side:
+		return
+
+	var rings: Array = _detect_option_rings(_current_image_path)
+	if rings.size() != OPTION_ZONE_COUNT:
+		return
+
+	var layer_size: Vector2 = _option_ring_layer.size
+
+	for index in _ring_marks:
+		if index < 0 or index >= rings.size():
+			continue
+
+		var ring: Dictionary = rings[index]
+		var color: Color = _ring_marks[index]
+
+		var center: Vector2 = ring["center"] * layer_size
+		var radius: Vector2 = ring["radius"] * layer_size
+		var stroke: float = max(radius.x * RING_STROKE_RATIO, 3.0)
+
+		# تعبئة خفيفة داخل الحلقة، ثم الحلقة نفسها حول رسم البطاقة
+		_draw_ring_shape(center, radius, Color(color, RING_FILL_ALPHA), true, 0.0)
+		_draw_ring_shape(center, radius + Vector2(stroke, stroke) * 0.5, color, false, stroke)
+
+
+# ======================================================
+# اسم الدالة: _draw_ring_shape
+# وظيفتها:
+# رسم حلقة بيضاوية. صورة البطاقة تمدد أفقيا داخل TextureRect
+# لأن نسبة الصورة تخالف نسبة العقدة، فالدائرة المرسومة في
+# البطاقة تظهر بيضاوية. نمدد رسمنا بالقدر نفسه ليطابقها
+# ======================================================
+func _draw_ring_shape(
+	center: Vector2,
+	radius: Vector2,
+	color: Color,
+	filled: bool,
+	width: float
+) -> void:
+	var unit: float = max(radius.y, 1.0)
+	var stretch := Vector2(radius.x / unit, 1.0)
+
+	_option_ring_layer.draw_set_transform(center, 0.0, stretch)
+
+	if filled:
+		_option_ring_layer.draw_circle(Vector2.ZERO, unit, color)
+	else:
+		_option_ring_layer.draw_arc(Vector2.ZERO, unit, 0.0, TAU, 64, color, width, true)
+
+	_option_ring_layer.draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
+
+
+# ======================================================
+# اسم الدالة: _mark_option_rings
+# وظيفتها:
+# تلوين دائرة الخيار الذي ضغطه اللاعب، أخضر إن أصاب وأحمر
+# إن أخطأ. واللون يحدد لحظة الضغط لأن الصواب معروف فورا
+# من correct_index، فلا انتظار بين الضغط وظهور اللون.
+#
+# وعند الخطأ تلون دائرة الإجابة الصحيحة بالأخضر أيضا، مع
+# بقاء إبراز الصف الأخضر كما هو
+# ======================================================
+func _mark_option_rings(picked_index: int, is_correct: bool) -> void:
+	if not uses_card_image:
+		return
+
+	_ring_marks.clear()
+	_ring_marks[picked_index] = RING_COLOR_CORRECT if is_correct else RING_COLOR_WRONG
+
+	if not is_correct:
+		var correct_index: int = int(current_question.get("correct_index", -1))
+		if correct_index >= 0 and correct_index != picked_index:
+			_ring_marks[correct_index] = RING_COLOR_CORRECT
+
+	_ensure_option_ring_layer()
+	_option_ring_layer.queue_redraw()
+
+
+# تسخين مبكر للنتيجة المخزنة، تستدعى مؤجلة عند فتح البطاقة
+func _warm_option_rings(image_path: String) -> void:
+	_detect_option_rings(image_path)
+
+
+func _clear_option_ring_marks() -> void:
+	if _ring_marks.is_empty():
+		return
+
+	_ring_marks.clear()
+
+	if _option_ring_layer != null and is_instance_valid(_option_ring_layer):
+		_option_ring_layer.queue_redraw()
+
+
+# ======================================================
 # اسم الدالة: _set_option_zone_disabled
 # وظيفتها:
 # تغيير حالة منطقة الضغط وشكل المؤشر معا.
@@ -492,7 +880,12 @@ func _set_option_zones_visible(zones_visible: bool) -> void:
 # ======================================================
 func _on_image_option_pressed(option_index: int) -> void:
 	var correct_index: int = int(current_question.get("correct_index", -1))
-	_resolve_answer(option_index == correct_index)
+	var is_correct: bool = option_index == correct_index
+
+	# اللون يظهر مع الضغط نفسه، لا بعد انتظار
+	_mark_option_rings(option_index, is_correct)
+
+	_resolve_answer(is_correct)
 
 
 # ======================================================
@@ -504,9 +897,11 @@ func _on_image_option_pressed(option_index: int) -> void:
 func _apply_question_visuals() -> void:
 	var image_path: String = str(current_question.get("image", ""))
 	uses_card_image = image_path != "" and ResourceLoader.exists(image_path)
+	_current_image_path = image_path
 
 	# سؤال جديد يعني العودة من وجه المعلومة إلى وجه السؤال
 	_showing_info_side = false
+	_clear_option_ring_marks()
 
 	if uses_card_image:
 		texture_rect.texture = load(image_path)
@@ -515,6 +910,11 @@ func _apply_question_visuals() -> void:
 		panel.visible = false
 		background_label.visible = false
 		_set_option_zones_visible(true)
+
+		# الاكتشاف يجري مرة واحدة لكل بطاقة، ويكلف عشرات المللي
+		# ثانية. نؤجله إطارا فلا يعطل ظهور البطاقة، وينتهي قبل أن
+		# يقرأ اللاعب السؤال، فلا يتأخر شيء لحظة الضغط
+		_warm_option_rings.call_deferred(image_path)
 		return
 
 	# القطاعات التي لا تملك صور بطاقات بعد تبقى على العرض النصي
@@ -1345,8 +1745,10 @@ func show_info_side() -> void:
 	# لا نحتاج مناطق الضغط بعد انتهاء الإجابة
 	_set_option_zones_visible(false)
 
-	# وجه المعلومة لا يعرض المؤقت ولا النتيجة
+	# وجه المعلومة لا يعرض المؤقت ولا النتيجة ولا تلوين الدوائر
 	_showing_info_side = true
+	_clear_option_ring_marks()
+
 
 	var info_path: String = str(current_question.get("info_image", ""))
 
@@ -1403,6 +1805,7 @@ func reset_question_card() -> void:
 	# نبدأ من الوضع النصي، و _apply_question_visuals يفعّل الصورة إن وجدت
 	uses_card_image = false
 	_clear_correct_zone_highlight()
+	_clear_option_ring_marks()
 	_set_option_zones_visible(false)
 
 	enable_answer_buttons()
