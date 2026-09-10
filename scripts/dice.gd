@@ -53,6 +53,9 @@ func roll_dice(p_dice: int = -1) -> void:
 
 	is_rolling = true
 
+	# صوت رمي حجر النرد — يبدأ مع الحركة ويقطع عند الاستقرار
+	Sfx.play(Sfx.Sound.DICE_ROLL)
+
 	# إيقاف أي حركة سابقة حتى لا تتداخل الحركات عند التدحرج المتكرر
 	if roll_tween != null and roll_tween.is_valid():
 		roll_tween.kill()
@@ -95,6 +98,8 @@ func roll_dice(p_dice: int = -1) -> void:
 
 	roll_tween.tween_callback(func() -> void:
 		is_rolling = false
+		# الملف الصوتي أطول من الحركة، فنقطعه هنا بدل قص الملف نفسه
+		Sfx.stop(Sfx.Sound.DICE_ROLL)
 		dice_rolled.emit(result)
 	)
 

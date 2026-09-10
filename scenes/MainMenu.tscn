@@ -2,7 +2,7 @@
 
 [ext_resource type="Script" path="res://scripts/MainMenu.gd" id="1_script"]
 [ext_resource type="Theme" path="res://theme/main_theme.tres" id="2_theme"]
-[ext_resource type="AudioStream" path="res://assets/audio/clash-royale-start-up-sound.mp3" id="3_startup"]
+[ext_resource type="AudioStream" uid="uid://cdtfwy6538evp" path="res://assets/audio/sound effects/صوت الدخول للعبة.mp3" id="3_startup"]
 [ext_resource type="Texture2D" path="res://assets/images/الصفحة الرئيسية/محتويات الصفحة الرئيسية-10.png" id="4_background"]
 [ext_resource type="Texture2D" path="res://assets/images/الصفحة الرئيسية/محتويات الصفحة الرئيسية-06.png" id="5_gate_closed"]
 [ext_resource type="Texture2D" path="res://assets/images/الصفحة الرئيسية/محتويات الصفحة الرئيسية-07.png" id="6_gate_open"]

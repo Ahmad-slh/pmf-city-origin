@@ -43,6 +43,9 @@ func show_street_card(card_data: Dictionary, cell, board_ref) -> void:
 	current_cell = cell
 	board = board_ref
 
+	# صوت لما ينشق الشارع — عند ظهور بطاقة الشارع
+	Sfx.play(Sfx.Sound.STREET_CRACK)
+
 	is_showing_info = true
 	
 	player_image.visible = true
@@ -147,9 +150,11 @@ func show_event_side() -> void:
 
 	if current_card.get("type", "") == "GOOD":
 		title_label.text = "حدث جيد"
+		Sfx.play(Sfx.Sound.EVENT_GOOD)
 		
 	elif current_card.get("type", "") == "BAD":
 		title_label.text = "حدث سيئ"
+		Sfx.play(Sfx.Sound.EVENT_BAD)
 		
 	else:
 		title_label.text = "حدث"

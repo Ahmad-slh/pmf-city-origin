@@ -25,6 +25,7 @@ GoodEffects="*uid://c2ex0720lnpv2"
 BadEffects="*uid://5rm1yycb7q5u"
 GameEffects="*uid://mq3b7r1mxq8t"
 GameManagerHelper="*uid://dytm5prss2gsi"
+Sfx="*res://scripts/Sfx.gd"
 
 [display]
 

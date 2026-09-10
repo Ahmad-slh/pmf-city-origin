@@ -18,6 +18,8 @@ extends CanvasLayer
 @onready var answer_c_button: Button = $TextureRect/Panel/MarginContainer/AnswersContainer/AnswerCButton
 @onready var answer_d_button: Button = $TextureRect/Panel/MarginContainer/AnswersContainer/AnswerDButton
 @onready var close_button: Button = $TextureRect/CloseButton
+# زر الإغلاق الظاهر على وجه المعلومة وحده، لا على وجه السؤال
+@onready var info_close_button: Button = $TextureRect/InfoCloseButton
 @onready var texture_rect: TextureRect = $TextureRect
 @onready var choos_player_1: ColorRect = $ChoosPlayer1
 @onready var choos_player_2: ColorRect = $ChoosPlayer2
@@ -901,6 +903,7 @@ func _apply_question_visuals() -> void:
 
 	# سؤال جديد يعني العودة من وجه المعلومة إلى وجه السؤال
 	_showing_info_side = false
+	info_close_button.visible = false
 	_clear_option_ring_marks()
 
 	if uses_card_image:
@@ -1209,6 +1212,9 @@ func handle_normal_answer(is_correct: bool) -> void:
 	current_cell.questions_used += 1
 	
 	if is_correct:
+		# صوت الإجابة الصحيحة — المسار العادي فقط.
+		# في المعركة يشتغل صوت فوز/خسارة القطاع بدلا منه
+		Sfx.play(Sfx.Sound.ANSWER_CORRECT)
 		result_label.text = "✅ إجابة صحيحة"
 		result_label.add_theme_color_override("font_color", Color(0.0, 0.278, 0.005, 1.0))
 				# تكبير الخط
@@ -1227,6 +1233,8 @@ func handle_normal_answer(is_correct: bool) -> void:
 		if current_cell.questions_used >= 2:
 			current_cell.close_cell(team_id)
 	else:
+		# صوت الإجابة الخاطئة — المسار العادي فقط
+		Sfx.play(Sfx.Sound.ANSWER_WRONG)
 		result_label.text = "❌ إجابة خاطئة"
 		result_label.add_theme_color_override("font_color", Color(0.281, 0.0, 0.015, 1.0))
 
@@ -1749,6 +1757,9 @@ func show_info_side() -> void:
 	_showing_info_side = true
 	_clear_option_ring_marks()
 
+	# الزر الوحيد الذي يغلق وجه المعلومة يدويا، ويمر بنفس مسار
+	# _on_close_button_pressed المربوط بزر الإغلاق الأصلي
+	info_close_button.visible = true
 
 	var info_path: String = str(current_question.get("info_image", ""))
 
@@ -1777,6 +1788,7 @@ func show_info_side() -> void:
 
 func reset_question_card() -> void:
 	
+	info_close_button.visible = false
 	choos_player_1.visible= false
 	choos_player_2.visible = false
 	is_flipping = false

@@ -3,6 +3,46 @@
 [ext_resource type="Script" uid="uid://p0isvurmmqy4" path="res://scripts/sector_question_card.gd" id="1_libg3"]
 [ext_resource type="Texture2D" uid="uid://cj1wubt0ulbk8" path="res://assets/images/QuastionCards/Blue01_F2.png" id="2_7m7h8"]
 
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_infoclosenorm"]
+bg_color = Color(0.09, 0.145, 0.29, 0.78)
+border_width_left = 5
+border_width_top = 5
+border_width_right = 5
+border_width_bottom = 5
+border_color = Color(1, 1, 1, 0.55)
+corner_radius_top_left = 70
+corner_radius_top_right = 70
+corner_radius_bottom_right = 70
+corner_radius_bottom_left = 70
+shadow_color = Color(0, 0, 0, 0.35)
+shadow_size = 10
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_infoclosehover"]
+bg_color = Color(0.7529412, 0.22352941, 0.16862746, 0.92)
+border_width_left = 5
+border_width_top = 5
+border_width_right = 5
+border_width_bottom = 5
+border_color = Color(1, 1, 1, 0.85)
+corner_radius_top_left = 70
+corner_radius_top_right = 70
+corner_radius_bottom_right = 70
+corner_radius_bottom_left = 70
+shadow_color = Color(0, 0, 0, 0.35)
+shadow_size = 10
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_infoclosepress"]
+bg_color = Color(0.58, 0.16, 0.12, 1)
+border_width_left = 5
+border_width_top = 5
+border_width_right = 5
+border_width_bottom = 5
+border_color = Color(1, 1, 1, 0.85)
+corner_radius_top_left = 70
+corner_radius_top_right = 70
+corner_radius_bottom_right = 70
+corner_radius_bottom_left = 70
+
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_yiiku"]
 bg_color = Color(0.11372549, 0.22352941, 0.16862746, 0.9137255)
 corner_radius_top_left = 20
@@ -118,6 +158,28 @@ flat = true
 autowrap_trim_flags = 192
 clip_text = true
 expand_icon = true
+
+[node name="InfoCloseButton" type="Button" parent="TextureRect" unique_id=1450099001]
+visible = false
+custom_minimum_size = Vector2(140, 140)
+layout_mode = 0
+offset_left = 1240.0
+offset_top = 150.0
+offset_right = 1380.0
+offset_bottom = 290.0
+mouse_default_cursor_shape = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_focus_color = Color(1, 1, 1, 1)
+theme_override_colors/font_hover_color = Color(1, 1, 1, 1)
+theme_override_colors/font_pressed_color = Color(1, 1, 1, 1)
+theme_override_constants/outline_size = 5
+theme_override_colors/font_outline_color = Color(0, 0, 0, 0.45)
+theme_override_font_sizes/font_size = 65
+theme_override_styles/normal = SubResource("StyleBoxFlat_infoclosenorm")
+theme_override_styles/hover = SubResource("StyleBoxFlat_infoclosehover")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_infoclosepress")
+theme_override_styles/focus = SubResource("StyleBoxFlat_infoclosenorm")
+text = "X"
 
 [node name="Panel" type="Panel" parent="TextureRect" unique_id=1169812214]
 layout_mode = 1
@@ -307,5 +369,6 @@ theme_override_styles/normal = SubResource("StyleBoxFlat_2cl4s")
 text = "الفريق الاحمر"
 
 [connection signal="pressed" from="TextureRect/CloseButton" to="." method="_on_close_button_pressed"]
+[connection signal="pressed" from="TextureRect/InfoCloseButton" to="." method="_on_close_button_pressed"]
 [connection signal="pressed" from="ChoosPlayer1/Button1" to="." method="_on_button_1_pressed"]
 [connection signal="pressed" from="ChoosPlayer2/Button2" to="." method="_on_button_2_pressed"]
