@@ -135,10 +135,14 @@ EffectType.CONTROL_OPPONENT_DIRECTION: {
 	"Id":6,
 	"type": EffectType.CONTROL_OPPONENT_DIRECTION,
 	"category": EffectCategory.GOOD,
-	"handler": EffectHandler.BATTLE,
-	"trigger_type": EffectTriggerType.NEXT_BATTLE,
-	"name": "",
-	"description": ""
+	# التأثير ينفذ داخل حركة الخصم لا داخل المعركة، ويبقى مخزنا
+	# حتى يستعمل. هذان الحقلان مطابقان الآن لتوأمه
+	# OPPONENT_CONTROLS_YOUR_DIRECTION الذي يعبر عن نفس الآلية
+	"handler": EffectHandler.MOVEMENT,
+	"trigger_type": EffectTriggerType.UNTIL_USED,
+	# منقولان حرفيا عن بطاقة الشارع رقم 6، كما تفعل بقية التأثيرات
+	"name": "مناورة تكتيكية",
+	"description": "اختيار اتجاه حركة الفريق المنافس في الجولة القادمة"
 },
 EffectType.ROLL_TWICE_CHOOSE_BEST: {
 	"Id":9,
