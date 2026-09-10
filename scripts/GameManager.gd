@@ -134,6 +134,24 @@ func handle_opponent_twice_effects() -> bool:
 
 	return false	
 
+# ======================================================
+#   هل رمى الفريق صاحب الدور نرده بالفعل؟
+# ------------------------------------------------------
+# قفل الموانع في GameManagerHelper يغطي النوافذ المعروضة وحدها،
+# فيبقى النرد قابلا للضغط في الفترة بين استقرار الرمية وسحب
+# القطعة إلى القطاع، إذ لا نافذة مفتوحة بعد. هذه الراية تغلق
+# تلك الفترة: رمية واحدة لكل دور، ما لم يمنح تأثير رمية إضافية.
+#
+# تصفّر عند انتقال الدور، وعند كل مسار يعيد الرمي للفريق نفسه
+# ======================================================
+var has_rolled_this_turn: bool = false
+
+
+# يستدعى من كل مسار يمنح الفريق نفسه رمية جديدة
+func rearm_dice_roll() -> void:
+	has_rolled_this_turn = false
+
+
 # --------------------------------
 func end_turn() -> void:
 	
@@ -144,22 +162,33 @@ func end_turn() -> void:
 	# حذف التأثيرات المؤقتة بعد أن يراها اللاعب خلال دوره
 	#GameManagerHelper.reduce_temporary_effects(finished_team_id)
 	
+	# المسارات الخمسة التالية ترجع دون تبديل الفريق، أي أن الفريق
+	# نفسه سيرمي مرة أخرى بحق مكتسب من بطاقة. كل واحد منها يعيد
+	# تسليح الرمية، وإلا منعته الراية الجديدة من رميته المستحقة
 	if GoodEffects.use_choose_next_starting_team(current_team):
+		rearm_dice_roll()
 		return
 
 	if GoodEffects.use_choose_next_dice_number(current_team):
+		rearm_dice_roll()
 		good_dice_choose_next_roll.emit()
 		return
 	
 	if GoodEffects.use_twice_choose_best(current_team):
+		rearm_dice_roll()
 		return
 		
 	if GoodEffects.use_extra_dice_roll(current_team):
+		rearm_dice_roll()
 		return
 
 	if handle_opponent_twice_effects():
+		rearm_dice_roll()
 		return
+
+	# انتقال الدور فعليا: الفريق الجديد يبدأ برمية متاحة
 	current_team = get_other_team_id(current_team)
+	rearm_dice_roll()
 	update_active_players()
 	turn_changed.emit(current_team)	
 	
