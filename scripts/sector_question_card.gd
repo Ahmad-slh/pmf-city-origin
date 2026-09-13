@@ -34,6 +34,10 @@ var answer_selected := false
 
 var is_flipping: bool = false
 
+# يزداد مع كل بطاقة جديدة. القلب ينتظر مهلة قبل أن يبدأ، فإن أغلقت
+# البطاقة وفتحت غيرها خلالها يلغي القلب القديم نفسه بدل قلب البطاقة الجديدة
+var _flip_generation := 0
+
 
 var questions_data := {
 	6: [
@@ -70,7 +74,7 @@ var time_left := ANSWER_TIME_SECONDS
 
 # كم ثانية تبقى نتيجة الإجابة معروضة قبل أن تنقلب البطاقة
 # إلى وجه المعلومة. تستخدم في العرض النصي وعرض الصورة والمعركة معا
-const RESULT_HOLD_SECONDS := 0.5
+const RESULT_HOLD_SECONDS := 2.5
 
 
 # ======================================================
@@ -449,7 +453,9 @@ const OPTION_ZONE_HOVER_INSET_H := 100.0
 # الصحيحة وحدها نمطا أخضر مرئيا لمدة قصيرة، ثم نعيدها
 # شفافة كما كانت قبل قلب البطاقة
 # ======================================================
-const CORRECT_HIGHLIGHT_SECONDS := 3.0
+# تضاف فوق RESULT_HOLD_SECONDS: الإجابة الخاطئة تبقى 4 ثوان قبل القلب
+# مقابل 2.5 للصحيحة، وقت إضافي لرؤية الإجابة الصحيحة مبرزة
+const CORRECT_HIGHLIGHT_SECONDS := 1.5
 
 var _highlighted_zone: Button = null
 
@@ -1563,12 +1569,10 @@ func handle_time_out() -> void:
 	if not answer_selected:
 		return
 
-	# هذا هو المسار الوحيد الذي يخفي البطاقة تلقائيا.
-	# القلب صار ينتظر RESULT_HOLD_SECONDS، فلو بقي الإخفاء على 1.5
-	# لاختفت البطاقة قبل أن تنقلب أصلا ولما رأى اللاعب وجه المعلومة.
-	# نضيف المهلة نفسها ليبقى وجه المعلومة ظاهرا كما كان
-	await get_tree().create_timer(RESULT_HOLD_SECONDS + 1.5).timeout
-	hide_card()
+	# كان هذا المسار يخفي البطاقة وينهي الدور بعد مهلة ثابتة، فتختفي
+	# قبل أن يبدأ القلب (انتهاء الوقت يبرز الإجابة الصحيحة فيتأخر القلب)
+	# ولا يرى اللاعب وجه المعلومة إطلاقا. الآن تنقلب البطاقة وتبقى
+	# ظاهرة حتى يضغط اللاعب زر الإغلاق، كبقية مسارات الإجابة
 
 
 # ======================================================
@@ -1890,6 +1894,7 @@ func show_info_side() -> void:
 
 func reset_question_card() -> void:
 	
+	_flip_generation += 1
 	info_close_button.visible = false
 	choos_player_1.visible= false
 	choos_player_2.visible = false
@@ -1929,6 +1934,7 @@ func flip_to_background_info() -> void:
 		return
 
 	is_flipping = true
+	var flip_generation := _flip_generation
 
 	disable_answer_buttons()
 
@@ -1947,6 +1953,15 @@ func flip_to_background_info() -> void:
 	if _highlighted_zone != null:
 		await get_tree().create_timer(CORRECT_HIGHLIGHT_SECONDS).timeout
 		_clear_correct_zone_highlight()
+
+	# فتحت بطاقة أخرى أثناء المهلة: هي صاحبة is_flipping الآن فلا نلمسه
+	if flip_generation != _flip_generation:
+		return
+
+	# أغلقت البطاقة بزر الإغلاق أثناء المهلة: لا نقلب بطاقة مخفية
+	if not visible:
+		is_flipping = false
+		return
 
 	texture_rect.pivot_offset = texture_rect.size / 2.0
 	
