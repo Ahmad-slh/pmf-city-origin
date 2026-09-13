@@ -486,6 +486,7 @@ metadata/_edit_use_anchors_ = true
 metadata/_edit_use_anchors_ = true
 
 [node name="Streets" type="Node2D" parent="." unique_id=1596604923]
+z_index = -1
 
 [node name="Street_01" parent="Streets" unique_id=759465077 groups=["board_sectors"] instance=ExtResource("1_fv4ni")]
 texture_filter = 1
