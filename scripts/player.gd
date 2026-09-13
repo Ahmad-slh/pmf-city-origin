@@ -36,8 +36,12 @@ func _process(delta: float) -> void:
 func _on_area_2d_2_input_event(viewport: Node, event: InputEvent, shape_idx: int) -> void:
 	if event is InputEventMouseButton:
 		if event.button_index == MOUSE_BUTTON_LEFT and event.pressed:
-			
-			
+
+			# الخصم يرسم مسارنا الآن: القطعة تتحرك بأمره لا بالسحب.
+			# لولا هذا المنع لأمكن جرّ القطعة أثناء تنفيذ المسار
+			if board != null and board.direction_walk_active:
+				return
+
 			var current_team_id =GameManagerHelper.get_team_id_from_effect(GameManagerHelper.EffectType.CHOOSE_NEXT_STARTING_TEAM)
 			if GoodEffects.use_choose_next_starting_team(current_team_id):
 				#good_dice_choose_next_roll.emit()
@@ -100,6 +104,8 @@ func check_drop_sector() -> bool:
 
 			if sector.is_highlighted:
 				allowed_position = sector.global_position
+				# صوت استقرار حنظلة على القطاع أو الشارع
+				Sfx.play(Sfx.Sound.TOKEN_SETTLE)
 				board._on_sector_selected(sector)
 				return true
 

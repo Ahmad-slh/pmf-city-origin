@@ -165,6 +165,11 @@ func _on_dice_rolled(value: int) -> void:
 		roll_off_rolled.emit(value)
 		return
 
+	# الرمية استُهلكت: يقفل النرد حتى ينتهي الدور أو تُمنح رمية إضافية.
+	# يغطي هذا الفترة بين استقرار النرد وسحب القطعة، وهي فترة لا نافذة
+	# فيها فلا يلتقطها قفل الموانع
+	GameManager.has_rolled_this_turn = true
+
 	var team_id = GameManager.current_team
 	clear_sector_highlights()
 	
@@ -208,7 +213,7 @@ func _on_dice_rolled(value: int) -> void:
 	# الخصم قد يكون مسيطرا على اتجاه حركة هذا الفريق هذه الجولة
 	var controller: int = _get_direction_controller(team_id)
 	if controller != 0:
-		_show_direction_popup(controller, team_id, value)
+		_start_controlled_walk(controller, team_id, value)
 		return
 
 	highlight_reachable_sectors(value, team_positions[team_id])
@@ -219,7 +224,8 @@ func _on_dice_rolled(value: int) -> void:
 # بطاقتان تعبران عن نفس الآلية من الجهتين:
 #   CONTROL_OPPONENT_DIRECTION      تخزن على الفريق المسيطر
 #   OPPONENT_CONTROLS_YOUR_DIRECTION تخزن على الفريق المقيد
-# كلتاهما كانتا تخزنان دون أن يقرأهما أي كود حركة.
+# الفريق المسيطر يرسم مسار الخصم خطوة بخطوة عبر
+# _start_controlled_walk، لا اتجاه واحد يُصفّى به الوصول.
 # ======================================================
 const DIRECTION_UP := Vector2i(0, -1)
 const DIRECTION_DOWN := Vector2i(0, 1)
@@ -272,12 +278,262 @@ func _team_display_name(team_id: int) -> String:
 
 
 # ======================================================
-# اسم الدالة: _show_direction_popup
-# وظيفتها:
-# نافذة اختيار الاتجاه، تبنى بالكود بالكامل بلا مشهد جديد.
-# تظهر للفريق المسيطر بعد أن يرمي الفريق المقيد النرد
+#   الحركة الموجهة: المسيطر يرسم مسار الخصم خطوة بخطوة
+# ------------------------------------------------------
+# عند كل خطوة من خطوات النرد تظهر نافذة الأسهم الأربعة،
+# فيختار الفريق المسيطر اتجاها واحدا فتتحرك قطعة الخصم قطاعا
+# واحدا، ثم تتكرر حتى تنفد الخطوات. لم يعد الاختيار مرة واحدة
+# تُصفّى بها الوجهات، بل صار المسار كله بيد المسيطر
+#
+# القواعد:
+#   - لا يعاد المرور على قطاع زاره المسار في هذه الرمية
+#   - القطاع المغلق يُعبر ولا يحتسب خطوة، ولا يصح الوقوف عليه
+#   - إذا انسد المسار قبل نفاد الخطوات نرجع خطوة إلى الوراء
+#     ونطلب من المسيطر اتجاها آخر لتلك الخطوة نفسها
+#   - إذا انسدت كل الاتجاهات من نقطة البداية نوقف الحركة برسالة
 # ======================================================
-func _show_direction_popup(controller_team: int, moving_team: int, steps: int) -> void:
+const WALK_DIRECTIONS := [DIRECTION_UP, DIRECTION_RIGHT, DIRECTION_DOWN, DIRECTION_LEFT]
+const WALK_STEP_DURATION := 0.28
+
+# الحركة الموجهة جارية الآن: تمنع سحب القطعة باليد أثناء تنفيذ المسار
+var direction_walk_active := false
+
+# خانات المسار الأخير بالترتيب، أداة تتبع للتصحيح وللوحة F9
+var last_walk_path: Array = []
+
+signal direction_step_chosen(direction)
+
+
+# إزاحة القطعة عن مركز القطاع، ليقف الفريقان جنبا إلى جنب
+func _token_offset(team_id: int) -> Vector2:
+	if team_id == 1:
+		return Vector2(-20, 0)
+	return Vector2(20, 0)
+
+
+# مفتاح نصي للاتجاه، لأن Vector2i لا يصلح مفتاحا مقروءا في التتبع
+func _dir_key(direction: Vector2i) -> String:
+	return "%d,%d" % [direction.x, direction.y]
+
+
+# ======================================================
+# اسم الدالة: _walk_options
+# وظيفتها:
+# ترجع الوجهات الصالحة من خانة محددة، اتجاها اتجاها.
+#
+# نمشي شعاعا من الخانة الحالية في الاتجاه المطلوب متخطين
+# الخانات التابعة لنفس القطاع الكبير، فأول قطاع مختلف نصادفه
+# هو وجهة هذا الاتجاه. هكذا يعطي كل اتجاه قطاعا واحدا بالضبط
+# مهما كان القطاع كبيرا، فلا يعود الالتباس القديم الذي كان
+# يجعل قطاعا واحدا يحقق اتجاهين معا في _matches_direction
+# ======================================================
+func _walk_options(
+	from_pos: Vector2i,
+	from_cell,
+	visited: Dictionary,
+	tried: Dictionary
+) -> Dictionary:
+	var options := {}
+
+	for direction in WALK_DIRECTIONS:
+		var key: String = _dir_key(direction)
+
+		# اتجاه جُرّب من هذه الخانة وأدى إلى طريق مسدود
+		if tried.has(key):
+			continue
+
+		var probe: Vector2i = from_pos + direction
+
+		# ما زلنا داخل نفس القطاع الكبير: نكمل حتى نخرج منه
+		while sectors_map.has(probe) and sectors_map[probe] == from_cell:
+			probe += direction
+
+		# خرجنا عن اللوحة
+		if not sectors_map.has(probe):
+			continue
+
+		var target = sectors_map[probe]
+
+		# لا رجوع إلى قطاع مر عليه المسار في هذه الرمية
+		if visited.has(target.get_instance_id()):
+			continue
+
+		# المغلق يُعبر بلا كلفة، تماما كما يفعل بحث الإضاءة العادي
+		var cost: int = 0 if target.is_closed else 1
+
+		options[key] = {
+			"cell": target,
+			"entry_pos": probe,
+			"cost": cost,
+			"direction": direction
+		}
+
+	return options
+
+
+# ======================================================
+# اسم الدالة: _start_controlled_walk
+# وظيفتها:
+# تدير المسار الموجه كاملا: من أول خطوة حتى الوقوف أو الفشل.
+# تعمل بأسلوب البحث بالتراجع، فالخطوة التي تقود إلى انسداد
+# تُلغى ويُطلب من المسيطر اتجاه آخر بدلا منها
+# ======================================================
+func _start_controlled_walk(controller_team: int, moving_team: int, steps: int) -> void:
+	var start_pos: Vector2i = team_positions[moving_team]
+
+	# حماية: موقع الفريق خارج الخريطة، نرجع للحركة العادية
+	if not sectors_map.has(start_pos):
+		push_warning("لا يوجد قطاع عند موقع الفريق %s، ألغيت الحركة الموجهة" % str(start_pos))
+		_clear_direction_effects(moving_team, controller_team)
+		highlight_reachable_sectors(steps, start_pos)
+		return
+
+	clear_sector_highlights()
+
+	direction_walk_active = true
+	is_moving = true
+	GameManagerHelper.push_input_block(self, "direction_walk")
+
+	var start_cell = sectors_map[start_pos]
+
+	# كل عنصر في المسار: القطاع، خانة الدخول إليه، كلفته بالخطوات،
+	# الاتجاه الذي أوصلنا إليه، والاتجاهات المجربة منه بلا فائدة
+	var path: Array = [{
+		"cell": start_cell,
+		"entry_pos": start_pos,
+		"cost": 0,
+		"from_dir": Vector2i.ZERO,
+		"tried": {}
+	}]
+
+	var visited := {start_cell.get_instance_id(): true}
+	var steps_left: int = steps
+	var retry_notice: bool = false
+	var failed: bool = false
+
+	# عداد المحاولات لا عداد التقدم: يزيد مع كل نافذة تُعرض، ولا
+	# يرجع مع تراجع القطعة، فلا يرى المسيطر رقما ينقص أمامه
+	var attempt: int = 0
+
+	while steps_left > 0:
+		var node: Dictionary = path[path.size() - 1]
+
+		var options: Dictionary = _walk_options(
+			node["entry_pos"], node["cell"], visited, node["tried"]
+		)
+
+		if options.is_empty():
+			# لا مخرج من هنا. القاعدة: لا تتوقف القطعة ناقصة الخطوات،
+			# بل نرجع خطوة ونطلب من المسيطر اتجاها مختلفا لتلك الخطوة
+			if path.size() == 1:
+				failed = true
+				break
+
+			var popped: Dictionary = path.pop_back()
+			visited.erase(popped["cell"].get_instance_id())
+			steps_left += popped["cost"]
+
+			var parent: Dictionary = path[path.size() - 1]
+			parent["tried"][_dir_key(popped["from_dir"])] = true
+
+			print("مسار مسدود، تراجع خطوة إلى ", parent["entry_pos"])
+
+			await _animate_token_step(moving_team, parent["cell"])
+			retry_notice = true
+			continue
+
+		attempt += 1
+
+		var chosen: Vector2i = await _ask_walk_direction(
+			controller_team, options, steps, steps_left, retry_notice, attempt
+		)
+
+		# النافذة أُغلقت دون اختيار: حالة نادرة عند تفريغ المشهد
+		if chosen == Vector2i.ZERO:
+			failed = true
+			break
+
+		retry_notice = false
+
+		var move: Dictionary = options[_dir_key(chosen)]
+
+		# نسجل الاتجاه فور اختياره، فإن عدنا إلى هنا لا نكرره
+		node["tried"][_dir_key(chosen)] = true
+
+		visited[move["cell"].get_instance_id()] = true
+		steps_left -= move["cost"]
+
+		path.append({
+			"cell": move["cell"],
+			"entry_pos": move["entry_pos"],
+			"cost": move["cost"],
+			"from_dir": chosen,
+			"tried": {}
+		})
+
+		await _animate_token_step(moving_team, move["cell"])
+
+	GameManagerHelper.pop_input_block(self)
+	direction_walk_active = false
+
+	# التأثير يُستهلك في الحالتين، فلا يبقى معلقا على الفريقين
+	_clear_direction_effects(moving_team, controller_team)
+
+	last_walk_path = []
+	for node in path:
+		last_walk_path.append(node["entry_pos"])
+
+	if failed:
+		await _show_walk_failed_popup(moving_team)
+
+		# القطعة ترجع إلى مكانها ولا يتحرك الفريق هذه الجولة
+		var stuck_token = team_players[moving_team]
+		stuck_token.global_position = stuck_token.allowed_position
+
+		is_moving = false
+		GameManager.end_turn()
+		return
+
+	print("المسار الموجه: ", last_walk_path)
+
+	var landing = path[path.size() - 1]["cell"]
+
+	Sfx.play(Sfx.Sound.TOKEN_SETTLE)
+	_finalize_landing(landing, moving_team)
+
+
+# ======================================================
+# اسم الدالة: _animate_token_step
+# وظيفتها:
+# تحريك القطعة قطاعا واحدا فقط. المسار الموجه يستدعيها مرة لكل
+# خطوة، فتُرى الحركة متنقلة قطاعا قطاعا لا قفزة واحدة إلى النهاية
+# ======================================================
+func _animate_token_step(team_id: int, cell) -> void:
+	var token = team_players[team_id]
+	var target: Vector2 = cell.global_position + _token_offset(team_id)
+
+	var tween := create_tween()
+	tween.tween_property(token, "global_position", target, WALK_STEP_DURATION)
+	await tween.finished
+
+	token.global_position = target
+
+
+# ======================================================
+# اسم الدالة: _ask_walk_direction
+# وظيفتها:
+# نافذة الأسهم الأربعة لخطوة واحدة، تبنى بالكود بلا مشهد جديد.
+# الاتجاه الذي لا وجهة له يظهر معطلا، فلا يستطيع المسيطر أصلا
+# أن يختار طريقا مسدودا في هذه الخطوة
+# ======================================================
+func _ask_walk_direction(
+	controller_team: int,
+	options: Dictionary,
+	total_steps: int,
+	steps_left: int,
+	retry_notice: bool,
+	attempt: int
+) -> Vector2i:
 	if direction_popup != null and is_instance_valid(direction_popup):
 		direction_popup.queue_free()
 
@@ -286,10 +542,10 @@ func _show_direction_popup(controller_team: int, moving_team: int, steps: int) -
 	add_child(layer)
 	direction_popup = layer
 
-	# تنتظر ضغطة اللاعب، فتقفل النرد حتى يختار اتجاها
+	# تنتظر ضغطة المسيطر، فتقفل النرد حتى يختار اتجاها
 	GameManagerHelper.push_input_block(layer, "direction_popup")
 
-	var panel_size := Vector2(460, 300)
+	var panel_size := Vector2(460, 372)
 	var screen_size: Vector2 = get_viewport().get_visible_rect().size
 
 	var panel := Panel.new()
@@ -306,26 +562,172 @@ func _show_direction_popup(controller_team: int, moving_team: int, steps: int) -
 	layer.add_child(panel)
 
 	var title := Label.new()
-	title.text = _team_display_name(controller_team) + " يحدد اتجاه حركة الخصم"
-	title.size = Vector2(panel_size.x - 40, 40)
-	title.position = Vector2(20, 16)
+	title.text = _team_display_name(controller_team) + " يرسم مسار الخصم"
+	title.size = Vector2(panel_size.x - 40, 34)
+	title.position = Vector2(20, 14)
 	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	title.add_theme_font_size_override("font_size", 22)
 	title.add_theme_color_override("font_color", Color("#1F1F1F"))
 	panel.add_child(title)
 
+	# رقم المحاولة كما هو، أما "المتبقي" فيظل يعكس الخطوات الحقيقية.
+	# بعد تراجع أو أكثر قد يتجاوز رقم المحاولة رقم النرد، وهذا مقصود
+	var subtitle := Label.new()
+	subtitle.text = "الخطوة %d من %d   —   المتبقي %d" % [attempt, total_steps, steps_left]
+	subtitle.size = Vector2(panel_size.x - 40, 26)
+	subtitle.position = Vector2(20, 52)
+	subtitle.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	subtitle.add_theme_font_size_override("font_size", 17)
+	subtitle.add_theme_color_override("font_color", Color("#555555"))
+	panel.add_child(subtitle)
+
+	if retry_notice:
+		var notice := Label.new()
+		notice.text = "الاتجاه السابق أدى إلى طريق مسدود، اختر غيره"
+		notice.size = Vector2(panel_size.x - 40, 24)
+		notice.position = Vector2(20, 82)
+		notice.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		notice.add_theme_font_size_override("font_size", 15)
+		notice.add_theme_color_override("font_color", Color("#C62828"))
+		panel.add_child(notice)
+
 	# الأزرار الأربعة موزعة على شكل صليب
 	var mid := panel_size.x / 2.0
 	# أسهم الاتجاهات: نستخدم U+2190..U+2193 لأن الخط arial.ttf
 	# لا يحتوي على مثلثي اليسار/اليمين (U+25C0 / U+25B6) فتظهر مربعات رموز
-	_add_direction_button(panel, "↑", DIRECTION_UP,
-		Vector2(mid - 55, 70), moving_team, steps, controller_team)
-	_add_direction_button(panel, "←", DIRECTION_LEFT,
-		Vector2(mid - 175, 160), moving_team, steps, controller_team)
-	_add_direction_button(panel, "→", DIRECTION_RIGHT,
-		Vector2(mid + 65, 160), moving_team, steps, controller_team)
-	_add_direction_button(panel, "↓", DIRECTION_DOWN,
-		Vector2(mid - 55, 220), moving_team, steps, controller_team)
+	_add_walk_button(panel, "↑", DIRECTION_UP, Vector2(mid - 55, 114), options)
+	_add_walk_button(panel, "←", DIRECTION_LEFT, Vector2(mid - 175, 202), options)
+	_add_walk_button(panel, "→", DIRECTION_RIGHT, Vector2(mid + 65, 202), options)
+	_add_walk_button(panel, "↓", DIRECTION_DOWN, Vector2(mid - 55, 290), options)
+
+	var chosen: Vector2i = await direction_step_chosen
+
+	GameManagerHelper.pop_input_block(layer)
+
+	if is_instance_valid(layer):
+		layer.queue_free()
+
+	direction_popup = null
+
+	return chosen
+
+
+func _add_walk_button(
+	parent: Control,
+	label: String,
+	direction: Vector2i,
+	at_position: Vector2,
+	options: Dictionary
+) -> void:
+	var button := Button.new()
+	button.text = label
+	button.size = Vector2(110, 60)
+	button.position = at_position
+	button.add_theme_font_size_override("font_size", 26)
+	button.name = "Dir_%d_%d" % [direction.x, direction.y]
+
+	# اتجاه بلا وجهة صالحة: يظهر معطلا بدل أن يقبل ضغطة لا تنفذ
+	if options.has(_dir_key(direction)):
+		button.pressed.connect(_on_walk_direction_pressed.bind(direction))
+	else:
+		button.disabled = true
+		button.tooltip_text = "لا يوجد قطاع متاح في هذا الاتجاه"
+
+	parent.add_child(button)
+
+
+func _on_walk_direction_pressed(direction: Vector2i) -> void:
+	# النافذة مغلقة أصلا: تجاهل النقر المكرر على أكثر من سهم
+	if direction_popup == null or not is_instance_valid(direction_popup):
+		return
+
+	direction_step_chosen.emit(direction)
+
+
+# ======================================================
+# اسم الدالة: _show_walk_failed_popup
+# وظيفتها:
+# رسالة صريحة عند انسداد كل الاتجاهات من نقطة البداية، وهي
+# الحالة الوحيدة التي لا ينفع فيها التراجع. لا تتحرك القطعة،
+# ويُستهلك التأثير، وينتقل الدور. لا صمت ولا تعليق
+# ======================================================
+func _show_walk_failed_popup(moving_team: int) -> void:
+	var layer := CanvasLayer.new()
+	layer.layer = 120
+	add_child(layer)
+
+	GameManagerHelper.push_input_block(layer, "direction_walk_failed")
+
+	var panel_size := Vector2(500, 230)
+	var screen_size: Vector2 = get_viewport().get_visible_rect().size
+
+	var panel := Panel.new()
+	panel.size = panel_size
+	panel.position = (screen_size - panel_size) / 2.0
+
+	var style := StyleBoxFlat.new()
+	style.bg_color = Color("#FFFFFF")
+	style.set_border_width_all(3)
+	style.border_color = Color("#C62828")
+	style.set_corner_radius_all(14)
+	panel.add_theme_stylebox_override("panel", style)
+
+	layer.add_child(panel)
+
+	var title := Label.new()
+	title.text = "لا يوجد مسار ممكن"
+	title.size = Vector2(panel_size.x - 40, 36)
+	title.position = Vector2(20, 24)
+	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	title.add_theme_font_size_override("font_size", 24)
+	title.add_theme_color_override("font_color", Color("#C62828"))
+	panel.add_child(title)
+
+	var body := Label.new()
+	body.text = _team_display_name(moving_team) + " محاصر بلا اتجاه صالح،\nلن يتحرك هذه الجولة"
+	body.size = Vector2(panel_size.x - 40, 70)
+	body.position = Vector2(20, 74)
+	body.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	body.add_theme_font_size_override("font_size", 18)
+	body.add_theme_color_override("font_color", Color("#1F1F1F"))
+	panel.add_child(body)
+
+	var ok := Button.new()
+	ok.text = "حسنا"
+	ok.name = "WalkFailedOk"
+	ok.size = Vector2(140, 46)
+	ok.position = Vector2((panel_size.x - 140) / 2.0, 162)
+	ok.add_theme_font_size_override("font_size", 20)
+	panel.add_child(ok)
+
+	await ok.pressed
+
+	GameManagerHelper.pop_input_block(layer)
+	layer.queue_free()
+
+
+# ======================================================
+# اسم الدالة: _finalize_landing
+# وظيفتها:
+# ما يجري بعد استقرار القطعة على قطاع: تثبيت موقعها، تحديث
+# موقع الفريق، ثم تشغيل حدث الخلية. مشتركة بين الحركة العادية
+# والحركة الموجهة حتى لا يفترق المساران بعد الوصول
+# ======================================================
+func _finalize_landing(cell, team_id: int) -> void:
+	var active_player = team_players[team_id]
+	var target: Vector2 = cell.global_position + _token_offset(team_id)
+
+	active_player.allowed_position = target
+	active_player.global_position = target
+
+	team_positions[team_id] = cell.grid_pos
+
+	# أول حركة حقيقية اكتملت: لم يعد المؤشر لازما
+	hide_start_hint()
+
+	board_cell_action_handler.handle_cell(cell)
+
+	is_moving = false
 
 
 # ======================================================
@@ -573,64 +975,6 @@ func _show_roll_off_popup(title_text: String, score_text: String, team_id: int, 
 	return state["play_pressed"]
 
 
-func _add_direction_button(
-	parent: Control,
-	label: String,
-	direction: Vector2i,
-	at_position: Vector2,
-	moving_team: int,
-	steps: int,
-	controller_team: int
-) -> void:
-	var button := Button.new()
-	button.text = label
-	button.size = Vector2(110, 60)
-	button.position = at_position
-	button.add_theme_font_size_override("font_size", 26)
-	button.pressed.connect(
-		_on_direction_chosen.bind(direction, moving_team, steps, controller_team)
-	)
-	parent.add_child(button)
-
-
-func _on_direction_chosen(
-	direction: Vector2i,
-	moving_team: int,
-	steps: int,
-	controller_team: int
-) -> void:
-	# النافذة مغلقة أصلاً: تجاهل النقر المكرر على أكثر من سهم
-	if direction_popup == null or not is_instance_valid(direction_popup):
-		return
-
-	# نحرّر القفل فورا: queue_free مؤجّل فتبقى العقدة صالحة هذا الإطار
-	GameManagerHelper.pop_input_block(direction_popup)
-
-	direction_popup.queue_free()
-	direction_popup = null
-
-	_clear_direction_effects(moving_team, controller_team)
-
-	highlight_reachable_sectors(steps, team_positions[moving_team], direction)
-
-
-# هل تقع الخلية في الاتجاه المطلوب بالنسبة لموقع البداية؟
-# نفحص كل مواقع القطاع لأن القطاعات الكبيرة تشغل أكثر من خانة
-func _matches_direction(start_pos: Vector2i, cell, direction: Vector2i) -> bool:
-	if direction == Vector2i.ZERO:
-		return true
-
-	for pos in get_debug_cell_positions(cell):
-		if direction.x > 0 and pos.x > start_pos.x:
-			return true
-		if direction.x < 0 and pos.x < start_pos.x:
-			return true
-		if direction.y > 0 and pos.y > start_pos.y:
-			return true
-		if direction.y < 0 and pos.y < start_pos.y:
-			return true
-
-	return false
 
 #--------------------------------
 # PLAYER
@@ -668,9 +1012,10 @@ func handle_sector(grid_pos: Vector2i) -> void:
 	if sector.questions_used >= 2:
 		sector.close_cell(team_id)
 	
-# direction != ZERO يعني أن الخصم فرض اتجاه الحركة هذه الجولة،
-# فلا تضاء إلا الوجهات الواقعة في ذلك الاتجاه
-func highlight_reachable_sectors(steps: int, start_pos: Vector2i, direction: Vector2i = Vector2i.ZERO) -> void:
+# الحركة العادية: تضاء كل وجهة تبعد steps خطوة بالضبط، ويختار
+# اللاعب منها بنفسه. الحركة الموجهة لا تمر من هنا إطلاقا، فهي
+# تحرّك القطعة خطوة خطوة في _start_controlled_walk
+func highlight_reachable_sectors(steps: int, start_pos: Vector2i) -> void:
 	var queue: Array = []
 	var highlighted_cells := {}
 
@@ -699,10 +1044,9 @@ func highlight_reachable_sectors(steps: int, start_pos: Vector2i, direction: Vec
 
 			# لا نضيء الخلية المغلقة كنهاية حركة
 			if not current_cell.is_closed and not highlighted_cells.has(cell_id):
-				if _matches_direction(start_pos, current_cell, direction):
-					current_cell.highlight()
-					current_cell.show_step_number(current_steps)
-					highlighted_cells[cell_id] = true
+				current_cell.highlight()
+				current_cell.show_step_number(current_steps)
+				highlighted_cells[cell_id] = true
 
 			continue
 
@@ -733,12 +1077,6 @@ func highlight_reachable_sectors(steps: int, start_pos: Vector2i, direction: Vec
 				"visited": new_visited
 			})
 
-	# إذا لم يترك الاتجاه المفروض أي وجهة ممكنة، نرفع القيد
-	# حتى لا يبقى الفريق بلا حركة ويتوقف الدور
-	if direction != Vector2i.ZERO and highlighted_cells.is_empty():
-		print("لا توجد وجهة في هذا الاتجاه، تم رفع القيد عن الحركة")
-		highlight_reachable_sectors(steps, start_pos, Vector2i.ZERO)
-
 func clear_sector_highlights() -> void:
 	for sector in sectors_map.values():
 		sector.clear_highlight()
@@ -754,35 +1092,16 @@ func _on_sector_selected(cell) -> void:
 	is_moving = true
 
 	var active_player = team_players[current_team]
-	
-	var offset := Vector2.ZERO
+	var offset := _token_offset(current_team)
 
-	if current_team == 1:
-		offset = Vector2(-20, 0)
-	else:
-		offset = Vector2(20, 0)
-	
-	#GameManager.current_team=current_team
-
+	# الحركة العادية تبقى كما كانت بالضبط: نقلة واحدة مباشرة إلى
+	# الوجهة التي اختارها اللاعب. المسار غير محسوب أصلا في هذا
+	# المسار، فلا شيء نمشيه خطوة خطوة
 	var tween := create_tween()
 	tween.tween_property(active_player, "global_position", cell.global_position + offset, 1)
 	await tween.finished
 
-	active_player.allowed_position = cell.global_position + offset
-	active_player.global_position = active_player.allowed_position
-
-	team_positions[current_team] = cell.grid_pos
-
-	# أول حركة حقيقية اكتملت: لم يعد المؤشر لازما
-	hide_start_hint()
-
-	var team_id = GameManager.current_team
-	board_cell_action_handler.handle_cell(cell)
-
-	#handle_sector(cell.grid_pos)
-
-	is_moving = false
-	#GameManager.end_turn()
+	_finalize_landing(cell, current_team)
 
 
 # ======================================================
@@ -811,6 +1130,10 @@ func _on_sector_selected(cell) -> void:
 func is_dice_locked() -> bool:
 
 	if is_any_card_open():
+		return true
+
+	# رمية واحدة لكل دور: تمنع الرمي المتكرر أثناء سحب القطعة
+	if GameManager.has_rolled_this_turn:
 		return true
 
 	return GameManagerHelper.is_input_locked()

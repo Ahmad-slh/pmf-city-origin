@@ -27,3 +27,12 @@ _debug_screenshots/
 # الأصل المستخدم فعلا هو home_icon.png و dice_frame.png
 *.png.png
 *.png.png.import
+
+# مخرجات تصدير الويب، تُكتب في جذر المشروع مباشرة.
+# الاسمان مأخوذان من export_path في export_presets.cfg
+# اسم التصدير "PFM-City-v1.0" ينتج pmfv1.html وهو نسخة PWA
+# واسم التصدير "Web" ينتج PmfCity.html وهي النسخة التي ترفع إلى itch.io
+# يغطي هذا html و js وعمال الصوت وخادم الخدمة والأيقونات
+# وملفات import. التي يولدها المحرر لها بعد كل تصدير
+/pmfv1.*
+/PmfCity.*

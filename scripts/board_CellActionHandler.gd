@@ -88,6 +88,10 @@ func handle_sector(cell, skip_investment: bool = false) -> void:
 		board.BattlePopup.play_battle_start_sound()
 		await cell.shake_cell()
 		await cell.flash_red()
+
+		# السؤال يظهر أولًا للقراءة فقط، ثم تفتح نافذة اختيار الفريق
+		await board.SectorQuestionCard.show_battle_preview(cell, board)
+
 		var team_must_begin_battle=-1
 		var team1=GameManagerHelper.has_effect(1, GameManagerHelper.EffectType.OPPONENT_ANSWERS_FIRST_NEXT_BATTLE)
 		var team2=GameManagerHelper.has_effect(2, GameManagerHelper.EffectType.OPPONENT_ANSWERS_FIRST_NEXT_BATTLE)

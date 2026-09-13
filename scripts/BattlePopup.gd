@@ -21,6 +21,7 @@ var board = null
 @onready var battle_win_sound: AudioStreamPlayer = $BattleWinSound
 
 @onready var button_row: HBoxContainer = $ContentBox/HBoxContainer
+@onready var space_small: Control = $ContentBox/SpaceSmall
 
 # تسلسل اختيار المجيب في المعركة:
 # الضغطة الأولى تفتح السؤال، والضغطات التالية تحوّل حق الإجابة للفريق الآخر
@@ -32,6 +33,7 @@ var _cb_home_anchor_top: float
 var _cb_home_anchor_bottom: float
 var _cb_home_offset_top: float
 var _cb_home_offset_bottom: float
+var _cb_home_min_size: Vector2
 
 
 func _ready() -> void:
@@ -49,6 +51,7 @@ func _ready() -> void:
 	_cb_home_anchor_bottom = content_box.anchor_bottom
 	_cb_home_offset_top = content_box.offset_top
 	_cb_home_offset_bottom = content_box.offset_bottom
+	_cb_home_min_size = content_box.custom_minimum_size
 
 
 var attacker_team_id: int = 0
@@ -176,6 +179,9 @@ func _select_answerer(team_id: int) -> void:
 # على الطبقة 100، فنرفع طبقة النافذة فوقها، ونجعل الجذر يمرّر الضغط إلى
 # مناطق الإجابة تحته بحيث تلتقطه الأزرار وحدها.
 # ======================================================
+const REDIRECT_BAR_TOP := 8.0
+const REDIRECT_BAR_HEIGHT := 55.0
+
 func enter_redirect_mode() -> void:
 	var cl := get_parent()
 	if cl is CanvasLayer:
@@ -194,13 +200,19 @@ func enter_redirect_mode() -> void:
 	message_label.visible = false
 	battle_teams_label.visible = false
 	battle_result_label.visible = false
+	# الفاصل بارتفاع 200 يدفع الأزرار للأسفل فوق نص السؤال
+	space_small.visible = false
 
-	# نقل صف الأزرار إلى أعلى الشاشة حتى لا يغطي مناطق الإجابة
-	# (مناطق الاختيار في البطاقة تبدأ عند نحو 55% من الارتفاع)
+	# نقل صف الأزرار إلى أعلى الشاشة فوق مؤقت البطاقة، حتى لا يغطي
+	# نص السؤال ولا مناطق الإجابة. مربع المؤقت يبدأ عند نحو y=72
+	# في شاشة 900، والأزرار بارتفاع 55، فيجلس الصف بين 8 و 63.
+	# الحد الأدنى لارتفاع الصندوق (450) كان يمدده للأسفل فوق نص
+	# السؤال مهما كانت الإزاحة، لذلك نلغيه في هذا الوضع فقط
+	content_box.custom_minimum_size = Vector2(_cb_home_min_size.x, 0.0)
 	content_box.anchor_top = 0.0
 	content_box.anchor_bottom = 0.0
-	content_box.offset_top = 30.0
-	content_box.offset_bottom = 230.0
+	content_box.offset_top = REDIRECT_BAR_TOP
+	content_box.offset_bottom = REDIRECT_BAR_TOP + REDIRECT_BAR_HEIGHT
 
 	attacker_button.visible = true
 	defender_button.visible = true
@@ -240,7 +252,9 @@ func _restore_full_layout() -> void:
 	title_label.visible = true
 	message_label.visible = true
 	battle_teams_label.visible = true
+	space_small.visible = true
 
+	content_box.custom_minimum_size = _cb_home_min_size
 	content_box.anchor_top = _cb_home_anchor_top
 	content_box.anchor_bottom = _cb_home_anchor_bottom
 	content_box.offset_top = _cb_home_offset_top
