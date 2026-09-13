@@ -142,6 +142,15 @@ func _process(delta: float) -> void:
 	# حتى تظهر النتيجة بعد توقف المؤقت
 	_sync_image_mode_overlay()
 
+	# عرض القراءة قبل المعركة له عداده الخاص، ولا يمر بـ handle_time_out
+	# لأن انتهاء وقت المعركة يجعل القطاع محايدًا
+	if battle_preview_running:
+		battle_preview_time_left -= delta
+		timer_label.text = "📖 وقت القراءة: " + GameManagerHelper.format_mm_ss(int(ceil(max(battle_preview_time_left, 0.0))))
+		if battle_preview_time_left <= 0:
+			_finish_battle_preview()
+		return
+
 	if not timer_running:
 		return
 
@@ -1903,6 +1912,96 @@ const OWNER_NEUTRAL_LOCKED := -1
 var second_chance_used := false
 
 
+# ======================================================
+#   عرض سؤال المعركة للقراءة فقط
+# ------------------------------------------------------
+# عند بدء المعركة يظهر السؤال أولًا للجميع دون إمكانية الإجابة
+# لمدة ANSWER_TIME_SECONDS، ثم يغلق تلقائيًا وتظهر نافذة اختيار
+# الفريق. السؤال نفسه يعاد عرضه بعدها في show_battle_question،
+# لأن كلا العرضين يقرأ questions[cell.questions_used] ولا يتغير
+# العداد إلا بعد الإجابة
+# ======================================================
+signal battle_preview_finished
+
+var battle_preview_running := false
+var battle_preview_time_left := 0.0
+
+
+func show_battle_preview(cell, board_ref) -> void:
+	var sector_data: Dictionary = SectorQuestionsData.sector_cards.get(cell.sector_id, {})
+	var questions: Array = sector_data.get("questions", [])
+	var question_index: int = cell.questions_used
+
+	# لا سؤال متاح: نتخطى القراءة ويكمل المسار الحالي إلى إلغاء المعركة
+	if question_index < 0 or question_index >= questions.size():
+		return
+
+	current_cell = cell
+	board = board_ref
+	current_board = board_ref
+
+	reset_question_card()
+
+	# reset_question_card تشغل مؤقت الإجابة، ولا إجابة في هذه المرحلة
+	timer_running = false
+	battle_mode = false
+	# يمنع _resolve_answer من أي مسار كان، ويعاد ضبطه في show_battle_question
+	answer_selected = true
+
+	current_question = questions[question_index]
+
+	sector_name_label.text = sector_data.get("topic", "")
+	question_number_label.text = "سؤال المعركة - للقراءة فقط"
+	question_text_label.text = current_question["question"]
+
+	answer_a_button.text = current_question["answers"]["A"]
+	answer_b_button.text = current_question["answers"]["B"]
+	answer_c_button.text = current_question["answers"]["C"]
+	answer_d_button.visible = false
+
+	result_label.visible = false
+	result_label.text = ""
+
+	_apply_question_visuals()
+
+	# بعد _apply_question_visuals لأنها تظهر مناطق الضغط في وضع الصورة
+	_set_option_zones_visible(false)
+	answer_a_button.disabled = true
+	answer_b_button.disabled = true
+	answer_c_button.disabled = true
+	answer_d_button.disabled = true
+
+	# زر الإغلاق ينهي الدور عبر hide_card، فيُخفى طوال القراءة
+	close_button.visible = false
+
+	battle_preview_time_left = ANSWER_TIME_SECONDS
+	timer_label.visible = true
+	timer_label.text = "📖 وقت القراءة: " + GameManagerHelper.format_mm_ss(int(battle_preview_time_left))
+	battle_preview_running = true
+
+	# البطاقة الظاهرة تمنع النرد أصلًا، وهذا المانع احتياط للحظة الانتقال
+	GameManagerHelper.push_input_block(self, "battle_preview")
+
+	visible = true
+	layer = 100
+
+	await battle_preview_finished
+
+
+func _finish_battle_preview() -> void:
+	if not battle_preview_running:
+		return
+
+	battle_preview_running = false
+	close_button.visible = true
+	visible = false
+
+	# المانع يُحرر بعد أن تفتح نافذة المعركة في الإطار نفسه
+	# (المستمع ينفذ show_battle مباشرة بعد الإشارة)
+	battle_preview_finished.emit()
+	GameManagerHelper.pop_input_block(self)
+
+
 func handle_sector(cell) -> void:
 	var team_id = GameManager.current_team
 
@@ -2004,7 +2103,15 @@ func show_battle_question(
 	_apply_question_visuals()
 
 	visible = true
+	layer = 100
 	enable_answer_buttons()
+
+	# enable_answer_buttons لا تشغل المؤقت في المعركة، وأزرار ChoosPlayer
+	# التي كانت تشغله مخفية دائمًا هنا، فكان سؤال المعركة بلا مؤقت.
+	# نشغله صراحة عند فتح السؤال للإجابة. تأثير "ما هذا الحظ السيّئ"
+	# ما زال قائمًا في هذه اللحظة (يحذف بعد العودة من هنا)، فيبقى
+	# الفريق المستفيد بلا حد زمني كما في وثيقة البطاقات
+	_start_answer_timer()
 
 
 # ======================================================
