@@ -43,8 +43,16 @@ var main_ui = null
 #   1. إخفاء اللوحة عند بدء اللعبة
 #   2. تعطيل مفتاح F9 حتى لا يفتحها اللاعب،
 #      لأن فتحها يغير debug_use_selected_card فيتأثر سحب البطاقات
+#
+# تعطيل مؤقت كامل: اللوحة معطلة الآن حتى في المحرر، بلا علاقة
+# بـ OS.is_debug_build(). لإعادة التفعيل لجلسة فحص لاحقة، أعد
+# FORCE_DISABLE إلى false — علم واحد واضح، لا حذف ولا تعليق متفرق
 # ======================================================
+const FORCE_DISABLE := true
+
 func _is_debug_tools_enabled() -> bool:
+	if FORCE_DISABLE:
+		return false
 	return OS.is_debug_build()
 
 

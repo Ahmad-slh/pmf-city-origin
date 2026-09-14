@@ -34,6 +34,10 @@ var answer_selected := false
 
 var is_flipping: bool = false
 
+# يزداد مع كل بطاقة جديدة. القلب ينتظر مهلة قبل أن يبدأ، فإن أغلقت
+# البطاقة وفتحت غيرها خلالها يلغي القلب القديم نفسه بدل قلب البطاقة الجديدة
+var _flip_generation := 0
+
 
 var questions_data := {
 	6: [
@@ -70,7 +74,7 @@ var time_left := ANSWER_TIME_SECONDS
 
 # كم ثانية تبقى نتيجة الإجابة معروضة قبل أن تنقلب البطاقة
 # إلى وجه المعلومة. تستخدم في العرض النصي وعرض الصورة والمعركة معا
-const RESULT_HOLD_SECONDS := 0.5
+const RESULT_HOLD_SECONDS := 2.5
 
 
 # ======================================================
@@ -199,6 +203,31 @@ const OVERLAY_RESULT_BOTTOM := 0.208
 var _overlay_timer: Label = null
 var _overlay_result: Label = null
 
+
+# ======================================================
+#   إشعار الفرصة الثانية في المعركة
+# ------------------------------------------------------
+# كان النص يمر عبر result_label فيظهر في طبقة النتيجة فوق البطاقة
+# ويغطي نص السؤال أثناء إعادة المحاولة. نعرضه بدلا من ذلك في شريط
+# أحمر على يسار الشاشة خارج البطاقة.
+#
+# الإشعار يظهر ما دام result_label يحمل هذا النص بالضبط، فيختفي في
+# اللحظة نفسها التي كان يختفي فيها سابقا (عند استبدال النص بنتيجة
+# الإجابة الثانية أو انتهاء الوقت)، دون أي مؤقت جديد.
+#
+# الإحداثيات بوحدات طبقة البطاقة (مقياسها 0.4): البطاقة تبدأ عند
+# x=1220، أي 488 بكسل على شاشة عرضها 1500، والإشعار ينتهي عند
+# x=1180 (472 بكسل) فيبقى بينه وبين البطاقة هامش
+# ======================================================
+const SECOND_CHANCE_TEXT := "❌ إجابة خاطئة\n✨ لديكم فرصة ثانية للإجابة مرة أخرى"
+
+const SECOND_CHANCE_NOTICE_LEFT := 60.0
+const SECOND_CHANCE_NOTICE_RIGHT := 1180.0
+const SECOND_CHANCE_NOTICE_TOP := 900.0
+const SECOND_CHANCE_NOTICE_BOTTOM := 1340.0
+
+var _second_chance_notice: Label = null
+
 # يمنع ظهور الطبقة على وجه المعلومة بعد قلب البطاقة
 var _showing_info_side := false
 
@@ -251,6 +280,45 @@ func _ensure_image_mode_overlay() -> void:
 	texture_rect.add_child(_overlay_result)
 
 
+func _ensure_second_chance_notice() -> void:
+	if _second_chance_notice != null and is_instance_valid(_second_chance_notice):
+		return
+
+	var label := Label.new()
+	label.name = "SecondChanceNotice"
+	label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	label.add_theme_font_size_override("font_size", 64)
+	label.add_theme_color_override("font_color", Color(1, 1, 1))
+	label.add_theme_color_override("font_outline_color", Color(0.35, 0.0, 0.0))
+	label.add_theme_constant_override("outline_size", 8)
+
+	var style := StyleBoxFlat.new()
+	style.bg_color = Color(0.80, 0.10, 0.10, 0.95)
+	style.border_color = Color(0.45, 0.0, 0.0, 1.0)
+	style.set_border_width_all(8)
+	style.set_corner_radius_all(40)
+	style.content_margin_left = 40
+	style.content_margin_right = 40
+	style.content_margin_top = 30
+	style.content_margin_bottom = 30
+	label.add_theme_stylebox_override("normal", style)
+
+	# ابن مباشر لطبقة البطاقة، لا لصورة البطاقة، حتى لا يتحرك مع
+	# حركة قلب البطاقة ولا يقع داخل حدودها
+	label.position = Vector2(SECOND_CHANCE_NOTICE_LEFT, SECOND_CHANCE_NOTICE_TOP)
+	label.size = Vector2(
+		SECOND_CHANCE_NOTICE_RIGHT - SECOND_CHANCE_NOTICE_LEFT,
+		SECOND_CHANCE_NOTICE_BOTTOM - SECOND_CHANCE_NOTICE_TOP
+	)
+	label.text = SECOND_CHANCE_TEXT
+	label.visible = false
+	add_child(label)
+	_second_chance_notice = label
+
+
 # ======================================================
 # اسم الدالة: _sync_image_mode_overlay
 # وظيفتها:
@@ -259,6 +327,17 @@ func _ensure_image_mode_overlay() -> void:
 # ======================================================
 func _sync_image_mode_overlay() -> void:
 	_ensure_image_mode_overlay()
+	_ensure_second_chance_notice()
+
+	# إشعار الفرصة الثانية يذهب إلى الشريط الأحمر على اليسار بدل
+	# البطاقة، في وضع الصورة والوضع النصي معا
+	var show_second_chance: bool = result_label.visible \
+		and result_label.text == SECOND_CHANCE_TEXT \
+		and not _showing_info_side
+	_second_chance_notice.visible = show_second_chance
+	# في الوضع النصي نخفي النسخة داخل اللوحة بالشفافية فقط،
+	# حتى لا يتغير تخطيط الخيارات تحتها
+	result_label.self_modulate.a = 0.0 if show_second_chance else 1.0
 
 	# الطبقة لوضع الصورة فقط، وليس على وجه المعلومة
 	if not uses_card_image or _showing_info_side:
@@ -266,7 +345,8 @@ func _sync_image_mode_overlay() -> void:
 		_overlay_result.visible = false
 		return
 
-	var has_result: bool = result_label.visible and result_label.text != ""
+	var has_result: bool = result_label.visible and result_label.text != "" \
+		and not show_second_chance
 
 	# المؤقت يبقى ظاهرا، وإشعار النتيجة يظهر تحته مباشرة
 	_overlay_timer.text = timer_label.text
@@ -373,7 +453,9 @@ const OPTION_ZONE_HOVER_INSET_H := 100.0
 # الصحيحة وحدها نمطا أخضر مرئيا لمدة قصيرة، ثم نعيدها
 # شفافة كما كانت قبل قلب البطاقة
 # ======================================================
-const CORRECT_HIGHLIGHT_SECONDS := 3.0
+# تضاف فوق RESULT_HOLD_SECONDS: الإجابة الخاطئة تبقى 4 ثوان قبل القلب
+# مقابل 2.5 للصحيحة، وقت إضافي لرؤية الإجابة الصحيحة مبرزة
+const CORRECT_HIGHLIGHT_SECONDS := 1.5
 
 var _highlighted_zone: Button = null
 
@@ -1203,17 +1285,34 @@ func try_use_second_chance_battle(is_correct: bool) -> bool:
 		GameManagerHelper.EffectType.SECOND_CHANCE_BATTLE
 	)
 	
-	result_label.text = "❌ إجابة خاطئة\n✨ لديكم فرصة ثانية للإجابة مرة أخرى"
+	result_label.text = SECOND_CHANCE_TEXT
 	result_label.add_theme_color_override(
 		"font_color",
 		Color(0.001, 0.001, 0.0, 1.0)
 	)
 	
+	# _mark_option_rings لونت دائرة الإجابة الصحيحة بالأخضر لحظة الضغط،
+	# وهذا يكشف الجواب قبل المحاولة الثانية. نزيل علامة الصحيحة ونبقي
+	# الأحمر على اختيار الفريق. إن أخطأ مرة ثانية تعيد _mark_option_rings
+	# رسم العلامات فتظهر الإجابة الصحيحة كالمعتاد
+	_hide_correct_option_ring()
+
 	# إعادة تفعيل الإجابة
 	answer_selected = false
 	#enable_answer_buttons()
 	
 	return true
+
+
+func _hide_correct_option_ring() -> void:
+	var correct_index: int = int(current_question.get("correct_index", -1))
+	if not _ring_marks.has(correct_index):
+		return
+
+	_ring_marks.erase(correct_index)
+
+	if _option_ring_layer != null and is_instance_valid(_option_ring_layer):
+		_option_ring_layer.queue_redraw()
 	
 func handle_normal_answer(is_correct: bool) -> void:
 	var team_id = GameManager.current_team
@@ -1470,12 +1569,10 @@ func handle_time_out() -> void:
 	if not answer_selected:
 		return
 
-	# هذا هو المسار الوحيد الذي يخفي البطاقة تلقائيا.
-	# القلب صار ينتظر RESULT_HOLD_SECONDS، فلو بقي الإخفاء على 1.5
-	# لاختفت البطاقة قبل أن تنقلب أصلا ولما رأى اللاعب وجه المعلومة.
-	# نضيف المهلة نفسها ليبقى وجه المعلومة ظاهرا كما كان
-	await get_tree().create_timer(RESULT_HOLD_SECONDS + 1.5).timeout
-	hide_card()
+	# كان هذا المسار يخفي البطاقة وينهي الدور بعد مهلة ثابتة، فتختفي
+	# قبل أن يبدأ القلب (انتهاء الوقت يبرز الإجابة الصحيحة فيتأخر القلب)
+	# ولا يرى اللاعب وجه المعلومة إطلاقا. الآن تنقلب البطاقة وتبقى
+	# ظاهرة حتى يضغط اللاعب زر الإغلاق، كبقية مسارات الإجابة
 
 
 # ======================================================
@@ -1797,6 +1894,7 @@ func show_info_side() -> void:
 
 func reset_question_card() -> void:
 	
+	_flip_generation += 1
 	info_close_button.visible = false
 	choos_player_1.visible= false
 	choos_player_2.visible = false
@@ -1836,6 +1934,7 @@ func flip_to_background_info() -> void:
 		return
 
 	is_flipping = true
+	var flip_generation := _flip_generation
 
 	disable_answer_buttons()
 
@@ -1854,6 +1953,15 @@ func flip_to_background_info() -> void:
 	if _highlighted_zone != null:
 		await get_tree().create_timer(CORRECT_HIGHLIGHT_SECONDS).timeout
 		_clear_correct_zone_highlight()
+
+	# فتحت بطاقة أخرى أثناء المهلة: هي صاحبة is_flipping الآن فلا نلمسه
+	if flip_generation != _flip_generation:
+		return
+
+	# أغلقت البطاقة بزر الإغلاق أثناء المهلة: لا نقلب بطاقة مخفية
+	if not visible:
+		is_flipping = false
+		return
 
 	texture_rect.pivot_offset = texture_rect.size / 2.0
 	
