@@ -267,7 +267,92 @@ func end_game():
 
 	print("Game Over")
 
+	var result := compute_winner()
+	last_winner_team = result["winner"]
+
+	print("القطاعات — الأزرق: ", result["sectors"][1], " | الأخضر: ", result["sectors"][2])
+	print("النقاط — الأزرق: ", result["scores"][1], " | الأخضر: ", result["scores"][2])
+
+	if last_winner_team == 0:
+		print("النتيجة: تعادل")
+	else:
+		print("الفائز: ", _winner_display_name(last_winner_team))
+		# صوت الفوز النهائي — لا يشتغل عند التعادل، فقط عند وجود فائز حقيقي
+		Sfx.play(Sfx.Sound.FINAL_WIN)
+
 	# هنا تستدعي شاشة النتائج		
+
+
+# ======================================================
+# اسم الدالة: compute_winner
+# وظيفتها:
+# تحديد الفريق الفائز في نهاية الوقت.
+#
+# معيار الفوز مأخوذ من قواعد اللعبة المعروضة في القائمة
+# الرئيسية (البند ٦): "الفريق الذي يجمع أكبر قدر من
+# الاستثمارات والقطاعات يفوز باللعبة".
+#
+# لذلك الترتيب:
+#   ١. عدد القطاعات المملوكة (owner_team) — المعيار الأساسي
+#   ٢. عند التساوي: النقاط المتراكمة من الأسئلة (team_scores)
+#   ٣. عند تساويهما معًا: تعادل (0)
+#
+# ملاحظة: owner_team = -1 يعني قطاعًا مغلقًا محايدًا،
+# فلا يحسب لأي فريق
+#
+# ترجع: { winner, sectors, scores }
+# ======================================================
+func compute_winner() -> Dictionary:
+	var sector_counts := {1: 0, 2: 0}
+
+	# مجموعة board_sectors تضم ٣٥ خلية: ١٤ قطاعًا و٢١ شارعًا.
+	# الشوارع أيضًا نسخ من Sector.tscn (بـ cell_type = STREET)،
+	# لذلك تملك owner_team كذلك ولا يكفي فحص وجود الخاصية —
+	# نصفّي على نوع الخلية.
+	#
+	# CellType.SECTOR = 0 (أول عنصر في enum داخل sector.gd).
+	# لا نستدعي is_sector() رغم أنها الفحص الطبيعي ظاهريًا، لأنها
+	# تكتب في GameManagerHelper.last_effect_source_type كأثر جانبي
+	const CELL_TYPE_SECTOR := 0
+
+	for cell in get_tree().get_nodes_in_group("board_sectors"):
+		if not is_instance_valid(cell):
+			continue
+		if not ("owner_team" in cell and "cell_type" in cell):
+			continue
+		if cell.cell_type != CELL_TYPE_SECTOR:
+			continue
+		var owner_team: int = cell.owner_team
+		if owner_team == 1 or owner_team == 2:
+			sector_counts[owner_team] += 1
+
+	var scores := {1: 0, 2: 0}
+	if is_instance_valid(board) and board.board_cell_action_handler != null:
+		scores[1] = board.board_cell_action_handler.team_scores[1]
+		scores[2] = board.board_cell_action_handler.team_scores[2]
+
+	var winner := 0
+
+	if sector_counts[1] > sector_counts[2]:
+		winner = 1
+	elif sector_counts[2] > sector_counts[1]:
+		winner = 2
+	elif scores[1] > scores[2]:
+		winner = 1
+	elif scores[2] > scores[1]:
+		winner = 2
+
+	return {
+		"winner": winner,
+		"sectors": sector_counts,
+		"scores": scores,
+	}
+
+
+func _winner_display_name(team_id: int) -> String:
+	if team_id == 1:
+		return "الفريق الأزرق"
+	return "الفريق الأخضر"
 
 
 # ======================================================
@@ -280,6 +365,10 @@ func end_game():
 # طبقة 140 لأن زر الخروج نفسه على ExitUI بطبقة 10
 # ======================================================
 const EXIT_CONFIRM_LAYER := 140
+
+# الفريق الفائز بعد انتهاء الوقت — تستخدمه شاشة النتائج لاحقًا
+# 0 = تعادل (أو اللعبة لم تنته بعد)، 1 = الأزرق، 2 = الأخضر
+var last_winner_team := 0
 
 var exit_confirm_layer: CanvasLayer = null
 
