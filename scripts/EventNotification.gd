@@ -181,7 +181,13 @@ func _apply_team_colors() -> void:
 		title_label.add_theme_color_override("font_color", Color("#D32F2F"))
 
 	event_label.add_theme_color_override("font_color", Color("#1F1F1F"))
-	close_button.add_theme_color_override("font_color", Color("#666666"))
+	# «إخفاء» كانت رمادية فاتحة فوق خلفية بيضاء. نستخدم لونًا داكنًا
+	# ثابتًا، ولون الفريق عند التحويم والضغط، لتبقى واضحة للفريقين.
+	close_button.add_theme_color_override("font_color", Color("#111111"))
+	close_button.add_theme_color_override("font_focus_color", Color("#111111"))
+	close_button.add_theme_color_override("font_hover_color", style.border_color)
+	close_button.add_theme_color_override("font_pressed_color", style.border_color.darkened(0.15))
+	close_button.add_theme_font_size_override("font_size", 18)
 
 	panel.add_theme_stylebox_override("panel", style)
 

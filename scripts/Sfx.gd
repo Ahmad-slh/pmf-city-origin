@@ -34,7 +34,7 @@ const STREAMS := {
 	Sound.TOKEN_SETTLE:   preload("res://assets/audio/sound effects/صوت استقرار حنظلة على القطاع أو الشارع.wav"),
 	Sound.ANSWER_CORRECT: preload("res://assets/audio/sound effects/صوت الإجابة الصحيحة.mp3"),
 	Sound.ANSWER_WRONG:   preload("res://assets/audio/sound effects/صوت الإجابة الخاطئة.mp3"),
-	Sound.BATTLE_START:   preload("res://assets/audio/sound effects/صوت المعركة.wav"),
+	Sound.BATTLE_START:   preload("res://assets/audio/battle_start.wav"),
 	Sound.SECTOR_WIN:     preload("res://assets/audio/sound effects/صوت فوز القطاع.wav"),
 	Sound.SECTOR_LOSE:    preload("res://assets/audio/sound effects/صوت خسارة القطاع.wav"),
 	Sound.EVENT_GOOD:     preload("res://assets/audio/sound effects/صوت حدث جيد.mp3"),

@@ -22,7 +22,9 @@ extends Node2D
 
 
 
-var remaining_seconds := 3600
+# مدة الجولة الكاملة: ساعتان.
+const GAME_DURATION_SECONDS := 2 * 60 * 60
+var remaining_seconds := GAME_DURATION_SECONDS
 
 
 
@@ -258,7 +260,7 @@ func _on_game_timer_timeout():
 
 func update_game_timer():
 
-	# اعرض دائماً بصيغة MM:SS فقط — بدون ساعات
+	# اعرض دائماً بصيغة دقائق:ثوانٍ — الساعتان تظهران 120:00
 	# ملاحظة: لا نضيف "⏳ الوقت:" هنا لأن الأيقونة موجودة أصلاً كصورة
 	# (TimerImage)، ولأن النص الأطول يفيض خارج الصندوق الأزرق
 	game_timer_label.text = GameManagerHelper.format_mm_ss(remaining_seconds)

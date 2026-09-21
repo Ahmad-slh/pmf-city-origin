@@ -6,7 +6,7 @@
 [ext_resource type="FontFile" uid="uid://u7k65f6drtyk" path="res://assets/fonts/Cairo-Regular.ttf" id="4_fk5km"]
 [ext_resource type="Texture2D" uid="uid://d11wpt5hgm7ab" path="res://assets/images/تصميم حنظلة/باتل الفريق الأزرق.png" id="7_bluef"]
 [ext_resource type="Texture2D" uid="uid://d2njwd1fty4bh" path="res://assets/images/تصميم حنظلة/باتل الفريق الاحمر.png" id="8_redf"]
-[ext_resource type="AudioStream" uid="uid://dv0uvblojnxid" path="res://assets/audio/sound effects/صوت المعركة.wav" id="4_m2wj0"]
+[ext_resource type="AudioStream" uid="uid://7h272svpdqt5" path="res://assets/audio/battle_start.wav" id="4_m2wj0"]
 [ext_resource type="AudioStream" uid="uid://buxp78vekl2uk" path="res://assets/audio/sound effects/صوت فوز القطاع.wav" id="5_ucv7a"]
 [ext_resource type="AudioStream" uid="uid://b5cp6j05xjohw" path="res://assets/audio/sound effects/صوت خسارة القطاع.wav" id="6_fk5km"]
 

@@ -148,6 +148,10 @@ func _on_dice_twice_choose_best(value:int =0)->bool:
 	if GoodEffects.use_twice_choose_best(current_team):
 		if GoodEffects.firstRoll==0:
 			GoodEffects.firstRoll=value
+			# الرمية الأولى ليست نهاية الدور. _on_dice_rolled يقفل النرد
+			# في بداية كل رمية، لذلك نحرره هنا حتى يستطيع الفريق تنفيذ
+			# الرمية الثانية التي تحتاجها البطاقة.
+			GameManager.has_rolled_this_turn = false
 			return true
 		else:
 			GoodEffects.secondRoll=value
@@ -498,7 +502,6 @@ func _start_controlled_walk(controller_team: int, moving_team: int, steps: int) 
 
 	var landing = path[path.size() - 1]["cell"]
 
-	Sfx.play(Sfx.Sound.TOKEN_SETTLE)
 	_finalize_landing(landing, moving_team)
 
 
@@ -593,12 +596,10 @@ func _ask_walk_direction(
 
 	# الأزرار الأربعة موزعة على شكل صليب
 	var mid := panel_size.x / 2.0
-	# أسهم الاتجاهات: نستخدم U+2190..U+2193 لأن الخط arial.ttf
-	# لا يحتوي على مثلثي اليسار/اليمين (U+25C0 / U+25B6) فتظهر مربعات رموز
-	_add_walk_button(panel, "↑", DIRECTION_UP, Vector2(mid - 55, 114), options)
-	_add_walk_button(panel, "←", DIRECTION_LEFT, Vector2(mid - 175, 202), options)
-	_add_walk_button(panel, "→", DIRECTION_RIGHT, Vector2(mid + 65, 202), options)
-	_add_walk_button(panel, "↓", DIRECTION_DOWN, Vector2(mid - 55, 290), options)
+	_add_walk_button(panel, "أعلى", DIRECTION_UP, Vector2(mid - 55, 114), options)
+	_add_walk_button(panel, "يسار", DIRECTION_LEFT, Vector2(mid - 175, 202), options)
+	_add_walk_button(panel, "يمين", DIRECTION_RIGHT, Vector2(mid + 65, 202), options)
+	_add_walk_button(panel, "أسفل", DIRECTION_DOWN, Vector2(mid - 55, 290), options)
 
 	var chosen: Vector2i = await direction_step_chosen
 
@@ -719,6 +720,9 @@ func _finalize_landing(cell, team_id: int) -> void:
 
 	active_player.allowed_position = target
 	active_player.global_position = target
+	# نقطة الوصول المشتركة للحركة بالسحب أو النقر أو التحكم بالاتجاه.
+	# تشغيل الصوت هنا يضمن سماعه مرة واحدة مهما كان مسار الحركة.
+	Sfx.play(Sfx.Sound.TOKEN_SETTLE)
 
 	team_positions[team_id] = cell.grid_pos
 

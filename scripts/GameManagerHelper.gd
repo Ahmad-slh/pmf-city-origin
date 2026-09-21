@@ -792,11 +792,11 @@ func set_effect_display_turns(team_id: int, effect_type: int, turns: int) -> voi
 # اسم الدالة: format_mm_ss
 # وظيفتها:
 # تنسيق موحّد للوقت بصيغة MM:SS لكل مؤقتات اللعبة
-# خانتان للدقائق وخانتان للثواني، بلا ساعات
+# دقائق قد تمتد إلى ثلاث خانات، وثانيتان، بلا ساعات
 # ======================================================
 func format_mm_ss(total_seconds: int) -> String:
 
-	var clamped := clampi(total_seconds, 0, 99 * 60 + 59)
+	var clamped := clampi(total_seconds, 0, 999 * 60 + 59)
 
 	return "%02d:%02d" % [clamped / 60, clamped % 60]
 
