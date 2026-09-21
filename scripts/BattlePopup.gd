@@ -8,6 +8,11 @@ var board = null
 @onready var battle_effect: TextureRect = $BattleEffect
 @onready var battle_card: TextureRect = $BattleCard
 
+# صورتا مقاتلي الفريقين بدل النقطتين الملونتين: الأزرق يسارًا والأحمر يمينًا
+@onready var fighters: Control = $Fighters
+@onready var blue_fighter: TextureRect = $Fighters/BlueFighter
+@onready var red_fighter: TextureRect = $Fighters/RedFighter
+
 @onready var title_label: Label = $ContentBox/TitleLabel
 @onready var message_label: Label = $ContentBox/MessageLabel
 @onready var battle_teams_label: Label = $ContentBox/BattleTeamsLabel
@@ -82,8 +87,9 @@ func show_battle(cell, p_attacker_team_id: int, p_defender_team_id: int, board_r
 	message_label.text = "اختر من سيجيب على السؤال"
 
 	battle_teams_label.text = get_team_name(attacker_team_id) + " وصل\n" + \
-		"إلى قطاع " + get_team_name(defender_team_id) + "\n\n" + \
-		get_team_icon(attacker_team_id) + "   VS   " + get_team_icon(defender_team_id)
+		"إلى قطاع " + get_team_name(defender_team_id)
+
+	_update_battle_identity()
 	play_open_animation()
 	begin_auto_bettle(current_cell, p_attacker_team_id, p_defender_team_id, board_ref, team_must_begin_battle)
 	
@@ -196,6 +202,7 @@ func enter_redirect_mode() -> void:
 	battle_flash.visible = false
 	battle_effect.visible = false
 	battle_card.visible = false
+	fighters.visible = false
 	title_label.visible = false
 	message_label.visible = false
 	battle_teams_label.visible = false
@@ -249,6 +256,7 @@ func _restore_full_layout() -> void:
 	battle_flash.visible = true
 	battle_effect.visible = true
 	battle_card.visible = true
+	fighters.visible = true
 	title_label.visible = true
 	message_label.visible = true
 	battle_teams_label.visible = true
@@ -260,6 +268,23 @@ func _restore_full_layout() -> void:
 	content_box.offset_top = _cb_home_offset_top
 	content_box.offset_bottom = _cb_home_offset_bottom
 		
+# ======================================================
+# اسم الدالة: _update_battle_identity
+# وظيفتها:
+# إظهار صورتي المقاتلين، وكتابة اسم الفريق على كل زر بدل الكلمة العامة
+# "المهاجم"/"المدافع". الزران يحتفظان بمعناهما كما هو: زر المهاجم يبقى
+# مرتبطًا بـ attacker_team_id وزر المدافع بـ defender_team_id، وإنما
+# يعرض كل منهما هوية الفريق الذي يمثله في هذه المعركة تحديدًا.
+# ======================================================
+func _update_battle_identity() -> void:
+	fighters.visible = true
+	blue_fighter.visible = true
+	red_fighter.visible = true
+
+	attacker_button.text = get_team_name(attacker_team_id)
+	defender_button.text = get_team_name(defender_team_id)
+
+
 func get_team_name(team_id: int) -> String:
 	if team_id == 1:
 		return "الفريق الأزرق"

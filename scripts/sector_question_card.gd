@@ -18,6 +18,7 @@ extends CanvasLayer
 @onready var answer_c_button: Button = $TextureRect/Panel/MarginContainer/AnswersContainer/AnswerCButton
 @onready var answer_d_button: Button = $TextureRect/Panel/MarginContainer/AnswersContainer/AnswerDButton
 @onready var close_button: Button = $TextureRect/CloseButton
+@onready var battle_start_answer_button: Button = $TextureRect/BattleStartAnswerButton
 # زر الإغلاق الظاهر على وجه المعلومة وحده، لا على وجه السؤال
 @onready var info_close_button: Button = $TextureRect/InfoCloseButton
 @onready var texture_rect: TextureRect = $TextureRect
@@ -146,13 +147,9 @@ func _process(delta: float) -> void:
 	# حتى تظهر النتيجة بعد توقف المؤقت
 	_sync_image_mode_overlay()
 
-	# عرض القراءة قبل المعركة له عداده الخاص، ولا يمر بـ handle_time_out
-	# لأن انتهاء وقت المعركة يجعل القطاع محايدًا
+	# مرحلة قراءة سؤال المعركة مفتوحة بلا عدّ زمني. لا يبدأ مؤقت
+	# الإجابة إلا بعد ضغط "جاهز لبدء الإجابة" ثم اختيار الفريق.
 	if battle_preview_running:
-		battle_preview_time_left -= delta
-		timer_label.text = "📖 وقت القراءة: " + GameManagerHelper.format_mm_ss(int(ceil(max(battle_preview_time_left, 0.0))))
-		if battle_preview_time_left <= 0:
-			_finish_battle_preview()
 		return
 
 	if not timer_running:
@@ -1896,6 +1893,7 @@ func reset_question_card() -> void:
 	
 	_flip_generation += 1
 	info_close_button.visible = false
+	battle_start_answer_button.visible = false
 	choos_player_1.visible= false
 	choos_player_2.visible = false
 	is_flipping = false
@@ -2024,15 +2022,15 @@ var second_chance_used := false
 #   عرض سؤال المعركة للقراءة فقط
 # ------------------------------------------------------
 # عند بدء المعركة يظهر السؤال أولًا للجميع دون إمكانية الإجابة
-# لمدة ANSWER_TIME_SECONDS، ثم يغلق تلقائيًا وتظهر نافذة اختيار
-# الفريق. السؤال نفسه يعاد عرضه بعدها في show_battle_question،
+# ودون عدّ زمني. عندما ينتهي اللاعب من القراءة يضغط زر بدء الإجابة،
+# فتظهر نافذة اختيار الفريق. السؤال نفسه يعاد عرضه بعدها في
+# show_battle_question، ويبدأ مؤقت الإجابة بعد اختيار الفريق فقط،
 # لأن كلا العرضين يقرأ questions[cell.questions_used] ولا يتغير
 # العداد إلا بعد الإجابة
 # ======================================================
 signal battle_preview_finished
 
 var battle_preview_running := false
-var battle_preview_time_left := 0.0
 
 
 func show_battle_preview(cell, board_ref) -> void:
@@ -2079,12 +2077,12 @@ func show_battle_preview(cell, board_ref) -> void:
 	answer_c_button.disabled = true
 	answer_d_button.disabled = true
 
-	# زر الإغلاق ينهي الدور عبر hide_card، فيُخفى طوال القراءة
+	# لا يسمح زر الإغلاق بإنهاء الدور أثناء القراءة. بدلًا منه يظهر زر
+	# واضح ينقل اللعبة إلى اختيار الفريق عندما يصبح اللاعب جاهزًا.
 	close_button.visible = false
-
-	battle_preview_time_left = ANSWER_TIME_SECONDS
+	battle_start_answer_button.visible = true
 	timer_label.visible = true
-	timer_label.text = "📖 وقت القراءة: " + GameManagerHelper.format_mm_ss(int(battle_preview_time_left))
+	timer_label.text = "📖 اقرأ السؤال، ثم اضغط جاهز لبدء الإجابة"
 	battle_preview_running = true
 
 	# البطاقة الظاهرة تمنع النرد أصلًا، وهذا المانع احتياط للحظة الانتقال
@@ -2101,6 +2099,7 @@ func _finish_battle_preview() -> void:
 		return
 
 	battle_preview_running = false
+	battle_start_answer_button.visible = false
 	close_button.visible = true
 	visible = false
 
@@ -2108,6 +2107,10 @@ func _finish_battle_preview() -> void:
 	# (المستمع ينفذ show_battle مباشرة بعد الإشارة)
 	battle_preview_finished.emit()
 	GameManagerHelper.pop_input_block(self)
+
+
+func _on_battle_start_answer_button_pressed() -> void:
+	_finish_battle_preview()
 
 
 func handle_sector(cell) -> void:

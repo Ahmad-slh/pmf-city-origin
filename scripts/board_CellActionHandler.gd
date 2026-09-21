@@ -71,7 +71,9 @@ func handle_sector(cell, skip_investment: bool = false) -> void:
 		
 
 
+	# القطاع المغلق لا يفتح بطاقة، فينتهي الدور هنا صراحة
 	if cell.is_closed:
+		GameManager.end_turn()
 		return
 	
 
@@ -126,6 +128,8 @@ func handle_sector(cell, skip_investment: bool = false) -> void:
 	else:
 		print("CLOSE CELL FOR TEAM = ", GameManager.current_team)
 		cell.close_cell(team_id)
+		# إغلاق القطاع لا يعرض بطاقة، فالدور ينتهي هنا
+		GameManager.end_turn()
 
 # ======================================================
 #   المنع الخاص بقطاع بعينه
@@ -163,7 +167,10 @@ func is_sector_investment_blocked(cell, team_id: int) -> bool:
 
 
 func handle_street(cell) -> void:
+	# خلية مغلقة لا تعرض بطاقة، فكان الدور لا ينتهي أبدا ويبقى
+	# النرد متاحا للفريق نفسه بلا حد
 	if cell.is_closed:
+		GameManager.end_turn()
 		return
 
 	var card_data = StreetCardsData.get_random_event_card()

@@ -4,9 +4,11 @@
 [ext_resource type="Texture2D" uid="uid://cb1kfceri758s" path="res://assets/images/buttel/buttel_effect.png" id="2_lvb1t"]
 [ext_resource type="Texture2D" uid="uid://d1cqi13uevad3" path="res://assets/images/buttel/buttel_background.png" id="3_m2wj0"]
 [ext_resource type="FontFile" uid="uid://u7k65f6drtyk" path="res://assets/fonts/Cairo-Regular.ttf" id="4_fk5km"]
+[ext_resource type="Texture2D" uid="uid://d11wpt5hgm7ab" path="res://assets/images/تصميم حنظلة/باتل الفريق الأزرق.png" id="7_bluef"]
+[ext_resource type="Texture2D" uid="uid://d2njwd1fty4bh" path="res://assets/images/تصميم حنظلة/باتل الفريق الاحمر.png" id="8_redf"]
 [ext_resource type="AudioStream" uid="uid://7h272svpdqt5" path="res://assets/audio/battle_start.wav" id="4_m2wj0"]
-[ext_resource type="AudioStream" uid="uid://blhwyv11j725t" path="res://assets/audio/battle_win.wav" id="5_ucv7a"]
-[ext_resource type="AudioStream" uid="uid://cmygkl3nr1a3i" path="res://assets/audio/battle_lose.wav" id="6_fk5km"]
+[ext_resource type="AudioStream" uid="uid://buxp78vekl2uk" path="res://assets/audio/sound effects/صوت فوز القطاع.wav" id="5_ucv7a"]
+[ext_resource type="AudioStream" uid="uid://b5cp6j05xjohw" path="res://assets/audio/sound effects/صوت خسارة القطاع.wav" id="6_fk5km"]
 
 [node name="BattlePopup" type="Control" unique_id=1922644025]
 visible = false
@@ -62,6 +64,51 @@ grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
 texture = ExtResource("3_m2wj0")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Fighters" type="Control" parent="." unique_id=1310011001]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="BlueFighter" type="TextureRect" parent="Fighters" unique_id=1310011002]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -210.0
+offset_top = 15.0
+offset_right = -20.0
+offset_bottom = 205.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("7_bluef")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="RedFighter" type="TextureRect" parent="Fighters" unique_id=1310011003]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = 20.0
+offset_top = 15.0
+offset_right = 210.0
+offset_bottom = 205.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("8_redf")
 expand_mode = 1
 stretch_mode = 5
 
@@ -122,7 +169,7 @@ horizontal_alignment = 1
 autowrap_mode = 2
 
 [node name="SpaceSmall" type="Control" parent="ContentBox" unique_id=1628118688]
-custom_minimum_size = Vector2(0, 30)
+custom_minimum_size = Vector2(0, 200)
 layout_mode = 2
 
 [node name="HBoxContainer" type="HBoxContainer" parent="ContentBox" unique_id=1879181990]
@@ -131,14 +178,14 @@ theme_override_constants/separation = 30
 alignment = 1
 
 [node name="AttackerButton" type="Button" parent="ContentBox/HBoxContainer" unique_id=926803096]
-custom_minimum_size = Vector2(120, 55)
+custom_minimum_size = Vector2(170, 55)
 layout_mode = 2
 theme_override_fonts/font = ExtResource("4_fk5km")
 theme_override_font_sizes/font_size = 20
 text = "المهاجم"
 
 [node name="DefenderButton" type="Button" parent="ContentBox/HBoxContainer" unique_id=144168846]
-custom_minimum_size = Vector2(120, 55)
+custom_minimum_size = Vector2(170, 55)
 layout_mode = 2
 theme_override_fonts/font = ExtResource("4_fk5km")
 theme_override_font_sizes/font_size = 20

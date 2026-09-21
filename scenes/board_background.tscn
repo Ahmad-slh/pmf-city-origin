@@ -15,28 +15,7 @@
 [ext_resource type="PackedScene" uid="uid://dby3bmkxex8kb" path="res://scenes/EventNotification.tscn" id="14_xbdsl"]
 [ext_resource type="PackedScene" uid="uid://eppplix32qj1" path="res://scenes/debug_event_panel.tscn" id="15_lr428"]
 [ext_resource type="Texture2D" uid="uid://byhbjt21f0o60" path="res://assets/images/background/home_icon.png" id="20_homeicon"]
-
-[sub_resource type="FontFile" id="FontFile_c725k"]
-resource_local_to_scene = true
-cache/0/variation_coordinates = {}
-cache/0/face_index = 0
-cache/0/embolden = 0.0
-cache/0/transform = Transform2D(1, 0, 0, 1, 0, 0)
-cache/0/spacing_top = 0
-cache/0/spacing_bottom = 0
-cache/0/spacing_space = 0
-cache/0/spacing_glyph = 0
-cache/0/baseline_offset = 0.0
-cache/0/16/0/ascent = 0.0
-cache/0/16/0/descent = 0.0
-cache/0/16/0/underline_position = 0.0
-cache/0/16/0/underline_thickness = 0.0
-cache/0/16/0/scale = 1.0
-cache/0/200/0/ascent = 0.0
-cache/0/200/0/descent = 0.0
-cache/0/200/0/underline_position = 0.0
-cache/0/200/0/underline_thickness = 0.0
-cache/0/200/0/scale = 1.0
+[ext_resource type="FontFile" uid="uid://bbs5p0j8anqhq" path="res://assets/fonts/arial.ttf" id="21_arialfont"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_exit_n"]
 bg_color = Color(0.18, 0.373, 0.639, 1)
@@ -230,17 +209,17 @@ anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
-offset_left = -1023.4238
+offset_left = -1273.4238
 offset_top = -453.01147
-offset_right = -223.42383
+offset_right = -473.42383
 offset_bottom = -256.01147
 grow_horizontal = 2
 grow_vertical = 2
 size_flags_horizontal = 3
 size_flags_vertical = 6
-theme_override_fonts/font = SubResource("FontFile_c725k")
-theme_override_font_sizes/font_size = 200
-text = "60:00	"
+theme_override_fonts/font = ExtResource("21_arialfont")
+theme_override_font_sizes/font_size = 140
+text = "120:00"
 horizontal_alignment = 1
 vertical_alignment = 1
 

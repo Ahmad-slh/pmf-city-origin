@@ -104,8 +104,6 @@ func check_drop_sector() -> bool:
 
 			if sector.is_highlighted:
 				allowed_position = sector.global_position
-				# صوت استقرار حنظلة على القطاع أو الشارع
-				Sfx.play(Sfx.Sound.TOKEN_SETTLE)
 				board._on_sector_selected(sector)
 				return true
 
