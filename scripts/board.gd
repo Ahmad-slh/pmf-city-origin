@@ -237,6 +237,9 @@ const DIRECTION_LEFT := Vector2i(-1, 0)
 const DIRECTION_RIGHT := Vector2i(1, 0)
 
 var direction_popup: CanvasLayer = null
+var direction_popup_last_position := Vector2(-1, -1)
+var direction_popup_dragging := false
+var direction_popup_drag_offset := Vector2.ZERO
 
 
 # يرجع رقم الفريق الذي يحدد الاتجاه، أو 0 إذا لا يوجد تحكم
@@ -548,12 +551,18 @@ func _ask_walk_direction(
 	# تنتظر ضغطة المسيطر، فتقفل النرد حتى يختار اتجاها
 	GameManagerHelper.push_input_block(layer, "direction_popup")
 
-	var panel_size := Vector2(460, 372)
+	var panel_size := Vector2(390, 310)
 	var screen_size: Vector2 = get_viewport().get_visible_rect().size
 
 	var panel := Panel.new()
 	panel.size = panel_size
-	panel.position = (screen_size - panel_size) / 2.0
+	if direction_popup_last_position.x < 0.0:
+		panel.position = (screen_size - panel_size) / 2.0
+	else:
+		panel.position = _clamp_direction_popup_position(
+			direction_popup_last_position, panel_size
+		)
+	direction_popup_last_position = panel.position
 
 	var style := StyleBoxFlat.new()
 	style.bg_color = Color("#FFFFFF")
@@ -564,13 +573,35 @@ func _ask_walk_direction(
 
 	layer.add_child(panel)
 
+	# المنطقة العلوية كلها مقبض سحب. هي شفافة كي لا تزاحم النص،
+	# لكنها تغيّر شكل المؤشر وتسمح بتحريك النافذة مع حفظ موقعها
+	# بين خطوات المسار المتتالية.
+	var drag_handle := Control.new()
+	drag_handle.name = "DragHandle"
+	drag_handle.size = Vector2(panel_size.x, 86)
+	drag_handle.mouse_default_cursor_shape = Control.CURSOR_MOVE
+	drag_handle.gui_input.connect(_on_direction_drag_gui_input.bind(panel))
+	panel.add_child(drag_handle)
+
+	# علامة بصرية صغيرة توضح أن أعلى النافذة قابل للسحب.
+	var grip := Panel.new()
+	grip.size = Vector2(48, 5)
+	grip.position = Vector2((panel_size.x - grip.size.x) / 2.0, 7)
+	grip.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	var grip_style := StyleBoxFlat.new()
+	grip_style.bg_color = style.border_color
+	grip_style.set_corner_radius_all(3)
+	grip.add_theme_stylebox_override("panel", grip_style)
+	drag_handle.add_child(grip)
+
 	var title := Label.new()
 	title.text = _team_display_name(controller_team) + " يرسم مسار الخصم"
 	title.size = Vector2(panel_size.x - 40, 34)
-	title.position = Vector2(20, 14)
+	title.position = Vector2(20, 16)
 	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	title.add_theme_font_size_override("font_size", 22)
+	title.add_theme_font_size_override("font_size", 20)
 	title.add_theme_color_override("font_color", Color("#1F1F1F"))
+	title.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	panel.add_child(title)
 
 	# رقم المحاولة كما هو، أما "المتبقي" فيظل يعكس الخطوات الحقيقية.
@@ -578,32 +609,35 @@ func _ask_walk_direction(
 	var subtitle := Label.new()
 	subtitle.text = "الخطوة %d من %d   —   المتبقي %d" % [attempt, total_steps, steps_left]
 	subtitle.size = Vector2(panel_size.x - 40, 26)
-	subtitle.position = Vector2(20, 52)
+	subtitle.position = Vector2(20, 47)
 	subtitle.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	subtitle.add_theme_font_size_override("font_size", 17)
+	subtitle.add_theme_font_size_override("font_size", 15)
 	subtitle.add_theme_color_override("font_color", Color("#555555"))
+	subtitle.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	panel.add_child(subtitle)
 
 	if retry_notice:
 		var notice := Label.new()
 		notice.text = "الاتجاه السابق أدى إلى طريق مسدود، اختر غيره"
 		notice.size = Vector2(panel_size.x - 40, 24)
-		notice.position = Vector2(20, 82)
+		notice.position = Vector2(20, 70)
 		notice.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-		notice.add_theme_font_size_override("font_size", 15)
+		notice.add_theme_font_size_override("font_size", 13)
 		notice.add_theme_color_override("font_color", Color("#C62828"))
+		notice.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		panel.add_child(notice)
 
 	# الأزرار الأربعة موزعة على شكل صليب
 	var mid := panel_size.x / 2.0
-	_add_walk_button(panel, "أعلى", DIRECTION_UP, Vector2(mid - 55, 114), options)
-	_add_walk_button(panel, "يسار", DIRECTION_LEFT, Vector2(mid - 175, 202), options)
-	_add_walk_button(panel, "يمين", DIRECTION_RIGHT, Vector2(mid + 65, 202), options)
-	_add_walk_button(panel, "أسفل", DIRECTION_DOWN, Vector2(mid - 55, 290), options)
+	_add_walk_button(panel, "أعلى", DIRECTION_UP, Vector2(mid - 48, 92), options)
+	_add_walk_button(panel, "يسار", DIRECTION_LEFT, Vector2(mid - 153, 165), options)
+	_add_walk_button(panel, "يمين", DIRECTION_RIGHT, Vector2(mid + 57, 165), options)
+	_add_walk_button(panel, "أسفل", DIRECTION_DOWN, Vector2(mid - 48, 238), options)
 
 	var chosen: Vector2i = await direction_step_chosen
 
 	GameManagerHelper.pop_input_block(layer)
+	direction_popup_dragging = false
 
 	if is_instance_valid(layer):
 		layer.queue_free()
@@ -611,6 +645,31 @@ func _ask_walk_direction(
 	direction_popup = null
 
 	return chosen
+
+
+# تحريك نافذة الاتجاه من المنطقة العلوية مع إبقائها كاملة داخل الشاشة.
+func _on_direction_drag_gui_input(event: InputEvent, panel: Control) -> void:
+	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT:
+		direction_popup_dragging = event.pressed
+		if event.pressed:
+			direction_popup_drag_offset = panel.position - event.global_position
+		panel.accept_event()
+		return
+
+	if event is InputEventMouseMotion and direction_popup_dragging:
+		var wanted_position: Vector2 = event.global_position + direction_popup_drag_offset
+		panel.position = _clamp_direction_popup_position(wanted_position, panel.size)
+		direction_popup_last_position = panel.position
+		panel.accept_event()
+
+
+func _clamp_direction_popup_position(wanted: Vector2, popup_size: Vector2) -> Vector2:
+	var viewport_size: Vector2 = get_viewport().get_visible_rect().size
+	const EDGE_MARGIN := 8.0
+	return Vector2(
+		clampf(wanted.x, EDGE_MARGIN, maxf(EDGE_MARGIN, viewport_size.x - popup_size.x - EDGE_MARGIN)),
+		clampf(wanted.y, EDGE_MARGIN, maxf(EDGE_MARGIN, viewport_size.y - popup_size.y - EDGE_MARGIN))
+	)
 
 
 func _add_walk_button(
@@ -622,9 +681,9 @@ func _add_walk_button(
 ) -> void:
 	var button := Button.new()
 	button.text = label
-	button.size = Vector2(110, 60)
+	button.size = Vector2(96, 52)
 	button.position = at_position
-	button.add_theme_font_size_override("font_size", 26)
+	button.add_theme_font_size_override("font_size", 22)
 	button.name = "Dir_%d_%d" % [direction.x, direction.y]
 
 	# اتجاه بلا وجهة صالحة: يظهر معطلا بدل أن يقبل ضغطة لا تنفذ

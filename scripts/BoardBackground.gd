@@ -19,6 +19,7 @@ extends Node2D
 @onready var game_timer_label: Label = $TimerImage/GameTimerLabel
 @onready var game_timer: Timer = $GameTimer
 @onready var exit_to_menu_button: Button = $ExitUI/ExitToMenuButton
+@onready var game_over_popup: CanvasLayer = $GameOverPopup
 
 
 
@@ -35,6 +36,7 @@ var shown_notification_effects: Dictionary = {}
 func _ready() -> void:
 	board.main_ui = self
 	exit_to_menu_button.pressed.connect(_on_exit_to_menu_pressed)
+	game_over_popup.return_to_menu_requested.connect(_on_game_over_return_to_menu)
 	#GameManager.signal_skip_turn_cleared.connect(_on_skip_turn_cleared)
 	GameManagerHelper.effects_changed.connect(_on_effects_changed)
 	GameManagerHelper.effects_show.connect(_on_effects_show)
@@ -272,8 +274,8 @@ func end_game():
 	var result := compute_winner()
 	last_winner_team = result["winner"]
 
-	print("القطاعات — الأزرق: ", result["sectors"][1], " | الأخضر: ", result["sectors"][2])
-	print("النقاط — الأزرق: ", result["scores"][1], " | الأخضر: ", result["scores"][2])
+	print("القطاعات — الأزرق: ", result["sectors"][1], " | الأحمر: ", result["sectors"][2])
+	print("النقاط — الأزرق: ", result["scores"][1], " | الأحمر: ", result["scores"][2])
 
 	if last_winner_team == 0:
 		print("النتيجة: تعادل")
@@ -282,7 +284,7 @@ func end_game():
 		# صوت الفوز النهائي — لا يشتغل عند التعادل، فقط عند وجود فائز حقيقي
 		Sfx.play(Sfx.Sound.FINAL_WIN)
 
-	# هنا تستدعي شاشة النتائج		
+	game_over_popup.show_result(result)
 
 
 # ======================================================
@@ -354,7 +356,11 @@ func compute_winner() -> Dictionary:
 func _winner_display_name(team_id: int) -> String:
 	if team_id == 1:
 		return "الفريق الأزرق"
-	return "الفريق الأخضر"
+	return "الفريق الأحمر"
+
+
+func _on_game_over_return_to_menu() -> void:
+	get_tree().change_scene_to_file("res://scenes/MainMenu.tscn")
 
 
 # ======================================================
@@ -369,7 +375,7 @@ func _winner_display_name(team_id: int) -> String:
 const EXIT_CONFIRM_LAYER := 140
 
 # الفريق الفائز بعد انتهاء الوقت — تستخدمه شاشة النتائج لاحقًا
-# 0 = تعادل (أو اللعبة لم تنته بعد)، 1 = الأزرق، 2 = الأخضر
+# 0 = تعادل (أو اللعبة لم تنته بعد)، 1 = الأزرق، 2 = الأحمر
 var last_winner_team := 0
 
 var exit_confirm_layer: CanvasLayer = null
