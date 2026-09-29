@@ -16,6 +16,7 @@
 [ext_resource type="PackedScene" uid="uid://eppplix32qj1" path="res://scenes/debug_event_panel.tscn" id="15_lr428"]
 [ext_resource type="Texture2D" uid="uid://byhbjt21f0o60" path="res://assets/images/background/home_icon.png" id="20_homeicon"]
 [ext_resource type="FontFile" uid="uid://bbs5p0j8anqhq" path="res://assets/fonts/arial.ttf" id="21_arialfont"]
+[ext_resource type="PackedScene" path="res://scenes/GameOverPopup.tscn" id="22_game_over"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_exit_n"]
 bg_color = Color(0.18, 0.373, 0.639, 1)
@@ -195,28 +196,20 @@ scale = Vector2(0.5193693, 0.57004774)
 texture = ExtResource("13_62jyy")
 
 [node name="DebugEventPanel" parent="." unique_id=1696037410 instance=ExtResource("15_lr428")]
+
+[node name="GameOverPopup" parent="." instance=ExtResource("22_game_over")]
 visible = false
 
 [node name="TimerImage" type="Sprite2D" parent="." unique_id=724480552]
-position = Vector2(1467, 47)
+position = Vector2(1370, 65)
 scale = Vector2(0.14276004, 0.14527027)
 texture = ExtResource("12_c725k")
 
 [node name="GameTimerLabel" type="Label" parent="TimerImage" unique_id=1586888424]
-custom_minimum_size = Vector2(800, 250)
-anchors_preset = 8
-anchor_left = 0.5
-anchor_top = 0.5
-anchor_right = 0.5
-anchor_bottom = 0.5
-offset_left = -1273.4238
-offset_top = -453.01147
-offset_right = -473.42383
-offset_bottom = -256.01147
-grow_horizontal = 2
-grow_vertical = 2
-size_flags_horizontal = 3
-size_flags_vertical = 6
+offset_left = -250.0
+offset_top = -170.0
+offset_right = 550.0
+offset_bottom = 170.0
 theme_override_fonts/font = ExtResource("21_arialfont")
 theme_override_font_sizes/font_size = 140
 text = "120:00"

@@ -41,7 +41,7 @@ const STREAMS := {
 	Sound.EVENT_BAD:      preload("res://assets/audio/sound effects/صوت حدث سيئ.mp3"),
 	Sound.STREET_CRACK:   preload("res://assets/audio/sound effects/صوت لما ينشق الشارع.mp3"),
 	Sound.GAME_ENTER:     preload("res://assets/audio/sound effects/صوت الدخول للعبة.mp3"),
-	Sound.FINAL_WIN:      preload("res://assets/audio/sound effects/صوت الفوز النهائي.mp3"),
+	Sound.FINAL_WIN:      preload("res://assets/audio/sound effects/final_victory_fanfare.mp3"),
 }
 
 var _players := {}
