@@ -1,6 +1,7 @@
 extends CanvasLayer
 
 signal return_to_menu_requested
+signal tie_breaker_requested
 
 const BLUE_TEAM_TEXTURE := preload("res://assets/images/تصميم حنظلة/باتل الفريق الأزرق.png")
 const RED_TEAM_TEXTURE := preload("res://assets/images/تصميم حنظلة/باتل الفريق الاحمر.png")
@@ -16,6 +17,8 @@ const DRAW_COLOR := Color("#546E7A")
 @onready var winner_character: TextureRect = $Overlay/ResultPanel/WinnerCharacter
 @onready var return_button: Button = $Overlay/ResultPanel/ReturnButton
 
+var current_winner := 0
+
 
 func _ready() -> void:
 	return_button.pressed.connect(_on_return_button_pressed)
@@ -25,8 +28,8 @@ func _ready() -> void:
 func show_result(result: Dictionary) -> void:
 	var winner: int = int(result.get("winner", 0))
 	var sectors: Dictionary = result.get("sectors", {1: 0, 2: 0})
-	var scores: Dictionary = result.get("scores", {1: 0, 2: 0})
 	var winner_color := _winner_color(winner)
+	current_winner = winner
 
 	winner_label.text = _winner_message(winner)
 	winner_label.add_theme_color_override("font_color", Color.WHITE)
@@ -39,9 +42,9 @@ func show_result(result: Dictionary) -> void:
 	sectors_label.text = "القطاعات:   الأزرق %d   |   الأحمر %d" % [
 		int(sectors.get(1, 0)), int(sectors.get(2, 0))
 	]
-	scores_label.text = "النقاط:   الأزرق %d   |   الأحمر %d" % [
-		int(scores.get(1, 0)), int(scores.get(2, 0))
-	]
+	scores_label.visible = winner == 0
+	scores_label.text = "سيحسم سؤال التعادل الفريق الفائز"
+	return_button.text = "بدء السؤال الحاسم" if winner == 0 else "العودة إلى القائمة الرئيسية"
 
 	if winner == 1:
 		winner_character.texture = BLUE_TEAM_TEXTURE
@@ -75,4 +78,8 @@ func _winner_color(winner: int) -> Color:
 
 func _on_return_button_pressed() -> void:
 	GameManagerHelper.pop_input_block(self)
-	return_to_menu_requested.emit()
+	if current_winner == 0:
+		hide()
+		tie_breaker_requested.emit()
+	else:
+		return_to_menu_requested.emit()

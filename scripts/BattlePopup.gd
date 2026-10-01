@@ -62,12 +62,14 @@ func _ready() -> void:
 var attacker_team_id: int = 0
 var defender_team_id: int = 0
 var battle_effect_original_position: Vector2
+var final_tie_breaker_mode := false
 
 func show_battle(cell, p_attacker_team_id: int, p_defender_team_id: int, board_ref, team_must_begin_battle: int) -> void:
 	current_cell = cell
 	attacker_team_id = p_attacker_team_id
 	defender_team_id = p_defender_team_id
 	board = board_ref
+	final_tie_breaker_mode = false
 
 	# معركة جديدة تبدأ بالنافذة الكاملة وبدون سؤال مفتوح بعد
 	battle_question_open = false
@@ -93,6 +95,30 @@ func show_battle(cell, p_attacker_team_id: int, p_defender_team_id: int, board_r
 	play_open_animation()
 	begin_auto_bettle(current_cell, p_attacker_team_id, p_defender_team_id, board_ref, team_must_begin_battle)
 	
+
+
+func show_final_tie_breaker(board_ref) -> void:
+	current_cell = null
+	attacker_team_id = 1
+	defender_team_id = 2
+	board = board_ref
+	final_tie_breaker_mode = true
+
+	battle_question_open = false
+	_restore_full_layout()
+
+	battle_result_label.visible = false
+	battle_result_label.text = ""
+	attacker_button.visible = true
+	defender_button.visible = true
+
+	visible = true
+	title_label.text = "سؤال الحسم"
+	message_label.text = "اختاروا الفريق الذي سيجيب أولاً"
+	battle_teams_label.text = "تعادل الفريقان\nالسؤال القادم سيحدد الفائز"
+
+	_update_battle_identity()
+	play_open_animation()
 
 
 func begin_auto_bettle(cell, p_attacker_team_id: int, p_defender_team_id: int, board_ref, team_must_begin_battle: int) -> void:
@@ -159,13 +185,21 @@ func _select_answerer(team_id: int) -> void:
 	if not battle_question_open:
 		battle_question_open = true
 		enter_redirect_mode()
-		board.SectorQuestionCard.show_battle_question(
-			current_cell,
-			board,
-			team_id,
-			attacker_team_id,
-			defender_team_id
-		)
+		if final_tie_breaker_mode:
+			board.SectorQuestionCard.show_final_tie_breaker_question(
+				board,
+				team_id,
+				attacker_team_id,
+				defender_team_id
+			)
+		else:
+			board.SectorQuestionCard.show_battle_question(
+				current_cell,
+				board,
+				team_id,
+				attacker_team_id,
+				defender_team_id
+			)
 		return
 
 	# سؤال المعركة مفتوح: نحوّل حق الإجابة للفريق الآخر ما لم تُسجّل
@@ -234,6 +268,7 @@ func enter_redirect_mode() -> void:
 # ======================================================
 func close_battle_ui() -> void:
 	battle_question_open = false
+	final_tie_breaker_mode = false
 	visible = false
 	_restore_full_layout()
 

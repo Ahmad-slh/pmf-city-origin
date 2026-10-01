@@ -1,4 +1,6 @@
 extends CanvasLayer
+
+signal final_tie_breaker_finished(winner_team: int)
 @onready var panel: Panel = $TextureRect/Panel
 @onready var timer_label: Label = $TextureRect/Panel/TimerLabel
 @onready var v_box_container: VBoxContainer = $TextureRect/Panel/VBoxContainer
@@ -1220,6 +1222,10 @@ func _resolve_answer(is_correct: bool) -> void:
 
 	result_label.visible = true
 
+	if final_tie_breaker_mode:
+		_resolve_final_tie_breaker(is_correct)
+		return
+
 	if battle_mode:
 		# فحص تأثير فرصة ثانية في دالة منفصلة
 		if try_use_second_chance_battle(is_correct):
@@ -1376,6 +1382,50 @@ func handle_battle_answer(is_correct: bool) -> void:
 		handle_attacker_answer(is_correct)
 	else:
 		handle_defender_answer(is_correct)
+
+
+func _resolve_final_tie_breaker(is_correct: bool, timed_out: bool = false) -> void:
+	answer_selected = true
+	timer_running = false
+	disable_answer_buttons()
+
+	if is_instance_valid(board) and board.BattlePopup != null:
+		board.BattlePopup.close_battle_ui()
+
+	var winner_team: int = battle_answering_team
+	if not is_correct:
+		winner_team = GameManager.get_other_team_id(battle_answering_team)
+
+	if is_correct:
+		result_label.text = "✅ إجابة صحيحة\n%s فاز بسؤال الحسم" % _team_name(winner_team)
+		result_label.add_theme_color_override("font_color", Color(0.0, 0.278, 0.005, 1.0))
+		Sfx.play(Sfx.Sound.ANSWER_CORRECT)
+	else:
+		result_label.text = "❌ إجابة خاطئة\nالفوز ينتقل إلى %s" % _team_name(winner_team)
+		if timed_out:
+			result_label.text = "⏰ انتهى الوقت\nالفوز ينتقل إلى %s" % _team_name(winner_team)
+		result_label.add_theme_color_override("font_color", Color(0.281, 0.0, 0.015, 1.0))
+		if timed_out:
+			Sfx.play(Sfx.Sound.SECTOR_LOSE)
+		else:
+			Sfx.play(Sfx.Sound.ANSWER_WRONG)
+			_highlight_correct_option_zone()
+
+	await get_tree().create_timer(RESULT_HOLD_SECONDS + 0.8).timeout
+
+	final_tie_breaker_mode = false
+	battle_mode = false
+	visible = false
+	result_label.visible = false
+	final_tie_breaker_finished.emit(winner_team)
+
+
+func _team_name(team_id: int) -> String:
+	if team_id == 1:
+		return "الفريق الأزرق"
+	if team_id == 2:
+		return "الفريق الأحمر"
+	return "الفريق"
 				
 func handle_attacker_answer(is_correct: bool) -> void:
 	
@@ -1549,6 +1599,12 @@ func handle_time_out() -> void:
 	if answer_selected:
 		return
 
+	if final_tie_breaker_mode:
+		result_label.visible = true
+		result_label.text = "⏰ انتهى الوقت"
+		_resolve_final_tie_breaker(false, true)
+		return
+
 	# المعركة: انتهاء الوقت يجعل القطاع محايدًا دائمًا مهما كان الفريق
 	# المختار للإجابة، عبر مسار مخصص لا يمر بتوجيه المهاجم/المدافع
 	# ولا بفحص الفرصة الثانية (عدم الإجابة ليس إجابة خاطئة من فريق بعينه)
@@ -1623,7 +1679,7 @@ func _resolve_battle_timeout() -> void:
 # ======================================================
 func redirect_battle_answerer(new_team: int) -> void:
 	# لا تحويل بعد تسجيل إجابة أو انتهاء الوقت
-	if not battle_mode or answer_selected or time_left <= 0:
+	if not (battle_mode or final_tie_breaker_mode) or answer_selected or time_left <= 0:
 		return
 
 	# لا حاجة للتحويل إذا كان الفريق نفسه يجيب أصلًا
@@ -1633,9 +1689,9 @@ func redirect_battle_answerer(new_team: int) -> void:
 	battle_answering_team = new_team
 
 	if new_team == battle_attacker_team:
-		question_number_label.text = "سؤال المعركة - المهاجم"
+		question_number_label.text = "سؤال الحسم - الفريق الأزرق" if final_tie_breaker_mode else "سؤال المعركة - المهاجم"
 	else:
-		question_number_label.text = "سؤال المعركة - المدافع"
+		question_number_label.text = "سؤال الحسم - الفريق الأحمر" if final_tie_breaker_mode else "سؤال المعركة - المدافع"
 
 
 var v_use_double_invest_in_sector=false
@@ -1697,6 +1753,7 @@ func show_sector_card(cell, board_ref) -> void:
 	
 	# ---  المعرك -----
 	battle_mode = false
+	final_tie_breaker_mode = false
 	battle_answering_team = 0
 	battle_attacker_team = 0
 	battle_defender_team = 0
@@ -1892,6 +1949,7 @@ func show_info_side() -> void:
 func reset_question_card() -> void:
 	
 	_flip_generation += 1
+	close_button.visible = true
 	info_close_button.visible = false
 	battle_start_answer_button.visible = false
 	choos_player_1.visible= false
@@ -2014,6 +2072,18 @@ var battle_answering_team := 0
 const OWNER_NONE := 0
 const OWNER_NEUTRAL_LOCKED := -1
 
+const FINAL_TIE_BREAKER_QUESTION := {
+	"question": "تعتمد الدول على عملتها الوطنية للتحكم باقتصادها، بالنسبة لدولة فلسطين فهل تمتلك الحكومة حالياً القدرة والصلاحية العملية على طباعة عملة ورقية وطنية خاصة بها؟",
+	"answers": {
+		"A": "نعم",
+		"B": "لا",
+		"C": ""
+	},
+	"correct": "B"
+}
+
+var final_tie_breaker_mode := false
+
 # هل تم استخدام فرصة الإجابة الثانية في هذه المعركة؟
 var second_chance_used := false
 
@@ -2125,6 +2195,63 @@ func handle_sector(cell) -> void:
 
 	show_sector_card(cell, board)
 
+
+func show_final_tie_breaker_question(
+	board_ref,
+	answering_team: int,
+	attacker_team: int,
+	defender_team: int
+) -> void:
+	reset_question_card()
+
+	current_cell = null
+	board = board_ref
+	current_board = board_ref
+
+	final_tie_breaker_mode = true
+	battle_mode = false
+	battle_answering_team = answering_team
+	battle_attacker_team = attacker_team
+	battle_defender_team = defender_team
+	second_chance_used = false
+
+	current_question = FINAL_TIE_BREAKER_QUESTION.duplicate(true)
+
+	answers_container.visible = true
+	background_label.visible = false
+	background_label.text = ""
+	result_label.visible = false
+	result_label.text = ""
+	answer_selected = false
+
+	sector_name_label.text = "سؤال التعادل"
+	question_number_label.text = "سؤال الحسم - %s" % _team_name(answering_team)
+	question_text_label.text = current_question["question"]
+
+	answer_a_button.text = current_question["answers"]["A"]
+	answer_b_button.text = current_question["answers"]["B"]
+	answer_c_button.text = ""
+	answer_c_button.visible = false
+	answer_d_button.visible = false
+	close_button.visible = false
+
+	uses_card_image = false
+	panel.visible = true
+	background_label.visible = false
+	_set_option_zones_visible(false)
+
+	visible = true
+	show()
+	layer = 100
+
+	answer_a_button.disabled = false
+	answer_b_button.disabled = false
+	answer_c_button.disabled = true
+	answer_d_button.disabled = true
+
+	_start_answer_timer()
+
+
 func show_battle_question(
 	cell,
 	board_ref,
@@ -2147,6 +2274,7 @@ func show_battle_question(
 	
 	#GameManager.g_is_battle= false
 
+	final_tie_breaker_mode = false
 	battle_mode = true
 	battle_answering_team = answering_team
 	battle_attacker_team = attacker_team
