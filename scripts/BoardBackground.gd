@@ -37,6 +37,8 @@ func _ready() -> void:
 	board.main_ui = self
 	exit_to_menu_button.pressed.connect(_on_exit_to_menu_pressed)
 	game_over_popup.return_to_menu_requested.connect(_on_game_over_return_to_menu)
+	game_over_popup.tie_breaker_requested.connect(_on_tie_breaker_requested)
+	board.SectorQuestionCard.final_tie_breaker_finished.connect(_on_final_tie_breaker_finished)
 	#GameManager.signal_skip_turn_cleared.connect(_on_skip_turn_cleared)
 	GameManagerHelper.effects_changed.connect(_on_effects_changed)
 	GameManagerHelper.effects_show.connect(_on_effects_show)
@@ -275,7 +277,6 @@ func end_game():
 	last_winner_team = result["winner"]
 
 	print("القطاعات — الأزرق: ", result["sectors"][1], " | الأحمر: ", result["sectors"][2])
-	print("النقاط — الأزرق: ", result["scores"][1], " | الأحمر: ", result["scores"][2])
 
 	if last_winner_team == 0:
 		print("النتيجة: تعادل")
@@ -298,8 +299,7 @@ func end_game():
 #
 # لذلك الترتيب:
 #   ١. عدد القطاعات المملوكة (owner_team) — المعيار الأساسي
-#   ٢. عند التساوي: النقاط المتراكمة من الأسئلة (team_scores)
-#   ٣. عند تساويهما معًا: تعادل (0)
+#   ٢. عند التساوي: تعادل مؤقت، ثم يحسمه سؤال نهائي
 #
 # ملاحظة: owner_team = -1 يعني قطاعًا مغلقًا محايدًا،
 # فلا يحسب لأي فريق
@@ -330,26 +330,17 @@ func compute_winner() -> Dictionary:
 		if owner_team == 1 or owner_team == 2:
 			sector_counts[owner_team] += 1
 
-	var scores := {1: 0, 2: 0}
-	if is_instance_valid(board) and board.board_cell_action_handler != null:
-		scores[1] = board.board_cell_action_handler.team_scores[1]
-		scores[2] = board.board_cell_action_handler.team_scores[2]
-
 	var winner := 0
 
 	if sector_counts[1] > sector_counts[2]:
 		winner = 1
 	elif sector_counts[2] > sector_counts[1]:
 		winner = 2
-	elif scores[1] > scores[2]:
-		winner = 1
-	elif scores[2] > scores[1]:
-		winner = 2
 
 	return {
 		"winner": winner,
 		"sectors": sector_counts,
-		"scores": scores,
+		"scores": {1: 0, 2: 0},
 	}
 
 
@@ -361,6 +352,20 @@ func _winner_display_name(team_id: int) -> String:
 
 func _on_game_over_return_to_menu() -> void:
 	get_tree().change_scene_to_file("res://scenes/MainMenu.tscn")
+
+
+func _on_tie_breaker_requested() -> void:
+	board.BattlePopup.show_final_tie_breaker(board)
+
+
+func _on_final_tie_breaker_finished(winner_team: int) -> void:
+	last_winner_team = winner_team
+	print("الفائز بسؤال الحسم: ", _winner_display_name(last_winner_team))
+	Sfx.play(Sfx.Sound.FINAL_WIN)
+
+	var result := compute_winner()
+	result["winner"] = winner_team
+	game_over_popup.show_result(result)
 
 
 # ======================================================
