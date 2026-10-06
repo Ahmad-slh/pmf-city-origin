@@ -1078,7 +1078,11 @@ metadata/_edit_group_ = true
 [node name="Area2D2" parent="Players/Player_Green" index="0" unique_id=1843696117]
 position = Vector2(-6, -1)
 
+[node name="CollisionShape2D" parent="Players/Player_Green/Area2D2" index="0" unique_id=414697197]
+disabled = true
+
 [node name="Area2D" parent="Players/Player_Green/Area2D2" index="1" unique_id=1996686211]
+visible = false
 texture = ExtResource("21_os6cd")
 metadata/_edit_group_ = true
 
