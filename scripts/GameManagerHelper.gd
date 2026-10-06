@@ -804,11 +804,11 @@ func format_mm_ss(total_seconds: int) -> String:
 # ======================================================
 # اسم الدالة: format_time_label
 # وظيفتها:
-# النص الكامل الموحّد للمؤقتات: أيقونة ساعة + "الوقت:" + MM:SS
+# النص الكامل الموحّد للمؤقتات: "الوقت:" + MM:SS
 # ======================================================
 func format_time_label(total_seconds: int) -> String:
 
-	return "⏳ الوقت: " + format_mm_ss(total_seconds)
+	return "الوقت: " + format_mm_ss(total_seconds)
 
 
 # ======================================================

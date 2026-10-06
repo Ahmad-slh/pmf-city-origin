@@ -308,8 +308,8 @@ func _restore_full_layout() -> void:
 # وظيفتها:
 # إظهار صورتي المقاتلين، وكتابة اسم الفريق على كل زر بدل الكلمة العامة
 # "المهاجم"/"المدافع". الزران يحتفظان بمعناهما كما هو: زر المهاجم يبقى
-# مرتبطًا بـ attacker_team_id وزر المدافع بـ defender_team_id، وإنما
-# يعرض كل منهما هوية الفريق الذي يمثله في هذه المعركة تحديدًا.
+# مرتبطًا بـ attacker_team_id وزر المدافع بـ defender_team_id. نرتبهما
+# بصريًا بحيث يبقى زر الأزرق تحت صورته اليسرى وزر الأحمر تحت صورته اليمنى.
 # ======================================================
 func _update_battle_identity() -> void:
 	fighters.visible = true
@@ -318,6 +318,13 @@ func _update_battle_identity() -> void:
 
 	attacker_button.text = get_team_name(attacker_team_id)
 	defender_button.text = get_team_name(defender_team_id)
+
+	# ترتيب العقدة لا يغيّر الإشارة المربوطة بكل زر، لذلك تبقى هوية
+	# المهاجم والمدافع صحيحة حتى عندما يكون المهاجم هو الفريق الأحمر.
+	if attacker_team_id == 1:
+		button_row.move_child(attacker_button, 0)
+	elif defender_team_id == 1:
+		button_row.move_child(defender_button, 0)
 
 
 func get_team_name(team_id: int) -> String:

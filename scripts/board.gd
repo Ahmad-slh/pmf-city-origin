@@ -35,6 +35,25 @@ var team_colors := {
 	2: Color(1.0, 0.25, 0.25)
 }
 
+# الأسماء الظاهرة للاعب بدل أسماء العقد التقنية مثل Sector_07.
+# الترتيب يطابق صور القطاعات في لوحة اللعب.
+const SECTOR_DISPLAY_NAMES := {
+	1: "قطاع الملعب",
+	2: "قطاع المباني الحكومية",
+	3: "قطاع الحديقة العامة",
+	4: "قطاع المسجد",
+	5: "قطاع المستشفى",
+	6: "قطاع التعليم",
+	7: "قطاع مواقف السيارات",
+	8: "قطاع محطة الحافلات",
+	9: "قطاع المتحف",
+	10: "قطاع الطاقة",
+	11: "قطاع المدرسة",
+	12: "قطاع المكتبة",
+	13: "قطاع المحكمة",
+	14: "قطاع بئر المياه"
+}
+
 var team_players := {}
 var team_positions := {
 	1: Vector2i(0, 0),
@@ -282,6 +301,11 @@ func _team_display_name(team_id: int) -> String:
 	if team_id == 1:
 		return "الفريق الأزرق"
 	return "الفريق الأحمر"
+
+
+func _sector_display_name(sector) -> String:
+	var sector_id: int = int(sector.sector_id)
+	return str(SECTOR_DISPLAY_NAMES.get(sector_id, sector.sector_name))
 
 
 # ======================================================
@@ -1369,10 +1393,11 @@ func apply_cancel_investment_effect_if_needed(team_id: int, card_data: Dictionar
 		selected_sector.reset_sector()
 
 	# تجهيز وصف الحدث الذي سيظهر في اللوحة الجانبية
+	var sector_display_name := _sector_display_name(selected_sector)
 	var description: String = "تم إلغاء استثمار للفريق: " \
 		+ str(team_id) \
-		+ " في القطاع " \
-		+ selected_sector.name
+		+ " في " \
+		+ sector_display_name
 
 	#GameManagerHelper.remove_effect(team_id, GameManagerHelper.EffectType.CANCEL_ONE_INVESTMENT)
 	# الآن نخزن التأثير بعد أن عرفنا اسم القطاع
@@ -1381,7 +1406,7 @@ func apply_cancel_investment_effect_if_needed(team_id: int, card_data: Dictionar
 		GameManagerHelper.EffectType.CANCEL_ONE_INVESTMENT,
 		{
 			"card_data": card_data,
-			"sector_name": selected_sector.name,
+			"sector_name": sector_display_name,
 			"description": description,
 			"display_turns_left": 2
 		}
@@ -1424,10 +1449,11 @@ func apply_cancel_investment_for_other_team(team_id: int, card_data: Dictionary 
 		selected_sector.close_cell(other_team)
 
 	# تجهيز وصف الحدث الذي سيظهر في اللوحة الجانبية
+	var sector_display_name := _sector_display_name(selected_sector)
 	var description: String = "تم إلغاء استثمار للفريق: " \
 		+ str(team_id) \
-		+ " في القطاع " \
-		+ selected_sector.name \
+		+ " في " \
+		+ sector_display_name \
 		+ " وتم منحه للفريق " \
 		+ str(other_team)
 
@@ -1440,7 +1466,7 @@ func apply_cancel_investment_for_other_team(team_id: int, card_data: Dictionary 
 		GameManagerHelper.EffectType.TRANSFER_ONE_OWNED_SECTOR_TO_OPPONENT,
 		{
 			"card_data": card_data,
-			"sector_name": selected_sector.name,
+			"sector_name": sector_display_name,
 			"description": description,
 			"display_turns_left": 2
 		}
