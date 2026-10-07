@@ -154,28 +154,12 @@ func close_cell(team_id: int = 0) -> void:
 
 	lock_sprite.visible = true
 	lock_sprite.z_index = 100
-	update_sector_owner_image()
 	if is_locked == 1:
 		pass
 	else:
 		owner_team = team_id
-		#update_sector_owner_image()
-		#sprite.modulate = Color(1, 1, 1, 1)
-			
-	match team_id:
-		1:
-			lock_sprite.texture = blue_lock_texture
-			#update_sector_owner_image()
-
-		2:
-			lock_sprite.texture = red_lock_texture
-			#update_sector_owner_image()
-
-		_:
-			if cell_type == CellType.STREET:
-				return
-			lock_sprite.texture = gray_lock_texture
-			#sprite.modulate = Color(0.35, 0.35, 0.35, 1.0)
+	# حدّث الصورة والقفل بعد تثبيت المالك، لا حسب الفريق المرسل فقط.
+	update_sector_owner_image()
 
 	_apply_lock_icon_layout()
 	if cell_type == CellType.SECTOR:
@@ -473,3 +457,20 @@ func update_sector_owner_image() -> void:
 				sprite.texture = normal_texture
 			else:
 				sprite.texture = basic_texture
+	_update_sector_lock()
+
+
+func _update_sector_lock() -> void:
+	if cell_type != CellType.SECTOR or lock_sprite == null:
+		return
+	lock_sprite.visible = is_closed
+	if not is_closed:
+		return
+	match owner_team:
+		1:
+			lock_sprite.texture = blue_lock_texture
+		2:
+			lock_sprite.texture = red_lock_texture
+		_:
+			lock_sprite.texture = gray_lock_texture
+	_apply_lock_icon_layout()
