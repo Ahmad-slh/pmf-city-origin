@@ -180,6 +180,8 @@ func _on_dice_twice_choose_best(value:int =0)->bool:
 	return false
 
 func _on_dice_rolled(value: int) -> void:
+	if GameManager.game_finished:
+		return
 	#print("START DICE")
 
 	# قرعة البداية تستهلك الرمية بنفسها، فلا نشغّل منطق الدور

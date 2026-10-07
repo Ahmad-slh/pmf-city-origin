@@ -39,6 +39,10 @@ func _ready() -> void:
 	game_over_popup.return_to_menu_requested.connect(_on_game_over_return_to_menu)
 	game_over_popup.tie_breaker_requested.connect(_on_tie_breaker_requested)
 	board.SectorQuestionCard.final_tie_breaker_finished.connect(_on_final_tie_breaker_finished)
+	for cell in board.sectors.get_children():
+		if cell.cell_type == cell.CellType.SECTOR:
+			# افحص بعد اكتمال الإجابة وتحديث الملكية والنقاط.
+			cell.sector_closed.connect(_check_all_sectors_closed, CONNECT_DEFERRED)
 	#GameManager.signal_skip_turn_cleared.connect(_on_skip_turn_cleared)
 	GameManagerHelper.effects_changed.connect(_on_effects_changed)
 	GameManagerHelper.effects_show.connect(_on_effects_show)
@@ -255,6 +259,8 @@ func clean_invalid_notifications() -> void:
 
 # --------------  Timer
 func _on_game_timer_timeout():
+	if GameManager.game_finished:
+		return
 	remaining_seconds -= 1
 
 	update_game_timer()
@@ -269,7 +275,32 @@ func update_game_timer():
 	# (TimerImage)، ولأن النص الأطول يفيض خارج الصندوق الأزرق
 	game_timer_label.text = GameManagerHelper.format_mm_ss(remaining_seconds)
 
+func _check_all_sectors_closed() -> void:
+	if GameManager.game_finished:
+		return
+	var sector_count := 0
+	for cell in board.sectors.get_children():
+		if cell.cell_type != cell.CellType.SECTOR:
+			continue
+		sector_count += 1
+		if not cell.is_closed:
+			return
+	if sector_count > 0:
+		end_game()
+
+
 func end_game():
+	if GameManager.game_finished:
+		return
+	GameManager.game_finished = true
+	game_timer.stop()
+	board.clear_sector_highlights()
+	board.player_blue.is_dragging = false
+	board.player_green.is_dragging = false
+	board.SectorQuestionCard.timer_running = false
+	board.SectorQuestionCard.battle_preview_running = false
+	board.SectorQuestionCard.hide()
+	board.BattlePopup.close_battle_ui()
 
 	print("Game Over")
 

@@ -36,6 +36,7 @@ enum CellType {
 }
 
 signal sector_selected(sector)
+signal sector_closed
 
 var is_highlighted := false
 
@@ -177,6 +178,8 @@ func close_cell(team_id: int = 0) -> void:
 			#sprite.modulate = Color(0.35, 0.35, 0.35, 1.0)
 
 	_apply_lock_icon_layout()
+	if cell_type == CellType.SECTOR:
+		sector_closed.emit()
 
 
 func highlight() -> void:
