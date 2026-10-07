@@ -239,7 +239,9 @@ func _on_dice_rolled(value: int) -> void:
 		_start_controlled_walk(controller, team_id, value)
 		return
 
-	highlight_reachable_sectors(value, team_positions[team_id])
+	if not highlight_reachable_sectors(value, team_positions[team_id]):
+		await _show_walk_failed_popup(team_id)
+		GameManager.end_turn()
 
 # ======================================================
 #   التحكم باتجاه حركة الفريق المنافس
@@ -416,7 +418,9 @@ func _start_controlled_walk(controller_team: int, moving_team: int, steps: int) 
 	if not sectors_map.has(start_pos):
 		push_warning("لا يوجد قطاع عند موقع الفريق %s، ألغيت الحركة الموجهة" % str(start_pos))
 		_clear_direction_effects(moving_team, controller_team)
-		highlight_reachable_sectors(steps, start_pos)
+		if not highlight_reachable_sectors(steps, start_pos):
+			await _show_walk_failed_popup(moving_team)
+			GameManager.end_turn()
 		return
 
 	clear_sector_highlights()
@@ -731,9 +735,8 @@ func _on_walk_direction_pressed(direction: Vector2i) -> void:
 # ======================================================
 # اسم الدالة: _show_walk_failed_popup
 # وظيفتها:
-# رسالة صريحة عند انسداد كل الاتجاهات من نقطة البداية، وهي
-# الحالة الوحيدة التي لا ينفع فيها التراجع. لا تتحرك القطعة،
-# ويُستهلك التأثير، وينتقل الدور. لا صمت ولا تعليق
+# رسالة صريحة عندما لا توجد وجهة متاحة بعد رمية النرد
+# أو عندما ينسد مسار الحركة الموجهة.
 # ======================================================
 func _show_walk_failed_popup(moving_team: int) -> void:
 	var layer := CanvasLayer.new()
@@ -768,7 +771,7 @@ func _show_walk_failed_popup(moving_team: int) -> void:
 	panel.add_child(title)
 
 	var body := Label.new()
-	body.text = _team_display_name(moving_team) + " محاصر بلا اتجاه صالح،\nلن يتحرك هذه الجولة"
+	body.text = _team_display_name(moving_team) + " بلا وجهة متاحة بهذه الرمية،\nلن يتحرك هذه الجولة"
 	body.size = Vector2(panel_size.x - 40, 70)
 	body.position = Vector2(20, 74)
 	body.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
@@ -1102,12 +1105,12 @@ func handle_sector(grid_pos: Vector2i) -> void:
 # الحركة العادية: تضاء كل وجهة تبعد steps خطوة بالضبط، ويختار
 # اللاعب منها بنفسه. الحركة الموجهة لا تمر من هنا إطلاقا، فهي
 # تحرّك القطعة خطوة خطوة في _start_controlled_walk
-func highlight_reachable_sectors(steps: int, start_pos: Vector2i) -> void:
+func highlight_reachable_sectors(steps: int, start_pos: Vector2i) -> bool:
 	var queue: Array = []
 	var highlighted_cells := {}
 
 	if not sectors_map.has(start_pos):
-		return
+		return false
 
 	var start_cell = sectors_map[start_pos]
 
@@ -1163,6 +1166,8 @@ func highlight_reachable_sectors(steps: int, start_pos: Vector2i) -> void:
 				"steps": next_steps,
 				"visited": new_visited
 			})
+
+	return not highlighted_cells.is_empty()
 
 func clear_sector_highlights() -> void:
 	for sector in sectors_map.values():
