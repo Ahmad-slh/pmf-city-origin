@@ -212,6 +212,11 @@ func end_turn() -> void:
 # ======================================================
 func reset_for_new_game() -> void:
 	game_finished = false
+	rearm_dice_roll()
+	# هذه المتغيرات في autoload أيضا؛ لا تنتقل رمية غير مكتملة لمباراة جديدة.
+	GoodEffects.firstRoll = 0
+	GoodEffects.secondRoll = 0
+	GoodEffects.v_choose_first = 0
 
 	current_team = Team.BLUE
 	core_team = Team.BLUE

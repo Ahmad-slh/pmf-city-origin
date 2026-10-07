@@ -9,6 +9,25 @@ func check(condition: bool, message: String) -> void:
 func _init() -> void:
 	call_deferred("run_test")
 
+# Complete startup rather than freeing scenes with suspended opening-roll coroutines.
+func complete_opening(board) -> void:
+	var rolls := 0
+	for frame in range(120):
+		if not board.roll_off_active:
+			return
+		if board.roll_off_accepting_click:
+			board.roll_off_rolled.emit(6 if rolls == 0 else 1)
+			rolls += 1
+		else:
+			for child in board.get_children():
+				if child is CanvasLayer and child.layer == 130:
+					for panel in child.get_children():
+						for button in panel.get_children():
+							if button is Button and button.flat:
+								button.pressed.emit()
+		await process_frame
+	check(false, "opening roll-off completes")
+
 func run_test() -> void:
 	var manager = root.get_node("GameManager")
 	for scenario in ["all_closed", "neutral_draw", "time"]:
@@ -16,6 +35,7 @@ func run_test() -> void:
 		var scene = load("res://scenes/board_background.tscn").instantiate()
 		root.add_child(scene)
 		await process_frame
+		await complete_opening(scene.board)
 		var sectors: Array = []
 		for cell in scene.board.sectors.get_children():
 			if cell.cell_type == cell.CellType.SECTOR:
@@ -63,6 +83,8 @@ func run_test() -> void:
 			scene.board.BattlePopup.attacker_button.pressed.emit()
 			check(scene.board.SectorQuestionCard.final_tie_breaker_mode, "decisive question opens after match ends")
 			check(scene.board.SectorQuestionCard.timer_running, "decisive question timer still runs")
+		# Let informational popup timers and the tie-breaker entrance tween settle.
+		await create_timer(3.5).timeout
 		scene.queue_free()
 		await process_frame
 	manager.reset_for_new_game()
