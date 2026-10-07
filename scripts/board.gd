@@ -180,6 +180,8 @@ func _on_dice_twice_choose_best(value:int =0)->bool:
 	return false
 
 func _on_dice_rolled(value: int) -> void:
+	if GameManager.game_finished:
+		return
 	#print("START DICE")
 
 	# قرعة البداية تستهلك الرمية بنفسها، فلا نشغّل منطق الدور
@@ -239,7 +241,9 @@ func _on_dice_rolled(value: int) -> void:
 		_start_controlled_walk(controller, team_id, value)
 		return
 
-	highlight_reachable_sectors(value, team_positions[team_id])
+	if not highlight_reachable_sectors(value, team_positions[team_id]):
+		await _show_walk_failed_popup(team_id)
+		GameManager.end_turn()
 
 # ======================================================
 #   التحكم باتجاه حركة الفريق المنافس
@@ -416,7 +420,9 @@ func _start_controlled_walk(controller_team: int, moving_team: int, steps: int) 
 	if not sectors_map.has(start_pos):
 		push_warning("لا يوجد قطاع عند موقع الفريق %s، ألغيت الحركة الموجهة" % str(start_pos))
 		_clear_direction_effects(moving_team, controller_team)
-		highlight_reachable_sectors(steps, start_pos)
+		if not highlight_reachable_sectors(steps, start_pos):
+			await _show_walk_failed_popup(moving_team)
+			GameManager.end_turn()
 		return
 
 	clear_sector_highlights()
@@ -731,9 +737,8 @@ func _on_walk_direction_pressed(direction: Vector2i) -> void:
 # ======================================================
 # اسم الدالة: _show_walk_failed_popup
 # وظيفتها:
-# رسالة صريحة عند انسداد كل الاتجاهات من نقطة البداية، وهي
-# الحالة الوحيدة التي لا ينفع فيها التراجع. لا تتحرك القطعة،
-# ويُستهلك التأثير، وينتقل الدور. لا صمت ولا تعليق
+# رسالة صريحة عندما لا توجد وجهة متاحة بعد رمية النرد
+# أو عندما ينسد مسار الحركة الموجهة.
 # ======================================================
 func _show_walk_failed_popup(moving_team: int) -> void:
 	var layer := CanvasLayer.new()
@@ -768,7 +773,7 @@ func _show_walk_failed_popup(moving_team: int) -> void:
 	panel.add_child(title)
 
 	var body := Label.new()
-	body.text = _team_display_name(moving_team) + " محاصر بلا اتجاه صالح،\nلن يتحرك هذه الجولة"
+	body.text = _team_display_name(moving_team) + " بلا وجهة متاحة بهذه الرمية،\nلن يتحرك هذه الجولة"
 	body.size = Vector2(panel_size.x - 40, 70)
 	body.position = Vector2(20, 74)
 	body.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
@@ -1102,12 +1107,12 @@ func handle_sector(grid_pos: Vector2i) -> void:
 # الحركة العادية: تضاء كل وجهة تبعد steps خطوة بالضبط، ويختار
 # اللاعب منها بنفسه. الحركة الموجهة لا تمر من هنا إطلاقا، فهي
 # تحرّك القطعة خطوة خطوة في _start_controlled_walk
-func highlight_reachable_sectors(steps: int, start_pos: Vector2i) -> void:
+func highlight_reachable_sectors(steps: int, start_pos: Vector2i) -> bool:
 	var queue: Array = []
 	var highlighted_cells := {}
 
 	if not sectors_map.has(start_pos):
-		return
+		return false
 
 	var start_cell = sectors_map[start_pos]
 
@@ -1163,6 +1168,8 @@ func highlight_reachable_sectors(steps: int, start_pos: Vector2i) -> void:
 				"steps": next_steps,
 				"visited": new_visited
 			})
+
+	return not highlighted_cells.is_empty()
 
 func clear_sector_highlights() -> void:
 	for sector in sectors_map.values():
@@ -1365,52 +1372,8 @@ func stop_dragging() -> void:
 		##print("تم تنفيذ وحذف تأثير CANCEL_ONE_INVESTMENT للفريق: ", team_id)
 		#
 func apply_cancel_investment_effect_if_needed(team_id: int, card_data: Dictionary = {}) -> void:
-	# نبحث عن قطاع مملوك للفريق
-	var selected_sector = null
-
-	for sector in sectors.get_children():
-		if not sector.has_method("is_sector"):
-			continue
-
-		#if not sector.is_sector():
-			#continue
-
-		if sector.owner_team == team_id:
-			selected_sector = sector
-			break
-
-	# إذا لم نجد قطاع مملوك للفريق
-	if selected_sector == null:
-		print("لا يوجد قطاع مملوك للفريق: ", team_id)
-		return
-
-	# إلغاء ملكية القطاع
-	selected_sector.owner_team = 0
-	selected_sector.questions_used = 0
-
-	# إعادة شكل القطاع إذا عندك دالة خاصة داخل سكربت القطاع
-	if selected_sector.has_method("reset_sector"):
-		selected_sector.reset_sector()
-
-	# تجهيز وصف الحدث الذي سيظهر في اللوحة الجانبية
-	var sector_display_name := _sector_display_name(selected_sector)
-	var description: String = "تم إلغاء استثمار للفريق: " \
-		+ str(team_id) \
-		+ " في " \
-		+ sector_display_name
-
-	#GameManagerHelper.remove_effect(team_id, GameManagerHelper.EffectType.CANCEL_ONE_INVESTMENT)
-	# الآن نخزن التأثير بعد أن عرفنا اسم القطاع
-	GameManagerHelper.add_effect(
-		team_id,
-		GameManagerHelper.EffectType.CANCEL_ONE_INVESTMENT,
-		{
-			"card_data": card_data,
-			"sector_name": sector_display_name,
-			"description": description,
-			"display_turns_left": 2
-		}
-	)
+	# احتفظ بمسار البطاقات القديمة، لكن نفّذ القاعدة الحالية: النقل للخصم.
+	apply_cancel_investment_for_other_team(team_id, card_data)
 
 #---------------------------------------
 func apply_cancel_investment_for_other_team(team_id: int, card_data: Dictionary = {}) -> void:
@@ -1427,8 +1390,9 @@ func apply_cancel_investment_for_other_team(team_id: int, card_data: Dictionary 
 		if not sector.has_method("is_sector"):
 			continue
 
-		#if not sector.is_sector():
-			#continue
+		# افحص النوع مباشرة؛ is_sector() تغيّر مصدر الحدث كأثر جانبي.
+		if sector.cell_type != sector.CellType.SECTOR:
+			continue
 
 		if sector.owner_team == team_id:
 			selected_sector = sector
@@ -1439,18 +1403,15 @@ func apply_cancel_investment_for_other_team(team_id: int, card_data: Dictionary 
 		print("لا يوجد قطاع مملوك للفريق: ", team_id)
 		return
 
-	# إلغاء ملكية القطاع
-	selected_sector.owner_team = other_team
-	
-	var v_is_locked= selected_sector.is_locked
-	
+	# ننقل الملكية دون تغيير عدد الأسئلة أو إعادة فتح قطاع مغلق.
+	var was_closed: bool = selected_sector.is_closed
 	selected_sector.mark_as_team(other_team, team_colors[other_team])
-	if v_is_locked>=1:
+	if was_closed:
 		selected_sector.close_cell(other_team)
 
 	# تجهيز وصف الحدث الذي سيظهر في اللوحة الجانبية
 	var sector_display_name := _sector_display_name(selected_sector)
-	var description: String = "تم إلغاء استثمار للفريق: " \
+	var description: String = "تم نقل استثمار من الفريق: " \
 		+ str(team_id) \
 		+ " في " \
 		+ sector_display_name \

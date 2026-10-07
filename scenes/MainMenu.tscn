@@ -9,8 +9,8 @@
 [ext_resource type="Texture2D" path="res://assets/images/الصفحة الرئيسية/محتويات الصفحة الرئيسية-08.png" id="7_cloud_big"]
 [ext_resource type="Texture2D" path="res://assets/images/الصفحة الرئيسية/محتويات الصفحة الرئيسية-09.png" id="8_cloud_small"]
 [ext_resource type="Texture2D" path="res://assets/images/الصفحة الرئيسية/محتويات الصفحة الرئيسية-01.png" id="9_airplane"]
-[ext_resource type="Texture2D" path="res://assets/images/الصفحة الرئيسية/حنظلة - الفريق الأخضر.png" id="10_char_red"]
-[ext_resource type="Texture2D" path="res://assets/images/الصفحة الرئيسية/حنظلة - الفريق الازرق.png" id="11_char_blue"]
+[ext_resource type="Texture2D" path="res://assets/images/player/2.png" id="10_char_red"]
+[ext_resource type="Texture2D" path="res://assets/images/player/1.png" id="11_char_blue"]
 [ext_resource type="Texture2D" path="res://assets/images/الصفحة الرئيسية/sign_play.png" id="12_sign_play"]
 [ext_resource type="Texture2D" path="res://assets/images/الصفحة الرئيسية/sign_rules.png" id="13_sign_rules"]
 [ext_resource type="Texture2D" path="res://assets/images/الصفحة الرئيسية/sign_tutorial.png" id="14_sign_tutorial"]
@@ -194,26 +194,26 @@ self_modulate = Color(1, 1, 1, 0)
 [node name="CharacterRed" type="TextureRect" parent="."]
 layout_mode = 0
 offset_left = 968.6
-offset_top = 644.2
-offset_right = 1268.8
-offset_bottom = 944.4
-pivot_offset = Vector2(136.2, 280.8)
+offset_top = 630.0
+offset_right = 1128.6
+offset_bottom = 900.0
+pivot_offset = Vector2(80, 270)
 mouse_filter = 2
 texture = ExtResource("10_char_red")
 expand_mode = 1
-stretch_mode = 0
+stretch_mode = 5
 
 [node name="CharacterBlue" type="TextureRect" parent="."]
 layout_mode = 0
-offset_left = 1086.1
-offset_top = 628.6
-offset_right = 1448.9
-offset_bottom = 991.4
-pivot_offset = Vector2(181.4, 296.4)
+offset_left = 1170.0
+offset_top = 630.0
+offset_right = 1330.0
+offset_bottom = 900.0
+pivot_offset = Vector2(80, 270)
 mouse_filter = 2
 texture = ExtResource("11_char_blue")
 expand_mode = 1
-stretch_mode = 0
+stretch_mode = 5
 
 [node name="RulesPopup" type="Panel" parent="."]
 visible = false
@@ -254,7 +254,7 @@ text = "[right][font_size=22]أهلاً بكم في مدينة المالية ا
 [font_size=25][b]الفرق والشخصية الرئيسية[/b][/font_size]
 • [b]فريقان متنافسان:[/b] تُلعب اللعبة بين فريقين.
 • [b]هوية الفريق:[/b] يختار كل فريق لوناً لشخصية حنظلة قبل بدء اللعبة، ليكون هوية الفريق الخاصة.
-• [b]وقت اللعبة:[/b] ساعتان (120 دقيقة)، أو حتى يسيطر أحد الفريقين على جميع القطاعات.
+• [b]نهاية اللعبة:[/b] تنتهي عند انتهاء ساعتين (120 دقيقة)، أو عند إغلاق جميع القطاعات، أيهما يحدث أولًا.
 • [b]حجر النرد:[/b]
   • يُرمى حجر النرد مرتين في بداية اللعبة لمعرفة الفريق الذي سيبدأ؛ وهو الفريق الحاصل على الرقم الأكبر.
   • في كل دور، يرمي الفريق حجر النرد لتحديد مساره على خريطة اللعبة.

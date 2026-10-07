@@ -5,6 +5,7 @@ signal good_dice_choose_next_roll()
 #signal signal_skip_turn_cleared(team_id)
 
 var g_is_battle = false
+var game_finished := false
 var x_current_teem = "blue"
 var g_team_clicks: int=0
 var extra_turn_team: int = 0
@@ -154,6 +155,8 @@ func rearm_dice_roll() -> void:
 
 # --------------------------------
 func end_turn() -> void:
+	if game_finished:
+		return
 	
 	GameManager.g_is_battle= false
 
@@ -208,6 +211,12 @@ func end_turn() -> void:
 # إلى المباراة الجديدة في نفس الجلسة
 # ======================================================
 func reset_for_new_game() -> void:
+	game_finished = false
+	rearm_dice_roll()
+	# هذه المتغيرات في autoload أيضا؛ لا تنتقل رمية غير مكتملة لمباراة جديدة.
+	GoodEffects.firstRoll = 0
+	GoodEffects.secondRoll = 0
+	GoodEffects.v_choose_first = 0
 
 	current_team = Team.BLUE
 	core_team = Team.BLUE

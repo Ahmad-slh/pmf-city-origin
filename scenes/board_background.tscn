@@ -10,7 +10,7 @@
 [ext_resource type="Texture2D" uid="uid://bv5g0lhm1qdod" path="res://assets/images/MainPageItems/UP Panel.png" id="6_cguuw"]
 [ext_resource type="Texture2D" uid="uid://vcs4386uex4b" path="res://assets/images/MainPageItems/TeamLabelName-red.png" id="9_y3wg4"]
 [ext_resource type="Texture2D" uid="uid://djwo7eec2aceo" path="res://assets/images/MainPageItems/effects-red.png" id="12_27j5c"]
-[ext_resource type="Texture2D" uid="uid://bn47lolo0i6bd" path="res://assets/images/timer/Timer-image.png" id="12_c725k"]
+[ext_resource type="Texture2D" path="res://assets/images/timer/hourglass.svg" id="12_c725k"]
 [ext_resource type="Texture2D" uid="uid://ch3k6psdkmjd7" path="res://assets/images/MainPageItems/effects-blue.png" id="13_62jyy"]
 [ext_resource type="PackedScene" uid="uid://dby3bmkxex8kb" path="res://scenes/EventNotification.tscn" id="14_xbdsl"]
 [ext_resource type="PackedScene" uid="uid://eppplix32qj1" path="res://scenes/debug_event_panel.tscn" id="15_lr428"]
@@ -41,6 +41,18 @@ corner_radius_top_left = 8
 corner_radius_top_right = 8
 corner_radius_bottom_right = 8
 corner_radius_bottom_left = 8
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_clock"]
+bg_color = Color(0.122, 0.184, 0.369, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(1, 1, 1, 1)
+corner_radius_top_left = 7
+corner_radius_top_right = 7
+corner_radius_bottom_right = 7
+corner_radius_bottom_left = 7
 
 [node name="BoardBackground" type="Node2D" unique_id=747300420]
 script = ExtResource("1_pblq0")
@@ -92,22 +104,23 @@ position = Vector2(-4.6894684, -325.83643)
 scale = Vector2(0.89323306, 0.8637148)
 texture = ExtResource("6_27j5c")
 
-[node name="GameRoot" type="Node2D" parent="." unique_id=1330413708]
-scale = Vector2(0.9, 0.9)
+[node name="Background" type="CanvasLayer" parent="."]
+layer = -1
 
-[node name="TextureRect" type="TextureRect" parent="GameRoot" unique_id=1322107951]
-z_index = -10
+[node name="TextureRect" type="TextureRect" parent="Background" unique_id=1322107951]
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-scale = Vector2(1, 0.74)
 mouse_filter = 2
 texture = ExtResource("1_gumd1")
 expand_mode = 1
-stretch_mode = 2
+stretch_mode = 0
 metadata/_edit_use_anchors_ = true
+
+[node name="GameRoot" type="Node2D" parent="." unique_id=1330413708]
+scale = Vector2(0.9, 0.9)
 
 [node name="Board" parent="GameRoot" unique_id=2020624565 instance=ExtResource("4_e248q")]
 position = Vector2(-109.22221, 24.000046)
@@ -200,18 +213,42 @@ texture = ExtResource("13_62jyy")
 [node name="GameOverPopup" parent="." instance=ExtResource("22_game_over")]
 visible = false
 
-[node name="TimerImage" type="Sprite2D" parent="." unique_id=724480552]
-position = Vector2(1370, 65)
-scale = Vector2(0.14276004, 0.14527027)
-texture = ExtResource("12_c725k")
+[node name="TimerUI" type="CanvasLayer" parent="."]
+layer = 10
 
-[node name="GameTimerLabel" type="Label" parent="TimerImage" unique_id=1586888424]
-offset_left = -250.0
-offset_top = -170.0
-offset_right = 550.0
-offset_bottom = 170.0
+[node name="TimerImage" type="HBoxContainer" parent="TimerUI" unique_id=724480552]
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -164.0
+offset_top = 20.0
+offset_right = -20.0
+offset_bottom = 74.0
+grow_horizontal = 0
+mouse_filter = 2
+layout_direction = 1
+theme_override_constants/separation = 12
+
+[node name="Hourglass" type="TextureRect" parent="TimerUI/TimerImage"]
+custom_minimum_size = Vector2(24, 54)
+layout_mode = 2
+mouse_filter = 2
+texture = ExtResource("12_c725k")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="ClockBox" type="PanelContainer" parent="TimerUI/TimerImage"]
+custom_minimum_size = Vector2(108, 38)
+layout_mode = 2
+size_flags_vertical = 4
+mouse_filter = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_clock")
+
+[node name="GameTimerLabel" type="Label" parent="TimerUI/TimerImage/ClockBox" unique_id=1586888424]
+layout_mode = 2
+mouse_filter = 2
 theme_override_fonts/font = ExtResource("21_arialfont")
-theme_override_font_sizes/font_size = 140
+theme_override_font_sizes/font_size = 20
 text = "120:00"
 horizontal_alignment = 1
 vertical_alignment = 1
