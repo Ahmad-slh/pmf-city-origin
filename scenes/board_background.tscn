@@ -201,18 +201,31 @@ texture = ExtResource("13_62jyy")
 [node name="GameOverPopup" parent="." instance=ExtResource("22_game_over")]
 visible = false
 
-[node name="TimerImage" type="Sprite2D" parent="." unique_id=724480552]
-position = Vector2(1370, 65)
-scale = Vector2(0.14276004, 0.14527027)
-texture = ExtResource("12_c725k")
+[node name="TimerUI" type="CanvasLayer" parent="."]
+layer = 10
 
-[node name="GameTimerLabel" type="Label" parent="TimerImage" unique_id=1586888424]
-offset_left = -250.0
-offset_top = -170.0
-offset_right = 550.0
-offset_bottom = 170.0
+[node name="TimerImage" type="TextureRect" parent="TimerUI" unique_id=724480552]
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -244.0
+offset_top = 12.0
+offset_right = -20.0
+offset_bottom = 147.0
+grow_horizontal = 0
+mouse_filter = 2
+texture = ExtResource("12_c725k")
+expand_mode = 1
+stretch_mode = 0
+
+[node name="GameTimerLabel" type="Label" parent="TimerUI/TimerImage" unique_id=1586888424]
+offset_left = 72.0
+offset_top = 49.0
+offset_right = 199.0
+offset_bottom = 107.0
+mouse_filter = 2
 theme_override_fonts/font = ExtResource("21_arialfont")
-theme_override_font_sizes/font_size = 140
+theme_override_font_sizes/font_size = 24
 text = "120:00"
 horizontal_alignment = 1
 vertical_alignment = 1

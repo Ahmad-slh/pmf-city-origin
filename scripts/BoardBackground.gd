@@ -16,7 +16,7 @@ extends Node2D
 
 @onready var debug_event_panel : CanvasLayer = $DebugEventPanel
 
-@onready var game_timer_label: Label = $TimerImage/GameTimerLabel
+@onready var game_timer_label: Label = $TimerUI/TimerImage/GameTimerLabel
 @onready var game_timer: Timer = $GameTimer
 @onready var exit_to_menu_button: Button = $ExitUI/ExitToMenuButton
 @onready var game_over_popup: CanvasLayer = $GameOverPopup
