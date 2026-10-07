@@ -10,7 +10,7 @@
 [ext_resource type="Texture2D" uid="uid://bv5g0lhm1qdod" path="res://assets/images/MainPageItems/UP Panel.png" id="6_cguuw"]
 [ext_resource type="Texture2D" uid="uid://vcs4386uex4b" path="res://assets/images/MainPageItems/TeamLabelName-red.png" id="9_y3wg4"]
 [ext_resource type="Texture2D" uid="uid://djwo7eec2aceo" path="res://assets/images/MainPageItems/effects-red.png" id="12_27j5c"]
-[ext_resource type="Texture2D" uid="uid://bn47lolo0i6bd" path="res://assets/images/timer/Timer-image.png" id="12_c725k"]
+[ext_resource type="Texture2D" path="res://assets/images/timer/hourglass.svg" id="12_c725k"]
 [ext_resource type="Texture2D" uid="uid://ch3k6psdkmjd7" path="res://assets/images/MainPageItems/effects-blue.png" id="13_62jyy"]
 [ext_resource type="PackedScene" uid="uid://dby3bmkxex8kb" path="res://scenes/EventNotification.tscn" id="14_xbdsl"]
 [ext_resource type="PackedScene" uid="uid://eppplix32qj1" path="res://scenes/debug_event_panel.tscn" id="15_lr428"]
@@ -41,6 +41,18 @@ corner_radius_top_left = 8
 corner_radius_top_right = 8
 corner_radius_bottom_right = 8
 corner_radius_bottom_left = 8
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_clock"]
+bg_color = Color(0.122, 0.184, 0.369, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(1, 1, 1, 1)
+corner_radius_top_left = 7
+corner_radius_top_right = 7
+corner_radius_bottom_right = 7
+corner_radius_bottom_left = 7
 
 [node name="BoardBackground" type="Node2D" unique_id=747300420]
 script = ExtResource("1_pblq0")
@@ -204,28 +216,39 @@ visible = false
 [node name="TimerUI" type="CanvasLayer" parent="."]
 layer = 10
 
-[node name="TimerImage" type="TextureRect" parent="TimerUI" unique_id=724480552]
+[node name="TimerImage" type="HBoxContainer" parent="TimerUI" unique_id=724480552]
 anchors_preset = 1
 anchor_left = 1.0
 anchor_right = 1.0
-offset_left = -244.0
-offset_top = 12.0
+offset_left = -164.0
+offset_top = 20.0
 offset_right = -20.0
-offset_bottom = 147.0
+offset_bottom = 74.0
 grow_horizontal = 0
+mouse_filter = 2
+layout_direction = 1
+theme_override_constants/separation = 12
+
+[node name="Hourglass" type="TextureRect" parent="TimerUI/TimerImage"]
+custom_minimum_size = Vector2(24, 54)
+layout_mode = 2
 mouse_filter = 2
 texture = ExtResource("12_c725k")
 expand_mode = 1
-stretch_mode = 0
+stretch_mode = 5
 
-[node name="GameTimerLabel" type="Label" parent="TimerUI/TimerImage" unique_id=1586888424]
-offset_left = 72.0
-offset_top = 49.0
-offset_right = 199.0
-offset_bottom = 107.0
+[node name="ClockBox" type="PanelContainer" parent="TimerUI/TimerImage"]
+custom_minimum_size = Vector2(108, 38)
+layout_mode = 2
+size_flags_vertical = 4
+mouse_filter = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_clock")
+
+[node name="GameTimerLabel" type="Label" parent="TimerUI/TimerImage/ClockBox" unique_id=1586888424]
+layout_mode = 2
 mouse_filter = 2
 theme_override_fonts/font = ExtResource("21_arialfont")
-theme_override_font_sizes/font_size = 24
+theme_override_font_sizes/font_size = 20
 text = "120:00"
 horizontal_alignment = 1
 vertical_alignment = 1
