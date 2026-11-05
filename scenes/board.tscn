@@ -43,9 +43,9 @@
 [ext_resource type="PackedScene" uid="uid://djo6ov33phfpw" path="res://scenes/BattlePopup.tscn" id="24_v21d4"]
 [ext_resource type="PackedScene" uid="uid://12ou74im58rt" path="res://scenes/StreetCard.tscn" id="25_5pkjh"]
 [ext_resource type="Texture2D" uid="uid://cr5th3aixkcso" path="res://assets/images/sectors/grey/Sector_07.png" id="26_jg0oi"]
-[ext_resource type="Texture2D" uid="uid://bic4o8a2ngnra" path="res://assets/images/sectors/red/Sector_06.jpeg" id="26_u1rxi"]
+[ext_resource type="Texture2D" uid="uid://dup1pkxwbavej" path="res://assets/images/sectors/red/Sector_06.png" id="26_u1rxi"]
 [ext_resource type="Texture2D" uid="uid://dtyr0mjk2wies" path="res://assets/images/sectors/blue/Sector_07.png" id="27_jjavo"]
-[ext_resource type="Texture2D" uid="uid://54bb0xbr48s" path="res://assets/images/sectors/red/Sector_07.jpeg" id="30_jg0oi"]
+[ext_resource type="Texture2D" uid="uid://dmrd3s83hboda" path="res://assets/images/sectors/red/Sector_07.png" id="30_jg0oi"]
 [ext_resource type="Texture2D" uid="uid://bdfpeypinb6t1" path="res://assets/images/sectors/grey/Sector_08.png" id="30_jk51t"]
 [ext_resource type="Texture2D" uid="uid://cp8i7700lecse" path="res://assets/images/streets/normal/first.png" id="30_stfirst"]
 [ext_resource type="Texture2D" uid="uid://2vu3mxxy1jpo" path="res://assets/images/sectors/blue/Sector_08.png" id="31_hiqtb"]
@@ -955,7 +955,7 @@ metadata/_edit_use_anchors_ = true
 
 [node name="Street_18" parent="Streets" unique_id=874406953 groups=["board_sectors"] instance=ExtResource("1_fv4ni")]
 texture_filter = 1
-position = Vector2(1361, 724)
+position = Vector2(1421, 724)
 priority = 1
 cell_type = 1
 sector_id = 18

@@ -78,11 +78,22 @@ func run_test() -> void:
 		scene._on_game_timer_timeout()
 		check(scene.game_timer.is_stopped(), scenario + ": repeated finish is harmless")
 		if scenario == "neutral_draw":
+			var card = scene.board.SectorQuestionCard
 			scene.game_over_popup._on_return_button_pressed()
+			await process_frame
+			check(card.visible and card.battle_preview_running, "decisive question is read before any answer")
+			check(not scene.board.BattlePopup.visible, "team selection waits until the question is read")
+			card.battle_start_answer_button.pressed.emit()
+			await process_frame
 			check(scene.board.BattlePopup.visible, "tie allows team selection after match ends")
 			scene.board.BattlePopup.attacker_button.pressed.emit()
-			check(scene.board.SectorQuestionCard.final_tie_breaker_mode, "decisive question opens after match ends")
-			check(scene.board.SectorQuestionCard.timer_running, "decisive question timer still runs")
+			check(card.final_tie_breaker_mode, "decisive question opens after match ends")
+			check(card.timer_running, "decisive question timer still runs")
+			check(card.current_question["answers"].size() == 2, "decisive question offers two options only")
+			check(card.answer_b_button.visible and not card.answer_c_button.visible, "third option row is hidden")
+			check(card.option_buttons[0].visible and not card.option_buttons[0].disabled, "first circle answers the decisive question")
+			check(card.option_buttons[1].visible and not card.option_buttons[1].disabled, "second circle answers the decisive question")
+			check(not card.option_buttons[2].visible, "third circle is hidden for a yes/no question")
 		# Let informational popup timers and the tie-breaker entrance tween settle.
 		await create_timer(3.5).timeout
 		scene.queue_free()

@@ -386,6 +386,9 @@ func _on_game_over_return_to_menu() -> void:
 
 
 func _on_tie_breaker_requested() -> void:
+	# نفس تسلسل سؤال المعركة: السؤال يقرأ أولا، ثم تفتح نافذة اختيار
+	# الفريق الذي رفع يده أولا، وبعدها تبدأ الإجابة بالضغط على الدائرة
+	await board.SectorQuestionCard.show_final_tie_breaker_preview(board)
 	board.BattlePopup.show_final_tie_breaker(board)
 
 

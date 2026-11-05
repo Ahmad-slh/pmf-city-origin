@@ -278,6 +278,9 @@ text = "[right][font_size=22]أهلاً بكم في مدينة المالية ا
 • تضم المدينة 14 قطاعاً مالياً حكومياً.
 • يحتوي كل قطاع على سؤالين تعليميين، وبعد الإجابة عن السؤالين، سواء كانت الإجابات صحيحة أو خاطئة، يُغلق القطاع نهائياً.
 • عند حصولكم على إجابة صحيحة، يتلوّن القطاع بلون فريقكم.
+• [b]النقطة الصفراء الوامضة:[/b] إذا أجاب الفريق إجابة خاطئة عن أول سؤال في القطاع، فلا يتلوّن القطاع بأي لون، وتظهر فوقه نقطة صغيرة تومض بين درجتين من الأصفر؛ وهي إشارة للفريقين بأن أمام هذا القطاع فرصة أخرى (سؤالاً ثانياً) لم تُستخدم بعد.
+  • عند المرور بالقطاع مرة أخرى والإجابة بشكل صحيح، من أي فريق، تختفي النقطة ويأخذ القطاع لون الفريق الفائز.
+  • أما إذا كانت الإجابة الثانية خاطئة، فيُغلق القطاع باللون الرمادي.
 
 [font_size=25][b]وضع التحدي (Battle Mode)![/b][/font_size]
 عندما يتواجد الفريقان في القطاع نفسه في الوقت نفسه، يتفعّل وضع التحدي.
@@ -465,3 +468,25 @@ theme_override_colors/default_color = Color(0.13, 0.16, 0.22, 1)
 theme_override_font_sizes/normal_font_size = 21
 bbcode_enabled = true
 text = "مدينة PMF هي لعبة لوحية رقمية تعليمية لفريقين، تحاكي إدارة مدينة والاستثمار في قطاعاتها المختلفة. تعلّم مفاهيم الموازنة العامة والإدارة المالية بأسلوب ممتع وتنافسي من خلال النرد والبطاقات والمعارك المعرفية."
+
+[node name="CreditLabel" type="Label" parent="."]
+layout_mode = 1
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -268.0
+offset_top = -46.0
+offset_right = -18.0
+offset_bottom = -14.0
+grow_horizontal = 0
+grow_vertical = 0
+mouse_filter = 2
+theme_override_colors/font_color = Color(1, 1, 1, 0.9)
+theme_override_colors/font_outline_color = Color(0.04, 0.09, 0.22, 0.85)
+theme_override_constants/outline_size = 5
+theme_override_font_sizes/font_size = 20
+text = "Developed by Newsoft"
+horizontal_alignment = 2
+vertical_alignment = 1

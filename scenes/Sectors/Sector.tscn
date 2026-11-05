@@ -5,6 +5,8 @@
 [ext_resource type="Texture2D" uid="uid://cx755pgsvysv7" path="res://assets/images/sectors/s1.png" id="2_fq5c5"]
 [ext_resource type="Texture2D" uid="uid://cbj8gg7vov161" path="res://assets/images/Locks/lock_blue.png" id="3_fq5c5"]
 [ext_resource type="Texture2D" uid="uid://dmlwtshukniqm" path="res://assets/images/Locks/lock_gray.png" id="4_sjo4g"]
+[ext_resource type="Texture2D" uid="uid://bwfwlhutn7yh4" path="res://assets/images/Locks/pending_dot.png" id="5_dot"]
+[ext_resource type="Texture2D" uid="uid://cbdpiewujx1kv" path="res://assets/images/Locks/pending_dot_deep.png" id="6_dotdeep"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_yonaq"]
 size = Vector2(262, 233)
@@ -20,6 +22,8 @@ red_lock_texture = ExtResource("2_awj8g")
 blue_lock_texture = ExtResource("3_fq5c5")
 gray_lock_texture = ExtResource("4_sjo4g")
 neutral_lock_texture = ExtResource("4_sjo4g")
+pending_dot_texture = ExtResource("5_dot")
+pending_dot_deep_texture = ExtResource("6_dotdeep")
 
 [node name="Sprite2D" type="Sprite2D" parent="." unique_id=579697765]
 scale = Vector2(0.4, 0.4)

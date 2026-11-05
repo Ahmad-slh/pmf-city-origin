@@ -48,7 +48,13 @@ func run_test() -> void:
 			check(target.is_closed == closed, prefix + "open/closed state preserved")
 			check(target.questions_used == (2 if closed else 1), prefix + "question progress preserved")
 			check(target.sprite.texture == (target.red_texture if other_team == 2 else target.blue_texture), prefix + "sector color matches new owner")
-			check(target.lock_sprite.visible == closed, prefix + "lock visibility preserved")
+			# القطاع المنقول يبقى مملوكا: مقفل -> قفل بلون المالك الجديد،
+			# ومفتوح -> بلا أي علامة
+			if closed:
+				check(target.lock_sprite.visible, prefix + "closed sector keeps its lock")
+				check(target.lock_sprite.texture == (target.blue_lock_texture if other_team == 1 else target.red_lock_texture), prefix + "lock matches the new owner")
+			else:
+				check(not target.lock_sprite.visible, prefix + "owned open sector carries no marker")
 			if closed:
 				check(target.lock_sprite.texture == (target.red_lock_texture if other_team == 2 else target.blue_lock_texture), prefix + "lock color matches new owner")
 			check(street.owner_team == source_team, prefix + "streets unaffected")

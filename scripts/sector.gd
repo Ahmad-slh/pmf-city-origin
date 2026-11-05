@@ -19,16 +19,33 @@ extends Area2D
 
 # خاص بالاقفال
 @onready var lock_sprite: Sprite2D = $LockSprite
+@onready var collision_shape: CollisionShape2D = $CollisionShape2D
 @export var red_lock_texture: Texture2D
 @export var blue_lock_texture: Texture2D
 @export var gray_lock_texture: Texture2D
 @export var neutral_lock_texture: Texture2D
 
-# حجم وموقع أيقونة القفل — موحّدة لكل القطاعات
-# صور الأقفال بأبعاد مختلفة، لذلك يُحسب المقياس من حجم الصورة
-# بدل استخدام قيمة ثابتة، حتى تظهر جميعها بنفس الحجم.
-const LOCK_ICON_SIZE := 40.0     # أقصى بُعد للأيقونة بالبكسل
-const LOCK_ICON_MARGIN := 12.0   # المسافة من حافة القطاع
+# نقطة صغيرة تعلو القطاع الذي أخطأ أول من مرّ عليه، فتذكّر اللاعبين
+# بأن له سؤالا ثانيا لم يُستخدم بعد.
+# النقطة تومض بين درجتين من الأصفر حتى تلفت النظر وسط رسوم اللوحة
+@export var pending_dot_texture: Texture2D
+@export var pending_dot_deep_texture: Texture2D
+
+# مدة بقاء كل درجة قبل التبديل. 0.55 ثانية تعطي نبضة هادئة تُرى
+# من بعيد ولا تشتت الانتباه عن اللوحة
+const PENDING_DOT_BLINK_SECONDS := 0.55
+
+# حجم وموقع أيقونة القفل — موحّدة لكل القطاعات.
+# صور الأقفال الثلاثة بنفس المقاس وبنفس الشارة البيضاء، ومع ذلك
+# يُحسب المقياس من حجم الصورة حتى يبقى الحجم موحّدا لو تغيرت صورة.
+const LOCK_ICON_SIZE := 52.0     # أقصى بُعد للقفل بالبكسل
+const PENDING_DOT_SIZE := 34.0   # نقطة الفرصة الثانية، أصغر بكثير
+
+# موضع القفل: إزاحة من مركز رسم القطاع نحو أعلى اليمين، بنسبة من
+# عرض الرسم وارتفاعه. رسوم القطاعات بقع دائرية محاطة بأشجار، فحدود
+# الصورة الخارجية تقع فوق الأشجار لا على القطاع نفسه. الإزاحة من
+# المركز تبقي القفل داخل البقعة في كل القطاعات، وبنفس النسبة
+const LOCK_CENTER_OFFSET_RATIO := Vector2(0.30, -0.22)
 
 enum CellType {
 	SECTOR,
@@ -41,7 +58,10 @@ signal sector_closed
 var is_highlighted := false
 
 # خاص بالقطاع
-@export var questions_used: int = 0
+@export var questions_used: int = 0:
+	set(value):
+		questions_used = value
+		_update_sector_lock()
 @export var is_locked: int = 0
 
 #var questions_used: int = 0
@@ -71,6 +91,8 @@ func _ready() -> void:
 	lock_sprite.z_index = 100
 	lock_sprite.visible = false
 	lock_sprite.centered = true
+
+	_update_sector_lock()
 
 
 
@@ -123,7 +145,7 @@ func is_street() -> bool:
 
 # توحيد حجم وموقع أيقونة القفل في الزاوية العلوية اليمنى لكل القطاعات.
 # تُستدعى بعد كل تعيين لصورة القفل.
-func _apply_lock_icon_layout() -> void:
+func _apply_lock_icon_layout(icon_size: float = LOCK_ICON_SIZE) -> void:
 	if lock_sprite == null or lock_sprite.texture == null:
 		return
 
@@ -132,20 +154,98 @@ func _apply_lock_icon_layout() -> void:
 	var largest_side: float = max(tex_size.x, tex_size.y)
 	if largest_side <= 0.0:
 		return
-	var icon_scale: float = LOCK_ICON_SIZE / largest_side
+	var icon_scale: float = icon_size / largest_side
 	lock_sprite.scale = Vector2(icon_scale, icon_scale)
 
-	# الموقع محسوب من مستطيل صورة القطاع نفسه، لأن إزاحة الصورة
-	# تختلف بين قطاع وآخر — هذا ما كان يجعل الأيقونة غير منتظمة.
-	if sprite == null or sprite.texture == null:
+	# الموقع محسوب من حدود الرسم الظاهر في صورة القطاع، لا من
+	# مستطيل الصورة كاملا ولا من شكل الاصطدام. صور القطاعات تحمل
+	# هوامش شفافة مختلفة، وشكل الاصطدام أوسع من الرسم، وكلاهما
+	# كان يدفع القفل خارج حدود القطاع ويجعل موضعه يقفز بين قطاع وآخر
+	var rect: Rect2 = _sector_footprint()
+	if rect.size == Vector2.ZERO:
 		return
-	var art_half: Vector2 = (sprite.texture.get_size() * sprite.scale) * 0.5
-	var icon_half: Vector2 = (tex_size * icon_scale) * 0.5
 
-	lock_sprite.position = Vector2(
-		sprite.position.x + art_half.x - LOCK_ICON_MARGIN - icon_half.x,
-		sprite.position.y - art_half.y + LOCK_ICON_MARGIN + icon_half.y
-	)
+	lock_sprite.position = rect.get_center() + rect.size * LOCK_CENTER_OFFSET_RATIO
+
+
+# حدود الرسم الظاهر في القطاع بإحداثيات العقدة.
+# ترجع حدود البكسلات غير الشفافة في صورة القطاع، فينطبق القفل
+# على الرسم نفسه مهما اختلفت هوامش الصورة
+func _sector_footprint() -> Rect2:
+	if sprite != null and sprite.texture != null:
+		var tex_size: Vector2 = sprite.texture.get_size()
+		var opaque: Rect2 = _opaque_rect(sprite.texture)
+
+		if opaque.size.x > 0.0 and opaque.size.y > 0.0:
+			var offset: Vector2 = opaque.position - tex_size * 0.5
+			var top_left: Vector2 = offset * sprite.scale
+			return Rect2(sprite.position + top_left, opaque.size * sprite.scale)
+
+		var art: Vector2 = tex_size * sprite.scale
+		return Rect2(sprite.position - art * 0.5, art)
+
+	if collision_shape != null and collision_shape.shape is RectangleShape2D:
+		var box: Vector2 = (collision_shape.shape as RectangleShape2D).size
+		return Rect2(collision_shape.position - box * 0.5, box)
+
+	return Rect2()
+
+
+# ======================================================
+# حدود البكسلات غير الشفافة في صورة، بإحداثيات الصورة.
+# القياس يمر بخطوة ثابتة لأن الدقة المطلوبة بضعة بكسلات فقط،
+# والنتيجة تخزَّن لكل صورة فلا تُقاس إلا مرة واحدة في الجلسة
+# ======================================================
+const OPAQUE_SCAN_STRIDE := 4
+const OPAQUE_ALPHA_MIN := 24
+
+static var _opaque_rect_cache := {}
+
+
+static func _opaque_rect(texture: Texture2D) -> Rect2:
+	var key: String = texture.resource_path
+	if key != "" and _opaque_rect_cache.has(key):
+		return _opaque_rect_cache[key]
+
+	var result := Rect2()
+	var src: Image = texture.get_image()
+
+	if src != null:
+		var img := Image.new()
+		img.copy_from(src)
+		if img.is_compressed():
+			img.decompress()
+		img.convert(Image.FORMAT_RGBA8)
+
+		var w: int = img.get_width()
+		var h: int = img.get_height()
+		var min_x: int = w
+		var min_y: int = h
+		var max_x: int = -1
+		var max_y: int = -1
+
+		var y: int = 0
+		while y < h:
+			var x: int = 0
+			while x < w:
+				if img.get_pixel(x, y).a8 >= OPAQUE_ALPHA_MIN:
+					min_x = min(min_x, x)
+					max_x = max(max_x, x)
+					min_y = min(min_y, y)
+					max_y = max(max_y, y)
+				x += OPAQUE_SCAN_STRIDE
+			y += OPAQUE_SCAN_STRIDE
+
+		if max_x >= 0:
+			result = Rect2(
+				Vector2(min_x, min_y),
+				Vector2(max_x - min_x + 1, max_y - min_y + 1)
+			)
+
+	if key != "":
+		_opaque_rect_cache[key] = result
+
+	return result
 
 
 func close_cell(team_id: int = 0) -> void:
@@ -296,42 +396,31 @@ func register_street_visit() -> void:
 		# لذلك نُعيد صورة المرور الثاني بعده وليس قبله.
 		_apply_street_texture(street_second_texture)
 
-# تغيير صورة الشارع مع الحفاظ على نفس المساحة التي كانت تشغلها الصورة السابقة.
-# صور الشوارع الجديدة أكبر بكثير من الصورة الأصلية، لذلك يُعاد حساب المقياس
-# من حجم الصورة الجديدة بدل ترك مقياس ثابت — وإلا تمدد البلاط فوق القطاعات المجاورة.
+# تغيير صورة الشارع مع الحفاظ على مساحته الظاهرة على اللوحة.
+#
+# صور الحالات الثلاث (سليم، أول مرور، ثاني مرور) صارت على قياس واحد
+# لكل اتجاه، والطريق مرسوم في الموضع نفسه داخل كل صورة، فالتبديل
+# بينها لا يحرك شيئا ولا يحتاج أي معاملات تصحيح.
+#
+# القسمة أدناه تبقى كحماية: لو استُبدلت صورة بأخرى بقياس مختلف
+# لاحقا، يُعاد حساب المقياس تلقائيا فلا يتمدد البلاط فوق القطاعات
+# المجاورة. وهي تضرب المقياس الحالي فتحافظ على إشارته لو كان مقلوبا
 func _apply_street_texture(tex: Texture2D) -> void:
 	if sprite == null or tex == null or sprite.texture == null:
 		return
-	var target: Vector2 = sprite.texture.get_size() * sprite.scale
-	var tex_size: Vector2 = tex.get_size()
-	if tex_size.x <= 0.0 or tex_size.y <= 0.0:
+
+	var old_size: Vector2 = sprite.texture.get_size()
+	var new_size: Vector2 = tex.get_size()
+
+	if new_size.x <= 0.0 or new_size.y <= 0.0:
 		return
-	
-	# العرض والارتفاع الظاهران للصورة القديمة
-	var old_width: float = sprite.texture.get_width() * abs(sprite.scale.x)
-	var old_height: float = sprite.texture.get_height() * abs(sprite.scale.y)
 
-	# عرض وارتفاع الصورة الجديدة الأصليان
-	var new_width: float = tex.get_width()
-	var new_height: float = tex.get_height()
-	
-		# إعطاء الصورة الجديدة نفس عرض وارتفاع الصورة القديمة
-		
-	if visits_count==1:
-		sprite.scale.x = (old_width / new_width)*0.75
-		sprite.scale.y = (old_height / new_height)*0.55
-	else:
-		sprite.scale.x = (old_width / new_width)
-		sprite.scale.y = (old_height / new_height)
-
-	
+	sprite.scale = Vector2(
+		sprite.scale.x * (old_size.x / new_size.x),
+		sprite.scale.y * (old_size.y / new_size.y)
+	)
 	sprite.texture = tex
 
-	#if new_width <= 0.0 or new_height <= 0.0:
-		#return
-	#sprite.texture = tex
-	#sprite.scale = (target / tex_size) 
-	#sprite.modulate = Color(1, 1, 1, 1)
 
 func break_street() -> void:
 	if cell_type != CellType.STREET:
@@ -426,9 +515,7 @@ func cancel_investment() -> void:
 	label.visible = false
 	label.text = ""
 
-	if lock_sprite:
-		lock_sprite.visible = false
-		lock_sprite.texture = null
+	_update_sector_lock()
 
 	clear_highlight()
 
@@ -460,17 +547,89 @@ func update_sector_owner_image() -> void:
 	_update_sector_lock()
 
 
+# ======================================================
+# علامة القطاع
+# ------------------------------------------------------
+# ثلاث حالات لا رابع لها:
+#
+#   مقفل                     -> قفل بلون مالكه (أو رمادي للمحايد)
+#   مفتوح وله مالك           -> لا علامة. فريق أجاب أولا وفاز به،
+#                               ويبقى قابلا لإعادة المرور أو للمعركة
+#   مفتوح بلا مالك وسؤال مستهلك -> نقطة صغيرة: أول من مرّ عليه أخطأ،
+#                               فله فرصة ثانية لم تُستخدم بعد
+#
+# القطاع الذي لم يُلعب بعد لا يحمل أي علامة
+# ======================================================
+var _pending_dot_blink: Tween = null
+
+
+# ======================================================
+# وميض نقطة الفرصة الثانية
+# ------------------------------------------------------
+# دورة لا نهائية تبدّل صورة النقطة بين الدرجة الفاتحة والغامقة.
+# الصورتان بنفس المقاس، فلا يتغير المقياس مع التبديل ولا يحتاج
+# الأمر إعادة حساب الموضع في كل نبضة
+# ======================================================
+func _start_pending_dot_blink() -> void:
+	if pending_dot_deep_texture == null:
+		return
+
+	# الوميض شغّال أصلا: لا نعيد تشغيله فتُقطع الدورة في منتصفها
+	if _pending_dot_blink != null and _pending_dot_blink.is_valid():
+		return
+
+	_pending_dot_blink = create_tween().set_loops()
+	_pending_dot_blink.tween_callback(_set_dot_light)
+	_pending_dot_blink.tween_interval(PENDING_DOT_BLINK_SECONDS)
+	_pending_dot_blink.tween_callback(_set_dot_deep)
+	_pending_dot_blink.tween_interval(PENDING_DOT_BLINK_SECONDS)
+
+
+func _set_dot_light() -> void:
+	if lock_sprite != null:
+		lock_sprite.texture = pending_dot_texture
+
+
+func _set_dot_deep() -> void:
+	if lock_sprite != null:
+		lock_sprite.texture = pending_dot_deep_texture
+
+
+func _stop_pending_dot_blink() -> void:
+	if _pending_dot_blink != null and _pending_dot_blink.is_valid():
+		_pending_dot_blink.kill()
+	_pending_dot_blink = null
+
+
 func _update_sector_lock() -> void:
 	if cell_type != CellType.SECTOR or lock_sprite == null:
 		return
-	lock_sprite.visible = is_closed
-	if not is_closed:
+
+	if is_closed:
+		match owner_team:
+			1:
+				lock_sprite.texture = blue_lock_texture
+			2:
+				lock_sprite.texture = red_lock_texture
+			_:
+				lock_sprite.texture = gray_lock_texture
+
+		_stop_pending_dot_blink()
+		lock_sprite.visible = true
+		_apply_lock_icon_layout(LOCK_ICON_SIZE)
 		return
-	match owner_team:
-		1:
-			lock_sprite.texture = blue_lock_texture
-		2:
-			lock_sprite.texture = red_lock_texture
-		_:
-			lock_sprite.texture = gray_lock_texture
-	_apply_lock_icon_layout()
+
+	if owner_team == 1 or owner_team == 2:
+		_stop_pending_dot_blink()
+		lock_sprite.visible = false
+		return
+
+	if questions_used >= 1 and pending_dot_texture != null:
+		lock_sprite.texture = pending_dot_texture
+		lock_sprite.visible = true
+		_apply_lock_icon_layout(PENDING_DOT_SIZE)
+		_start_pending_dot_blink()
+		return
+
+	_stop_pending_dot_blink()
+	lock_sprite.visible = false
