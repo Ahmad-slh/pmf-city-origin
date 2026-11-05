@@ -38,7 +38,10 @@ var _cb_home_anchor_top: float
 var _cb_home_anchor_bottom: float
 var _cb_home_offset_top: float
 var _cb_home_offset_bottom: float
+var _cb_home_offset_left: float
+var _cb_home_offset_right: float
 var _cb_home_min_size: Vector2
+var _home_button_separation: int = 30
 
 
 func _ready() -> void:
@@ -56,7 +59,10 @@ func _ready() -> void:
 	_cb_home_anchor_bottom = content_box.anchor_bottom
 	_cb_home_offset_top = content_box.offset_top
 	_cb_home_offset_bottom = content_box.offset_bottom
+	_cb_home_offset_left = content_box.offset_left
+	_cb_home_offset_right = content_box.offset_right
 	_cb_home_min_size = content_box.custom_minimum_size
+	_home_button_separation = button_row.get_theme_constant("separation")
 
 
 var attacker_team_id: int = 0
@@ -222,6 +228,9 @@ func _select_answerer(team_id: int) -> void:
 const REDIRECT_BAR_TOP := 8.0
 const REDIRECT_BAR_HEIGHT := 55.0
 
+# الفراغ بين كل زر وصندوق المؤقت الذي يفصل بينهما
+const REDIRECT_BAR_TIMER_GAP := 14.0
+
 func enter_redirect_mode() -> void:
 	var cl := get_parent()
 	if cl is CanvasLayer:
@@ -255,9 +264,49 @@ func enter_redirect_mode() -> void:
 	content_box.offset_top = REDIRECT_BAR_TOP
 	content_box.offset_bottom = REDIRECT_BAR_TOP + REDIRECT_BAR_HEIGHT
 
+	_place_buttons_around_timer()
+
 	attacker_button.visible = true
 	defender_button.visible = true
 	visible = true
+
+
+# ======================================================
+# اسم الدالة: _place_buttons_around_timer
+# وظيفتها:
+# صندوق المؤقت يشغل أعلى البطاقة، وكان صف الأزرار يوضع فوقه فيتداخل
+# معه ويخفي الوقت. هنا نفصل الزرين عن بعض بقدر عرض المؤقت، ونركز
+# الصف على المؤقت نفسه، فيصير الترتيب:
+#     [الفريق الأزرق]   الوقت: 00:39   [الفريق الأحمر]
+# الأزرق على اليسار والأحمر على اليمين كما في نافذة الاختيار،
+# والمؤقت يبقى ظاهرا بين الفريقين.
+# لو لم تتوفر مقاسات المؤقت يبقى الوضع القديم دون تغيير
+# ======================================================
+func _place_buttons_around_timer() -> void:
+	if board == null or board.SectorQuestionCard == null:
+		return
+
+	var timer_rect: Rect2 = board.SectorQuestionCard.get_timer_screen_rect()
+	if timer_rect.size.x <= 0.0:
+		return
+
+	var button_w: float = attacker_button.custom_minimum_size.x
+	var gap: float = REDIRECT_BAR_TIMER_GAP
+	var total_w: float = timer_rect.size.x + 2.0 * (button_w + gap)
+
+	# الفاصل بين الزرين = عرض المؤقت + هامشا الجانبين
+	button_row.add_theme_constant_override("separation", int(timer_rect.size.x + 2.0 * gap))
+
+	# الصندوق يرتكز على منتصف النافذة، فالإزاحة تقاس من المنتصف
+	var center_x: float = timer_rect.get_center().x - size.x * 0.5
+	content_box.custom_minimum_size = Vector2(total_w, 0.0)
+	content_box.offset_left = center_x - total_w * 0.5
+	content_box.offset_right = center_x + total_w * 0.5
+
+	# الزران بمحاذاة منتصف المؤقت رأسيا
+	var bar_top: float = max(timer_rect.get_center().y - REDIRECT_BAR_HEIGHT * 0.5, 4.0)
+	content_box.offset_top = bar_top
+	content_box.offset_bottom = bar_top + REDIRECT_BAR_HEIGHT
 
 
 # ======================================================
@@ -302,6 +351,9 @@ func _restore_full_layout() -> void:
 	content_box.anchor_bottom = _cb_home_anchor_bottom
 	content_box.offset_top = _cb_home_offset_top
 	content_box.offset_bottom = _cb_home_offset_bottom
+	content_box.offset_left = _cb_home_offset_left
+	content_box.offset_right = _cb_home_offset_right
+	button_row.add_theme_constant_override("separation", _home_button_separation)
 		
 # ======================================================
 # اسم الدالة: _update_battle_identity

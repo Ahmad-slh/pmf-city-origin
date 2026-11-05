@@ -38,7 +38,51 @@ func run_test() -> void:
 		check(cell.owner_team == 1 and cell.lock_sprite.texture == cell.blue_lock_texture and cell.sprite.texture == cell.blue_texture, cell.name + ": battle lock follows actual retained owner")
 		cell.close_neutral_cell()
 		check(cell.lock_sprite.texture == cell.gray_lock_texture and cell.sprite.texture == cell.normal_texture, cell.name + ": neutral battle uses gray")
+		# قطاع أعيد فتحه بلا مالك وقد استُهلك سؤاله الأول: نقطة الفرصة الثانية
 		cell.reset_sector()
-		check(not cell.lock_sprite.visible, cell.name + ": reopened sector hides lock")
+		cell.owner_team = 0
+		cell.questions_used = 1
+		check(cell.lock_sprite.visible and cell.lock_sprite.texture == cell.pending_dot_texture, cell.name + ": unowned sector with a used question shows the second-chance dot")
+		# قطاع مفتوح لفريق مالك: لا علامة إطلاقا
+		cell.owner_team = 1
+		cell.update_sector_owner_image()
+		check(not cell.lock_sprite.visible, cell.name + ": owned open sector carries no marker")
+		# قطاع لم يُلعب بعد: لا علامة
+		cell.owner_team = 0
+		cell.questions_used = 0
+		check(not cell.lock_sprite.visible, cell.name + ": untouched sector carries no marker")
+	# ------------------------------------------------------------------
+	# النقطة الوامضة والقفل يتشاركان العقدة نفسها، والوميض يبدّل صورتها
+	# كل نصف ثانية. لو بقي شغّالا بعد الإغلاق لمسح القفل بعد لحظة.
+	# هذه الفحوص تحرس ذلك الحد تحديدا
+	# ------------------------------------------------------------------
+	var all_sectors: Array = []
+	for c in board.sectors.get_children():
+		if c.cell_type == c.CellType.SECTOR:
+			all_sectors.append(c)
+
+	var one = all_sectors[0]
+	var two = all_sectors[1]
+
+	one.is_closed = false
+	one.owner_team = 0
+	one.questions_used = 1
+	await create_timer(0.2).timeout
+	check(one._pending_dot_blink != null and one._pending_dot_blink.is_valid(), "second-chance dot blinks while the sector is open")
+
+	one.close_cell(2)
+	await create_timer(1.6).timeout
+	check(one.lock_sprite.texture == one.red_lock_texture, "lock survives longer than a full blink cycle")
+	check(not (one._pending_dot_blink != null and one._pending_dot_blink.is_valid()), "blink stops once the sector closes")
+
+	two.is_closed = false
+	two.owner_team = 0
+	two.questions_used = 1
+	await create_timer(0.2).timeout
+	two.mark_as_team(1, Color.WHITE)
+	await create_timer(1.6).timeout
+	check(not two.lock_sprite.visible, "blink leaves no marker once a team owns the sector")
+	check(one.lock_sprite.texture == one.red_lock_texture, "one sector blinking never disturbs another sector lock")
+
 	print("RESULT: ", "FAIL" if failed else "PASS", " — lock colors verified on ", count, " sectors")
 	quit(1 if failed else 0)

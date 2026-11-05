@@ -197,6 +197,12 @@ const OVERLAY_TIMER_BOTTOM := 0.023
 const OVERLAY_RESULT_TOP := 0.104
 const OVERLAY_RESULT_BOTTOM := 0.208
 
+# في سؤال الحسم تبقى اللوحة النصية ظاهرة فوق القالب، والمكان أعلى
+# البطاقة مشغول بنص السؤال. النتيجة تنزل إذن إلى الفراغ تحت صفي
+# الإجابة، فلا يركب نص على نص
+const OVERLAY_RESULT_TOP_TIE := 0.700
+const OVERLAY_RESULT_BOTTOM_TIE := 0.820
+
 var _overlay_timer: Label = null
 var _overlay_result: Label = null
 
@@ -264,6 +270,27 @@ func _make_overlay_label(font_size: int, top: float, bottom: float) -> Label:
 	return label
 
 
+# ======================================================
+# اسم الدالة: get_timer_screen_rect
+# وظيفتها:
+# مستطيل صندوق المؤقت كما يظهر على الشاشة، يحسب من نفس الثوابت التي
+# ترسم بها طبقة المؤقت، ويمر عبر تحويل طبقة البطاقة (المقياس 0.4).
+# تستخدمه نافذة المعركة لتضع زري الفريقين على جانبي المؤقت بدل
+# وضعهما فوقه. لا يشترط أن تكون البطاقة معروضة بعد: نافذة المعركة
+# تطلبه قبل أن تفتح السؤال، والقياس يعتمد على مقاس الصورة وحده
+# ======================================================
+func get_timer_screen_rect() -> Rect2:
+	var size_now: Vector2 = texture_rect.size
+	if size_now.x <= 0.0 or size_now.y <= 0.0:
+		return Rect2()
+
+	var xf: Transform2D = texture_rect.get_global_transform_with_canvas()
+	var top_left: Vector2 = xf * Vector2(OVERLAY_LEFT * size_now.x, OVERLAY_TOP * size_now.y)
+	var bottom_right: Vector2 = xf * Vector2(OVERLAY_RIGHT * size_now.x, OVERLAY_TIMER_BOTTOM * size_now.y)
+
+	return Rect2(top_left, bottom_right - top_left).abs()
+
+
 func _ensure_image_mode_overlay() -> void:
 	if _overlay_timer != null and is_instance_valid(_overlay_timer):
 		return
@@ -322,6 +349,17 @@ func _ensure_second_chance_notice() -> void:
 # نسخ نص المؤقت والنتيجة من العقدتين الأصليتين إلى الطبقة.
 # تستدعى كل إطار، فتلتقط أي تغيير مهما كان مصدره
 # ======================================================
+# ======================================================
+# اسم الدالة: _option_visuals_active
+# وظيفتها:
+# هل نرسم دوائر الاختيار ونستخدم طبقة النتيجة خارج البطاقة؟
+# صحيح في بطاقات الصور، وصحيح أيضا في سؤال الحسم لأنه يعرض
+# فوق قالب البطاقة ويُجاب عليه بالضغط على الدائرة نفسها
+# ======================================================
+func _option_visuals_active() -> bool:
+	return uses_card_image or final_tie_breaker_mode
+
+
 func _sync_image_mode_overlay() -> void:
 	_ensure_image_mode_overlay()
 	_ensure_second_chance_notice()
@@ -336,8 +374,8 @@ func _sync_image_mode_overlay() -> void:
 	# حتى لا يتغير تخطيط الخيارات تحتها
 	result_label.self_modulate.a = 0.0 if show_second_chance else 1.0
 
-	# الطبقة لوضع الصورة فقط، وليس على وجه المعلومة
-	if not uses_card_image or _showing_info_side:
+	# الطبقة لوضع الصورة وسؤال الحسم، وليس على وجه المعلومة
+	if not _option_visuals_active() or _showing_info_side:
 		_overlay_timer.visible = false
 		_overlay_result.visible = false
 		return
@@ -352,11 +390,22 @@ func _sync_image_mode_overlay() -> void:
 	_overlay_result.text = result_label.text
 	_overlay_result.visible = has_result
 
+	# موضع إشعار النتيجة يتبع نوع البطاقة
+	if final_tie_breaker_mode:
+		_overlay_result.anchor_top = OVERLAY_RESULT_TOP_TIE
+		_overlay_result.anchor_bottom = OVERLAY_RESULT_BOTTOM_TIE
+	else:
+		_overlay_result.anchor_top = OVERLAY_RESULT_TOP
+		_overlay_result.anchor_bottom = OVERLAY_RESULT_BOTTOM
+
 	# النتيجة تلون بالأخضر أو الأحمر في العقدة الأصلية، ننقل اللون كما هو
 	_overlay_result.add_theme_color_override(
 		"font_color",
 		result_label.get_theme_color("font_color")
 	)
+
+	if final_tie_breaker_mode:
+		result_label.self_modulate.a = 0.0
 
 
 # ======================================================
@@ -483,7 +532,7 @@ func _make_correct_zone_style() -> StyleBoxFlat:
 
 # يبرز منطقة الإجابة الصحيحة، ويرجع true إذا تم الإبراز فعلا
 func _highlight_correct_option_zone() -> bool:
-	if not uses_card_image:
+	if not _option_visuals_active():
 		return false
 
 	var correct_index: int = int(current_question.get("correct_index", -1))
@@ -818,6 +867,107 @@ func _collect_ring_components(
 
 
 # ======================================================
+# غطاء الدائرة الثالثة في سؤال الحسم
+# ------------------------------------------------------
+# قالب البطاقة يرسم ثلاث دوائر، وسؤال الحسم خياران فقط.
+# مستطيل أبيض بلون أرضية البطاقة يخفي الدائرة الزائدة،
+# ولا يلتقط الفأرة حتى لا يحجب شيئا تحته
+# ======================================================
+var _tie_breaker_cover: ColorRect = null
+
+
+func _ensure_tie_breaker_cover() -> void:
+	if _tie_breaker_cover != null and is_instance_valid(_tie_breaker_cover):
+		return
+
+	var cover := ColorRect.new()
+	cover.name = "TieBreakerCircleCover"
+	cover.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	cover.color = Color(1, 1, 1, 1)
+	cover.position = TIE_BREAKER_COVER_RECT.position
+	cover.size = TIE_BREAKER_COVER_RECT.size
+	cover.visible = false
+
+	texture_rect.add_child(cover)
+	_tie_breaker_cover = cover
+
+
+func _show_tie_breaker_cover(cover_visible: bool) -> void:
+	_ensure_tie_breaker_cover()
+	_tie_breaker_cover.visible = cover_visible
+	_ensure_tie_breaker_banner()
+	_tie_breaker_banner.visible = cover_visible
+
+
+var _tie_breaker_banner: Label = null
+
+
+func _ensure_tie_breaker_banner() -> void:
+	if _tie_breaker_banner != null and is_instance_valid(_tie_breaker_banner):
+		return
+
+	var label := Label.new()
+	label.name = "TieBreakerBanner"
+	label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	label.add_theme_font_size_override("font_size", 64)
+	label.add_theme_color_override("font_color", Color(1, 1, 1))
+	label.position = TIE_BREAKER_BANNER_RECT.position
+	label.size = TIE_BREAKER_BANNER_RECT.size
+	label.text = TIE_BREAKER_BANNER_TEXT
+	label.visible = false
+
+	texture_rect.add_child(label)
+	_tie_breaker_banner = label
+
+
+# ======================================================
+# مواضع مناطق الضغط
+# ------------------------------------------------------
+# الثوابت العامة مضبوطة على بطاقات القطاعات المرسومة. قالب
+# سؤال الحسم مختلف قليلا، ودوائره معروفة بالبكسل، فنحاذي
+# مناطق الضغط مع صفوف النص نفسها حتى لا يقع نص خيار داخل
+# منطقة الخيار المجاور
+# ======================================================
+func _card_height() -> float:
+	var h: float = texture_rect.size.y
+	return h if h > 0.0 else 2059.0
+
+
+func _reset_option_zone_anchors() -> void:
+	_ensure_option_buttons()
+
+	for i in option_buttons.size():
+		option_buttons[i].anchor_top = OPTION_ZONE_TOP + i * OPTION_ZONE_HEIGHT
+		option_buttons[i].anchor_bottom = OPTION_ZONE_TOP + (i + 1) * OPTION_ZONE_HEIGHT
+
+
+# الدائرتان الأوليان وحدهما قابلتان للضغط في سؤال الحسم
+func _set_tie_breaker_option_zones() -> void:
+	_ensure_option_buttons()
+
+	var card_height: float = _card_height()
+
+	for i in option_buttons.size():
+		var is_used: bool = i < TIE_BREAKER_OPTION_COUNT
+		option_buttons[i].visible = is_used
+		_set_option_zone_disabled(option_buttons[i], not is_used)
+
+		if not is_used:
+			continue
+
+		# صف الخيار نفسه: مركزه مركز الدائرة، وارتفاعه ارتفاع الصف
+		var row_center: float = TEXT_MODE_FIRST_ROW_CENTER + i * TEXT_MODE_ROW_PITCH
+		var row_top: float = row_center - TEXT_MODE_ROW_HEIGHT * 0.5
+
+		var row_bottom: float = row_top + TEXT_MODE_ROW_HEIGHT
+
+		option_buttons[i].anchor_top = row_top / card_height
+		option_buttons[i].anchor_bottom = row_bottom / card_height
+
+
+# ======================================================
 # اسم الدالة: _ensure_option_ring_layer
 # وظيفتها:
 # طبقة الرسم فوق صورة البطاقة. تضاف بعد أزرار الخيارات
@@ -842,7 +992,7 @@ func _draw_option_rings() -> void:
 	if _ring_marks.is_empty():
 		return
 
-	if not uses_card_image or _showing_info_side:
+	if not _option_visuals_active() or _showing_info_side:
 		return
 
 	var rings: Array = _detect_option_rings(_current_image_path)
@@ -905,7 +1055,7 @@ func _draw_ring_shape(
 # بقاء إبراز الصف الأخضر كما هو
 # ======================================================
 func _mark_option_rings(picked_index: int, is_correct: bool) -> void:
-	if not uses_card_image:
+	if not _option_visuals_active():
 		return
 
 	_ring_marks.clear()
@@ -1055,12 +1205,15 @@ const TEXT_MODE_ROW_HEIGHT := 120.0
 const TEXT_MODE_FONT_SIZE := 26
 
 
-func _apply_text_mode_answer_layout() -> void:
+# visible_rows: عدد الخيارات الظاهرة. سؤال الحسم خياران فقط،
+# فيقصر الصندوق على صفين ويحاذيهما مع الدائرتين الأوليين
+func _apply_text_mode_answer_layout(visible_rows: int = 3) -> void:
 	# المسافة بين الصفوف تشتق من المسافة بين الدوائر
 	var row_spacing: float = TEXT_MODE_ROW_PITCH - TEXT_MODE_ROW_HEIGHT
 
+	var rows: float = float(max(visible_rows, 1))
 	var box_width: float = TEXT_MODE_BOX_RIGHT - TEXT_MODE_BOX_LEFT
-	var box_height: float = TEXT_MODE_ROW_HEIGHT * 3.0 + row_spacing * 2.0
+	var box_height: float = TEXT_MODE_ROW_HEIGHT * rows + row_spacing * (rows - 1.0)
 
 	# أعلى الصندوق = مركز أول دائرة ناقص نصف ارتفاع الصف
 	var box_top: float = TEXT_MODE_FIRST_ROW_CENTER - TEXT_MODE_ROW_HEIGHT * 0.5
@@ -1086,6 +1239,10 @@ func _apply_text_mode_answer_layout() -> void:
 	answers_container.size_flags_vertical = Control.SIZE_FILL
 	answers_container.add_theme_constant_override("separation", int(row_spacing))
 
+	# البداية لا الوسط: الصف الأول يجب أن يبقى مقابل الدائرة الأولى
+	# مهما كان عدد الصفوف الظاهرة
+	answers_container.alignment = BoxContainer.ALIGNMENT_BEGIN
+
 	for button in [answer_a_button, answer_b_button, answer_c_button]:
 		button.custom_minimum_size = Vector2(0, TEXT_MODE_ROW_HEIGHT)
 		button.add_theme_font_size_override("font_size", TEXT_MODE_FONT_SIZE)
@@ -1098,8 +1255,17 @@ func _apply_text_mode_answer_layout() -> void:
 		# النص عربي، فيبدأ من اليمين قرب الدائرة
 		button.alignment = HORIZONTAL_ALIGNMENT_RIGHT
 
-		# الخلفية البيضاء في الأزرار B و C كانت تغطي جزءا من الرسمة
-		button.add_theme_stylebox_override("normal", StyleBoxEmpty.new())
+		# الخلفية في الأزرار كانت تغطي جزءا من الرسمة، وتظهر شريطا
+		# رماديا حول النص عند التعطيل. نلغيها في كل الحالات
+		for style_name in ["normal", "hover", "pressed", "focus", "disabled"]:
+			button.add_theme_stylebox_override(style_name, StyleBoxEmpty.new())
+
+		# نص الخيار يبقى بلونه نفسه وهو معطل، فالتعطيل هنا يعني
+		# "الضغط يمر من دائرة البطاقة" لا "خيار غير متاح"
+		button.add_theme_color_override(
+			"font_disabled_color",
+			button.get_theme_color("font_color")
+		)
 
 
 func show_sector_question(cell, question_number: int) -> void:
@@ -1817,9 +1983,9 @@ func enable_answer_buttons() -> void:
 	answer_d_button.disabled = true
 	answer_d_button.visible = false
 
-	# مناطق الضغط تفعّل فقط عندما يعرض السؤال كصورة بطاقة
+	# مناطق الضغط تفعّل في بطاقات الصور وفي سؤال الحسم
 	for button in option_buttons:
-		_set_option_zone_disabled(button, not uses_card_image)
+		_set_option_zone_disabled(button, not _option_visuals_active())
 
 
 
@@ -1977,6 +2143,11 @@ func reset_question_card() -> void:
 
 	# نبدأ من الوضع النصي، و _apply_question_visuals يفعّل الصورة إن وجدت
 	uses_card_image = false
+	_show_tie_breaker_cover(false)
+	_reset_option_zone_anchors()
+	question_text_label.add_theme_font_size_override(
+		"font_size", QUESTION_TEXT_FONT_SIZE
+	)
 	_clear_correct_zone_highlight()
 	_clear_option_ring_marks()
 	_set_option_zones_visible(false)
@@ -2074,11 +2245,31 @@ const FINAL_TIE_BREAKER_QUESTION := {
 	"question": "تعتمد الدول على عملتها الوطنية للتحكم باقتصادها، بالنسبة لدولة فلسطين فهل تمتلك الحكومة حالياً القدرة والصلاحية العملية على طباعة عملة ورقية وطنية خاصة بها؟",
 	"answers": {
 		"A": "نعم",
-		"B": "لا",
-		"C": ""
+		"B": "لا"
 	},
-	"correct": "B"
+	"correct": "B",
+	"correct_index": 1
 }
+
+# سؤال الحسم لا يملك بطاقة مرسومة، فيعرض فوق قالب البطاقة العام.
+# القالب يرسم ثلاث دوائر، والسؤال خياران فقط، فتغطى الدائرة الثالثة
+const TIE_BREAKER_CARD_IMAGE := "res://assets/images/QuastionCards/Blue01_F2.png"
+
+# حدود الدائرة الثالثة بإحداثيات القالب (1671x2059)، مع هامش أمان
+const TIE_BREAKER_COVER_RECT := Rect2(1280.0, 1440.0, 160.0, 125.0)
+
+# الشريط الأزرق المرسوم في القالب، يبقى فارغا ما لم نكتب فيه.
+# البطاقات المرسومة تحمله مكتوبا، وسؤال الحسم يكتبه بنفسه
+const TIE_BREAKER_BANNER_RECT := Rect2(493.0, 832.0, 820.0, 160.0)
+const TIE_BREAKER_BANNER_TEXT := "اختر الإجابة الصحيحة"
+
+# عدد خيارات سؤال الحسم: نعم / لا
+const TIE_BREAKER_OPTION_COUNT := 2
+
+# قياس نص السؤال: القيمة الأصلية للبطاقات، وقياس أصغر لسؤال الحسم
+# لأن نصه أطول من أي سؤال آخر وكان يمتد فوق الشريط الأزرق في القالب
+const QUESTION_TEXT_FONT_SIZE := 22
+const TIE_BREAKER_QUESTION_FONT_SIZE := 17
 
 var final_tie_breaker_mode := false
 
@@ -2194,6 +2385,96 @@ func handle_sector(cell) -> void:
 	show_sector_card(cell, board)
 
 
+# ======================================================
+# اسم الدالة: _apply_tie_breaker_card
+# وظيفتها:
+# تجهيز شكل بطاقة سؤال الحسم مرة واحدة تستخدمها مرحلتا القراءة
+# والإجابة معا: السؤال فوق قالب البطاقة، و"نعم" و"لا" محاذيان
+# للدائرتين الأوليين، والدائرة الثالثة مغطاة، والمؤقت في الطبقة
+# خارج البطاقة حتى لا يركب أي نص على نص آخر
+# ======================================================
+func _apply_tie_breaker_card(header_text: String) -> void:
+	current_question = FINAL_TIE_BREAKER_QUESTION.duplicate(true)
+	_current_image_path = TIE_BREAKER_CARD_IMAGE
+	_showing_info_side = false
+
+	# العرض نصي فوق القالب، لا بطاقة صورة جاهزة
+	uses_card_image = false
+	panel.visible = true
+	background_label.visible = false
+	background_label.text = ""
+	answers_container.visible = true
+
+	sector_name_label.text = "سؤال التعادل"
+	question_number_label.text = header_text
+	question_text_label.text = current_question["question"]
+	question_text_label.add_theme_font_size_override(
+		"font_size", TIE_BREAKER_QUESTION_FONT_SIZE
+	)
+
+	answer_a_button.text = current_question["answers"]["A"]
+	answer_b_button.text = current_question["answers"]["B"]
+	answer_a_button.visible = true
+	answer_b_button.visible = true
+	answer_c_button.text = ""
+	answer_c_button.visible = false
+	answer_d_button.text = ""
+	answer_d_button.visible = false
+
+	# صفان فقط محاذيان للدائرتين الأوليين، ثم تغطى الدائرة الثالثة
+	_apply_text_mode_answer_layout(TIE_BREAKER_OPTION_COUNT)
+	_show_tie_breaker_cover(true)
+
+	# المؤقت والنتيجة يظهران في الطبقة خارج البطاقة مثل بطاقات الصور
+	timer_label.visible = false
+	close_button.visible = false
+
+
+# ======================================================
+#   عرض سؤال الحسم للقراءة فقط
+# ------------------------------------------------------
+# نفس تسلسل سؤال المعركة: يقرأ الفريقان السؤال أولا بلا مؤقت
+# وبلا إمكانية إجابة، ثم يضغط المشرف "جاهز" فتفتح نافذة اختيار
+# الفريق الذي رفع يده أولا، وبعدها فقط يبدأ العد والإجابة
+# ======================================================
+func show_final_tie_breaker_preview(board_ref) -> void:
+	current_cell = null
+	board = board_ref
+	current_board = board_ref
+
+	reset_question_card()
+
+	# reset_question_card تشغل المؤقت، ولا إجابة في هذه المرحلة
+	timer_running = false
+	battle_mode = false
+	final_tie_breaker_mode = true
+	answer_selected = true
+
+	_apply_tie_breaker_card("سؤال الحسم - للقراءة فقط")
+
+	# لا ضغط على الدوائر ولا على الخيارات أثناء القراءة
+	_set_option_zones_visible(false)
+	answer_a_button.disabled = true
+	answer_b_button.disabled = true
+	answer_c_button.disabled = true
+	answer_d_button.disabled = true
+
+	result_label.visible = false
+	result_label.text = ""
+
+	battle_start_answer_button.visible = true
+	timer_label.text = "📖 اقرأ السؤال، ثم اضغط جاهز لبدء الإجابة"
+	battle_preview_running = true
+
+	GameManagerHelper.push_input_block(self, "tie_breaker_preview")
+
+	visible = true
+	show()
+	layer = 100
+
+	await battle_preview_finished
+
+
 func show_final_tie_breaker_question(
 	board_ref,
 	answering_team: int,
@@ -2212,40 +2493,24 @@ func show_final_tie_breaker_question(
 	battle_attacker_team = attacker_team
 	battle_defender_team = defender_team
 	second_chance_used = false
-
-	current_question = FINAL_TIE_BREAKER_QUESTION.duplicate(true)
-
-	answers_container.visible = true
-	background_label.visible = false
-	background_label.text = ""
-	result_label.visible = false
-	result_label.text = ""
 	answer_selected = false
 
-	sector_name_label.text = "سؤال التعادل"
-	question_number_label.text = "سؤال الحسم - %s" % _team_name(answering_team)
-	question_text_label.text = current_question["question"]
+	_apply_tie_breaker_card("سؤال الحسم - %s" % _team_name(answering_team))
 
-	answer_a_button.text = current_question["answers"]["A"]
-	answer_b_button.text = current_question["answers"]["B"]
-	answer_c_button.text = ""
-	answer_c_button.visible = false
-	answer_d_button.visible = false
-	close_button.visible = false
+	result_label.visible = false
+	result_label.text = ""
 
-	uses_card_image = false
-	panel.visible = true
-	background_label.visible = false
-	_set_option_zones_visible(false)
-
-	visible = true
-	show()
-	layer = 100
+	# الإجابة بالضغط على الدائرة، تماما كسؤال المعركة
+	_set_tie_breaker_option_zones()
 
 	answer_a_button.disabled = false
 	answer_b_button.disabled = false
 	answer_c_button.disabled = true
 	answer_d_button.disabled = true
+
+	visible = true
+	show()
+	layer = 100
 
 	_start_answer_timer()
 
